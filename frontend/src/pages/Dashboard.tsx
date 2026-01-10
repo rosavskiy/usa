@@ -1,7 +1,18 @@
-import { useState, useEffect } from 'react';
-import { BarChart3, TrendingDown, Leaf, FileText } from 'lucide-react';
-import api from '../api/axios';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useState, useEffect } from "react";
+import { BarChart3, TrendingDown, Leaf, FileText } from "lucide-react";
+import api from "../api/axios";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -14,19 +25,22 @@ export default function Dashboard() {
   const loadStats = async () => {
     try {
       const [calcsRes, docsRes] = await Promise.all([
-        api.get('/carbon/calculations'),
-        api.get('/upload'),
+        api.get("/carbon/calculations"),
+        api.get("/upload"),
       ]);
 
       const calculations = calcsRes.data.data || [];
       const documents = docsRes.data.data || [];
 
       // Calculate totals
-      const totalEmissions = calculations.reduce((sum: number, c: any) => sum + (c.total_co2e_kg || 0), 0);
-      
+      const totalEmissions = calculations.reduce(
+        (sum: number, c: any) => sum + (c.total_co2e_kg || 0),
+        0
+      );
+
       // Group by category
       const byCategory = calculations.reduce((acc: any, c: any) => {
-        const category = c.category || 'other';
+        const category = c.category || "other";
         acc[category] = (acc[category] || 0) + (c.total_co2e_kg || 0);
         return acc;
       }, {});
@@ -34,11 +48,14 @@ export default function Dashboard() {
       setStats({
         totalEmissions,
         totalDocuments: documents.length,
-        byCategory: Object.entries(byCategory).map(([name, value]) => ({ name, value })),
+        byCategory: Object.entries(byCategory).map(([name, value]) => ({
+          name,
+          value,
+        })),
         recentCalculations: calculations.slice(0, 5),
       });
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      console.error("Failed to load stats:", error);
       // Set empty stats on error
       setStats({
         totalEmissions: 0,
@@ -56,10 +73,14 @@ export default function Dashboard() {
   }
 
   if (!stats) {
-    return <div className="text-center py-12">Failed to load dashboard. Please refresh.</div>;
+    return (
+      <div className="text-center py-12">
+        Failed to load dashboard. Please refresh.
+      </div>
+    );
   }
 
-  const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
 
   return (
     <div className="space-y-6">
@@ -127,20 +148,27 @@ export default function Dashboard() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value }: any) => `${name}: ${(Number(value) || 0).toFixed(1)} kg`}
+                  label={({ name, value }: any) =>
+                    `${name}: ${(Number(value) || 0).toFixed(1)} kg`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {stats.byCategory.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-gray-500 text-center py-12">No data yet. Upload your first bill!</p>
+            <p className="text-gray-500 text-center py-12">
+              No data yet. Upload your first bill!
+            </p>
           )}
         </div>
 
@@ -150,20 +178,29 @@ export default function Dashboard() {
           {stats?.recentCalculations?.length > 0 ? (
             <div className="space-y-3">
               {stats.recentCalculations.map((calc: any) => (
-                <div key={calc.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={calc.id}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                >
                   <div>
                     <p className="font-medium capitalize">{calc.category}</p>
-                    <p className="text-sm text-gray-500">{calc.emission_type}</p>
+                    <p className="text-sm text-gray-500">
+                      {calc.emission_type}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-primary-600">{(Number(calc.total_co2e_kg) || 0).toFixed(2)} kg</p>
+                    <p className="font-bold text-primary-600">
+                      {(Number(calc.total_co2e_kg) || 0).toFixed(2)} kg
+                    </p>
                     <p className="text-xs text-gray-500">CO₂e</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-12">No calculations yet</p>
+            <p className="text-gray-500 text-center py-12">
+              No calculations yet
+            </p>
           )}
         </div>
       </div>

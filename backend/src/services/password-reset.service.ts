@@ -1,6 +1,6 @@
-import { query } from '../config/database';
-import crypto from 'crypto';
-import { UserModel } from '../models/user.model';
+import { query } from "../config/database";
+import crypto from "crypto";
+import { UserModel } from "../models/user.model";
 
 export class PasswordResetService {
   /**
@@ -13,7 +13,7 @@ export class PasswordResetService {
     }
 
     // Generate secure token
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Create table if not exists (for MVP without migrations)
@@ -38,7 +38,9 @@ export class PasswordResetService {
     // For MVP: log token to console (in production, send email)
     console.log(`\n🔐 PASSWORD RESET TOKEN for ${email}:`);
     console.log(`Token: ${token}`);
-    console.log(`Reset URL: http://localhost:3001/reset-password?token=${token}`);
+    console.log(
+      `Reset URL: http://localhost:3001/reset-password?token=${token}`
+    );
     console.log(`Expires: ${expiresAt.toISOString()}\n`);
 
     return token;
@@ -47,7 +49,10 @@ export class PasswordResetService {
   /**
    * Verify token and reset password
    */
-  static async resetPasswordWithToken(token: string, newPassword: string): Promise<boolean> {
+  static async resetPasswordWithToken(
+    token: string,
+    newPassword: string
+  ): Promise<boolean> {
     // Find valid token
     const result = await query(
       `SELECT user_id, expires_at, used FROM password_reset_tokens 

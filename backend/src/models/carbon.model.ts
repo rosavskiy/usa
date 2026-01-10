@@ -1,4 +1,4 @@
-import { query } from '../config/database';
+import { query } from "../config/database";
 
 export interface CarbonCalculation {
   id: number;
@@ -29,7 +29,9 @@ export interface CreateCarbonCalculationDTO {
 }
 
 export class CarbonModel {
-  static async create(data: CreateCarbonCalculationDTO): Promise<CarbonCalculation> {
+  static async create(
+    data: CreateCarbonCalculationDTO
+  ): Promise<CarbonCalculation> {
     const result = await query(
       `INSERT INTO carbon_calculations 
        (user_id, document_id, emission_type, category, co2_kg, ch4_kg, n2o_kg, total_co2e_kg, period_start, period_end) 
@@ -64,7 +66,7 @@ export class CarbonModel {
       `SELECT SUM(total_co2e_kg) as total FROM carbon_calculations WHERE user_id = $1`,
       [userId]
     );
-    return parseFloat(result.rows[0]?.total || '0');
+    return parseFloat(result.rows[0]?.total || "0");
   }
 
   static async findByUserIdAndDateRange(

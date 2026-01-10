@@ -1,17 +1,24 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Leaf, Upload, BarChart3, Lightbulb, LogOut, Calculator } from 'lucide-react';
+import { Outlet, Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  Leaf,
+  Upload,
+  BarChart3,
+  Lightbulb,
+  LogOut,
+  Calculator,
+} from "lucide-react";
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: BarChart3 },
-    { path: '/upload', label: 'Upload Bills', icon: Upload },
-    { path: '/manual', label: 'Manual Entry', icon: Calculator },
-    { path: '/calculations', label: 'Calculations', icon: BarChart3 },
-    { path: '/recommendations', label: 'Recommendations', icon: Lightbulb },
+    { path: "/", label: "Dashboard", icon: BarChart3 },
+    { path: "/upload", label: "Upload Bills", icon: Upload },
+    { path: "/manual", label: "Manual Entry", icon: Calculator },
+    { path: "/calculations", label: "Calculations", icon: BarChart3 },
+    { path: "/recommendations", label: "Recommendations", icon: Lightbulb },
   ];
 
   return (
@@ -22,9 +29,11 @@ export default function Layout() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <Leaf className="text-primary-600" size={32} />
-              <h1 className="text-xl font-bold text-gray-900">Carbon Tracker</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                Carbon Tracker
+              </h1>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{user?.companyName}</span>
               <button
@@ -52,8 +61,8 @@ export default function Layout() {
                   to={item.path}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      ? "bg-primary-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   <Icon size={20} />

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 export class AppError extends Error {
   statusCode: number;
@@ -26,10 +26,10 @@ export const errorHandler = (
   }
 
   // Unexpected errors
-  console.error('❌ Unexpected Error:', err);
+  console.error("❌ Unexpected Error:", err);
   return res.status(500).json({
     success: false,
-    message: 'Internal server error',
+    message: "Internal server error",
   });
 };
 

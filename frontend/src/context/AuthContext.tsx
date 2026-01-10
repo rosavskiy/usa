@@ -1,5 +1,11 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import api from '../api/axios';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import api from "../api/axios";
 
 interface User {
   id: number;
@@ -11,7 +17,11 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, companyName: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    companyName: string
+  ) => Promise<void>;
   logout: () => void;
 }
 
@@ -22,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       loadUser();
     } else {
@@ -32,17 +42,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUser = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         setLoading(false);
         return;
       }
-      
-      const response = await api.get('/auth/profile');
+
+      const response = await api.get("/auth/profile");
       setUser(response.data.data);
     } catch (error) {
-      console.error('Failed to load user:', error);
-      localStorage.removeItem('token');
+      console.error("Failed to load user:", error);
+      localStorage.removeItem("token");
       setUser(null);
     } finally {
       setLoading(false);
@@ -50,19 +60,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', response.data.data.token);
+    const response = await api.post("/auth/login", { email, password });
+    localStorage.setItem("token", response.data.data.token);
     setUser(response.data.data.user);
   };
 
-  const register = async (email: string, password: string, companyName: string, state?: string) => {
-    const response = await api.post('/auth/register', { email, password, companyName, state });
-    localStorage.setItem('token', response.data.data.token);
+  const register = async (
+    email: string,
+    password: string,
+    companyName: string,
+    state?: string
+  ) => {
+    const response = await api.post("/auth/register", {
+      email,
+      password,
+      companyName,
+      state,
+    });
+    localStorage.setItem("token", response.data.data.token);
     setUser(response.data.data.user);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setUser(null);
   };
 
@@ -76,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
