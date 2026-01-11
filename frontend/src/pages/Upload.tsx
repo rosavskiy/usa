@@ -13,6 +13,16 @@ import {
 } from "lucide-react";
 import api from "../api/axios";
 
+interface FileMetadata {
+  name: string;
+  size: number;
+  status: string;
+  docId?: number;
+  errorMsg?: string;
+}
+
+const STORAGE_KEY = "uploadMetadata";
+
 export default function Upload() {
   const navigate = useNavigate();
   const [files, setFiles] = useState<any[]>([]);
@@ -24,6 +34,44 @@ export default function Upload() {
   >([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Load metadata on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const metadata: FileMetadata[] = JSON.parse(saved);
+        // Convert metadata back to file structure (without actual File object)
+        const restoredFiles = metadata.map(m => ({
+          file: { name: m.name, size: m.size },
+          status: m.status,
+          docId: m.docId,
+          errorMsg: m.errorMsg,
+          progress: 0,
+        }));
+        setFiles(restoredFiles);
+        setUploadComplete(restoredFiles.length > 0 && restoredFiles.every(f => f.status === 'success'));
+      } catch (err) {
+        console.error('Failed to load metadata:', err);
+      }
+    }
+  }, []);
+
+  // Save metadata whenever files change
+  useEffect(() => {
+    if (files.length > 0) {
+      const metadata: FileMetadata[] = files.map(f => ({
+        name: f.file?.name || 'Unknown',
+        size: f.file?.size || 0,
+        status: f.status,
+        docId: f.docId,
+        errorMsg: f.errorMsg,
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(metadata));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, [files]);
 
   // Detect mobile device
   useState(() => {
