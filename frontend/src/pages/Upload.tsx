@@ -95,16 +95,15 @@ export default function Upload() {
     setUploading(true);
     const uploadedDocIds: number[] = [];
 
-    // Step 1: Upload ONLY pending files (skip already processed)
-    for (let i = 0; i < files.length; i++) {
-      // Skip files that are already successfully processed
-      if (files[i].status === "success") {
-        continue;
-      }
+    // Step 1: Upload files in parallel (not sequentially!)
+    const filesToUpload = files
+      .map((f, idx) => ({ file: f, index: idx }))
+      .filter(({ file }) => file.status !== "success"); // Skip already processed
 
+    const uploadPromises = filesToUpload.map(async ({ file, index }) => {
       try {
         const formData = new FormData();
-        formData.append("document", files[i].file);
+        formData.append("document", file.file);
 
         const response = await api.post("/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -116,15 +115,20 @@ export default function Upload() {
         // Mark as processing (show spinner, not checkmark yet)
         setFiles((prev) =>
           prev.map((f, idx) =>
-            idx === i ? { ...f, status: "processing", docId } : f
+            idx === index ? { ...f, status: "processing", docId } : f
           )
         );
+
+        return { success: true, docId, index };
       } catch (error) {
         setFiles((prev) =>
-          prev.map((f, idx) => (idx === i ? { ...f, status: "error" } : f))
+          prev.map((f, idx) => (idx === index ? { ...f, status: "error" } : f))
         );
+        return { success: false, index };
       }
-    }
+    });
+
+    await Promise.all(uploadPromises);
 
     setUploading(false);
 
