@@ -3,7 +3,7 @@ import { CarbonModel } from '../models/carbon.model';
 import { DocumentModel } from '../models/document.model';
 import { UserModel } from '../models/user.model';
 
-export async function generateCarbonReport(calculationId: number, userId: number): Promise<PDFDocument> {
+export async function generateCarbonReport(calculationId: number, userId: number): Promise<typeof PDFDocument> {
   // Get calculation data
   const calculation = await CarbonModel.findById(calculationId);
   if (!calculation || calculation.user_id !== userId) {
