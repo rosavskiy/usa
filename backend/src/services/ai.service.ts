@@ -69,7 +69,7 @@ export async function parseDocumentWithAI(
     }
 
     if (!response) {
-      throw new Error("OCR service error - maximum retries exceeded");
+      throw new Error("Photo processing timed out - please try uploading a smaller or clearer photo");
     }
 
     // Log full OCR.space response for debugging
@@ -79,20 +79,20 @@ export async function parseDocumentWithAI(
 
     // Check for OCR.space API errors
     if (response.data.IsErroredOnProcessing) {
-      throw new Error(`OCR API error: ${response.data.ErrorMessage || 'Unknown error'}`);
+      throw new Error("Unable to process photo - please ensure it's clear, well-lit, and in focus");
     }
 
     if (
       !response.data.ParsedResults ||
       response.data.ParsedResults.length === 0
     ) {
-      throw new Error("Image quality too low - please upload a clearer photo or use Manual Entry");
+      throw new Error("Photo quality too low - please upload a clearer, higher resolution image");
     }
 
     const ocrText = response.data.ParsedResults[0].ParsedText || "";
 
     if (!ocrText || ocrText.trim().length < 10) {
-      throw new Error("Image quality too low - please upload a clearer, higher resolution photo");
+      throw new Error("Text not readable - please upload a clearer, higher resolution photo");
     }
 
     console.log(`✨ OCR extracted text (${ocrText.length} chars):`);
@@ -110,7 +110,7 @@ export async function parseDocumentWithAI(
       parsedData.consumption.value === 0
     ) {
       throw new Error(
-        "Document is unreadable or does not contain consumption data"
+        "Consumption data not found on photo - please ensure the bill is fully visible and try again"
       );
     }
 
