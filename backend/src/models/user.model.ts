@@ -7,6 +7,9 @@ export interface User {
   password_hash: string;
   company_name: string;
   state?: string | null;
+  industry?: string | null;
+  currency?: string | null;
+  unit_system?: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -39,10 +42,57 @@ export class UserModel {
 
   static async findById(id: number): Promise<User | null> {
     const result = await query(
-      "SELECT id, email, company_name, state, created_at, updated_at FROM users WHERE id = $1",
+      "SELECT id, email, company_name, state, industry, currency, unit_system, created_at, updated_at FROM users WHERE id = $1",
       [id]
     );
     return result.rows[0] || null;
+  }
+
+  static async updateProfile(
+    userId: number,
+    data: {
+      companyName?: string;
+      state?: string;
+      industry?: string;
+      currency?: string;
+      unitSystem?: string;
+    }
+  ): Promise<User> {
+    const updates: string[] = [];
+    const values: any[] = [];
+    let paramCount = 1;
+
+    if (data.companyName !== undefined) {
+      updates.push(`company_name = $${paramCount++}`);
+      values.push(data.companyName);
+    }
+    if (data.state !== undefined) {
+      updates.push(`state = $${paramCount++}`);
+      values.push(data.state);
+    }
+    if (data.industry !== undefined) {
+      updates.push(`industry = $${paramCount++}`);
+      values.push(data.industry);
+    }
+    if (data.currency !== undefined) {
+      updates.push(`currency = $${paramCount++}`);
+      values.push(data.currency);
+    }
+    if (data.unitSystem !== undefined) {
+      updates.push(`unit_system = $${paramCount++}`);
+      values.push(data.unitSystem);
+    }
+
+    updates.push(`updated_at = NOW()`);
+    values.push(userId);
+
+    const result = await query(
+      `UPDATE users SET ${updates.join(", ")} WHERE id = $${paramCount} 
+       RETURNING id, email, company_name, state, industry, currency, unit_system, created_at, updated_at`,
+      values
+    );
+
+    return result.rows[0];
   }
 
   static async verifyPassword(

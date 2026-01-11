@@ -13,6 +13,7 @@ import ManualInput from "./pages/ManualInput";
 import Calculations from "./pages/Calculations";
 import Recommendations from "./pages/Recommendations";
 import MyDocuments from "./pages/MyDocuments";
+import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Layout from "./components/Layout";
@@ -57,6 +58,7 @@ function App() {
             <Route path="calculations" element={<Calculations />} />
             <Route path="recommendations" element={<Recommendations />} />
             <Route path="my-documents" element={<MyDocuments />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
       </Router>

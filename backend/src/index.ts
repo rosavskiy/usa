@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth.routes";
 import uploadRoutes from "./routes/upload.routes";
 import carbonRoutes from "./routes/carbon.routes";
+import settingsRoutes from "./routes/settings.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { query } from "./config/database";
 
@@ -46,6 +47,7 @@ app.use("/uploads", express.static(process.env.UPLOAD_DIR || "./uploads"));
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/carbon", carbonRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {

@@ -6,6 +6,7 @@ import {
   Download,
   Trash2,
   FileDown,
+  Edit,
 } from "lucide-react";
 import api from "../api/axios";
 import { format } from "date-fns";
@@ -23,6 +24,17 @@ export default function Calculations() {
     calcId: number | null;
   }>({ show: false, calcId: null });
   const [deleting, setDeleting] = useState(false);
+  const [editModal, setEditModal] = useState<{
+    show: boolean;
+    calculation: any | null;
+  }>({ show: false, calculation: null });
+  const [editForm, setEditForm] = useState({
+    category: "",
+    total_co2e_kg: "",
+    period_start: "",
+    period_end: "",
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadCalculations();
@@ -200,6 +212,94 @@ export default function Calculations() {
     }
   };
 
+  const handleEditClick = (calc: any) => {
+    setEditForm({
+      category: calc.category || "",
+      total_co2e_kg: calc.total_co2e_kg?.toString() || "",
+      period_start: calc.period_start
+        ? new Date(calc.period_start).toISOString().split("T")[0]
+        : "",
+      period_end: calc.period_end
+        ? new Date(calc.period_end).toISOString().split("T")[0]
+        : "",
+    });
+    setEditModal({ show: true, calculation: calc });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editModal.calculation) return;
+
+    try {
+      setSaving(true);
+      await api.put(`/carbon/calculations/${editModal.calculation.id}`, {
+        category: editForm.category,
+        total_co2e_kg: parseFloat(editForm.total_co2e_kg),
+        period_start: editForm.period_start || null,
+        period_end: editForm.period_end || null,
+      });
+
+      // Reload calculations
+      await loadCalculations();
+      setEditModal({ show: false, calculation: null });
+    } catch (error: any) {
+      console.error("Failed to update calculation:", error);
+      alert(
+        error.response?.data?.error || "Failed to update. Please try again."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDownloadAnnualReport = async (year: number) => {
+    try {
+      const response = await api.get(`/carbon/annual-report/${year}`, {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `annual-carbon-report-${year}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error("Failed to download annual report:", error);
+      alert(
+        error.response?.data?.error ||
+          "Failed to download annual report. Please try again."
+      );
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const response = await api.get("/carbon/export-csv", {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `carbon-calculations-${new Date().toISOString().split("T")[0]}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error("Failed to export CSV:", error);
+      alert(
+        error.response?.data?.error || "Failed to export CSV. Please try again."
+      );
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12">Loading calculations...</div>;
   }
@@ -217,6 +317,46 @@ export default function Calculations() {
           </div>
         </div>
       </div>
+
+      {/* Annual Report Section */}
+      {calculations.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+            <Download size={20} />
+            Annual Reports & Export
+          </h3>
+          <p className="text-sm text-blue-800 mb-3">
+            Download comprehensive annual carbon footprint reports with detailed
+            breakdowns, trends, and compliance statements.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {Array.from(
+              new Set(
+                calculations.map((c) =>
+                  new Date(c.calculation_date).getFullYear()
+                )
+              )
+            )
+              .sort((a, b) => b - a)
+              .map((year) => (
+                <button
+                  key={year}
+                  onClick={() => handleDownloadAnnualReport(year)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                >
+                  Download {year} Report
+                </button>
+              ))}
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+            >
+              Export CSV
+            </button>
+          </div>
+        </div>
+      )}
+
       {calculations.length === 0 ? (
         <div className="card text-center py-12">
           <TrendingUp className="mx-auto text-gray-400 mb-4" size={48} />
@@ -376,6 +516,15 @@ export default function Calculations() {
                             </div>
                             {/* Action Buttons */}
                             <div className="flex flex-col gap-2">
+                              {/* Edit Button */}
+                              <button
+                                onClick={() => handleEditClick(calc)}
+                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Edit calculation"
+                              >
+                                <Edit size={20} />
+                              </button>
+
                               {/* Download PDF Button */}
                               <button
                                 onClick={() => handleDownloadPDF(calc.id)}
@@ -434,6 +583,126 @@ export default function Calculations() {
               and N₂O impact)
             </li>
           </ul>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editModal.show && editModal.calculation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              ✏️ Edit Calculation
+            </h3>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  value={editForm.category}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, category: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  <option value="Electricity">Electricity</option>
+                  <option value="Natural Gas">Natural Gas</option>
+                  <option value="Gasoline">Gasoline</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Propane">Propane</option>
+                  <option value="Water">Water</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* Total CO2e */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Total CO₂e (kg)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editForm.total_co2e_kg}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      total_co2e_kg: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Current: {editModal.calculation.total_co2e_kg} kg CO₂e
+                </p>
+              </div>
+
+              {/* Period Start */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Period Start
+                </label>
+                <input
+                  type="date"
+                  value={editForm.period_start}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      period_start: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Period End */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Period End
+                </label>
+                <input
+                  type="date"
+                  value={editForm.period_end}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, period_end: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> Editing will update the total
+                  emissions. Individual gas breakdowns (CO₂, CH₄, N₂O) will be
+                  recalculated proportionally.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditModal({ show: false, calculation: null })
+                  }
+                  disabled={saving}
+                  className="flex-1 btn bg-gray-200 hover:bg-gray-300 text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 btn bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

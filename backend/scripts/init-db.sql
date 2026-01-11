@@ -7,6 +7,9 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     company_name VARCHAR(255) NOT NULL,
     state VARCHAR(2), -- US state code for regional emission factors
+    industry VARCHAR(100), -- Business industry classification
+    currency VARCHAR(10) DEFAULT 'USD', -- Preferred currency for reporting
+    unit_system VARCHAR(20) DEFAULT 'Imperial', -- Imperial or Metric
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

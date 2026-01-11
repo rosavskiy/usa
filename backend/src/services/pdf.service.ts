@@ -371,47 +371,6 @@ export async function generateCarbonReport(
     .text(`Total ${scopeLabel}: ${totalCO2e} kg CO2e`);
 
   // ==================== PAGE 6: METHODOLOGY ====================
-
-    doc.text(`Electricity Consumption: ${consumption.toLocaleString()} kWh`, {
-      indent: 20,
-    });
-    doc.text(`Emission Factor: ${factor.toFixed(3)} kg CO2e/kWh`, {
-      indent: 20,
-    });
-    doc.text(`Region: ${parsedData?.state || "US (average)"}`, { indent: 20 });
-  } else if (calculation.category === "gas") {
-    const consumption = parsedData?.consumption?.value || 0;
-    const unit = parsedData?.consumption?.unit || "therms";
-    const factor = calculation.total_co2e_kg / consumption;
-
-    doc.text(
-      `Natural Gas Consumption: ${consumption.toLocaleString()} ${unit}`,
-      { indent: 20 }
-    );
-    doc.text(`Emission Factor: ${factor.toFixed(3)} kg CO2e/${unit}`, {
-      indent: 20,
-    });
-  } else if (calculation.category === "fuel") {
-    const consumption = parsedData?.consumption?.value || 0;
-    const unit = parsedData?.consumption?.unit || "gallons";
-    const factor = calculation.total_co2e_kg / consumption;
-
-    doc.text(`Fuel Consumption: ${consumption.toLocaleString()} ${unit}`, {
-      indent: 20,
-    });
-    doc.text(`Emission Factor: ${factor.toFixed(3)} kg CO2e/${unit}`, {
-      indent: 20,
-    });
-  }
-
-  doc.moveDown(1);
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(14)
-    .fillColor("#2C5F2D")
-    .text(`Total ${scopeLabel}: ${totalCO2e} kg CO2e`);
-
-  // ==================== PAGE 6: METHODOLOGY ====================
   doc.addPage();
   doc
     .fontSize(20)

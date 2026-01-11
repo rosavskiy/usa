@@ -100,6 +100,59 @@ export class CarbonModel {
     await query(`DELETE FROM carbon_calculations WHERE id = $1`, [id]);
   }
 
+  static async update(
+    id: number,
+    data: {
+      category?: string;
+      total_co2e_kg?: number;
+      period_start?: string;
+      period_end?: string;
+    }
+  ): Promise<CarbonCalculation> {
+    // Get current calculation
+    const current = await CarbonModel.findById(id);
+    if (!current) {
+      throw new Error("Calculation not found");
+    }
+
+    // Calculate proportional gas breakdowns if total is updated
+    let co2_kg = current.co2_kg;
+    let ch4_kg = current.ch4_kg;
+    let n2o_kg = current.n2o_kg;
+
+    if (data.total_co2e_kg !== undefined && data.total_co2e_kg !== current.total_co2e_kg) {
+      const ratio = data.total_co2e_kg / current.total_co2e_kg;
+      co2_kg = current.co2_kg * ratio;
+      ch4_kg = current.ch4_kg * ratio;
+      n2o_kg = current.n2o_kg * ratio;
+    }
+
+    const result = await query(
+      `UPDATE carbon_calculations 
+       SET category = COALESCE($1, category),
+           total_co2e_kg = COALESCE($2, total_co2e_kg),
+           co2_kg = $3,
+           ch4_kg = $4,
+           n2o_kg = $5,
+           period_start = COALESCE($6, period_start),
+           period_end = COALESCE($7, period_end)
+       WHERE id = $8
+       RETURNING *`,
+      [
+        data.category,
+        data.total_co2e_kg,
+        co2_kg,
+        ch4_kg,
+        n2o_kg,
+        data.period_start,
+        data.period_end,
+        id,
+      ]
+    );
+
+    return result.rows[0];
+  }
+
   static async findPreviousByCategory(
     userId: number,
     category: string,

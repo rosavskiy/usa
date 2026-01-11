@@ -5,6 +5,7 @@ import { calculateEmissions } from "../services/carbon.service";
 import { generateRecommendations } from "../services/recommendations.service";
 import { generateCarbonReport } from "../services/report.service";
 import { generateCarbonReport as generateIndividualReport } from "../services/pdf.service";
+import { generateAnnualReport } from "../services/annual-report.service";
 import { asyncHandler, AppError } from "../middleware/error.middleware";
 
 export const calculateCarbon = asyncHandler(
@@ -94,6 +95,41 @@ export const deleteCalculation = asyncHandler(
   }
 );
 
+export const updateCalculation = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const calculationId = parseInt(req.params.id);
+    const { category, total_co2e_kg, period_start, period_end } = req.body;
+
+    // Get calculation to verify ownership
+    const calculation = await CarbonModel.findById(calculationId);
+
+    if (!calculation) {
+      throw new AppError("Calculation not found", 404);
+    }
+
+    if (calculation.user_id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    // Update calculation
+    const updatedCalculation = await CarbonModel.update(calculationId, {
+      category,
+      total_co2e_kg,
+      period_start,
+      period_end,
+    });
+
+    console.log(`✏️ Updated calculation ${calculationId}`);
+
+    res.json({
+      success: true,
+      data: updatedCalculation,
+      message: "Calculation updated successfully",
+    });
+  }
+);
+
 export const downloadIndividualReport = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
@@ -116,6 +152,29 @@ export const downloadIndividualReport = asyncHandler(
     const filename = `carbon-report-${calculationId}-${
       new Date().toISOString().split("T")[0]
     }.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    // Pipe PDF to response
+    doc.pipe(res);
+    doc.end();
+  }
+);
+
+export const downloadAnnualReport = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const year = parseInt(req.params.year);
+
+    if (!year || year < 2000 || year > new Date().getFullYear()) {
+      throw new AppError("Invalid year", 400);
+    }
+
+    // Generate Annual PDF
+    const doc = await generateAnnualReport({ userId, year });
+
+    // Set response headers
+    const filename = `annual-carbon-report-${year}.pdf`;
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
