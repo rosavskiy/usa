@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BarChart3, Calendar, TrendingUp, Download } from "lucide-react";
+import { BarChart3, Calendar, TrendingUp, Download, Trash2 } from "lucide-react";
 import api from "../api/axios";
 import { format } from "date-fns";
 
@@ -11,6 +11,8 @@ export default function Calculations() {
     "all"
   );
   const [downloading, setDownloading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean; calcId: number | null }>({ show: false, calcId: null });
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadCalculations();
@@ -137,6 +139,24 @@ export default function Calculations() {
       alert("Failed to download report. Please try again.");
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.calcId) return;
+
+    try {
+      setDeleting(true);
+      await api.delete(`/carbon/calculations/${deleteModal.calcId}`);
+      setDeleteModal({ show: false, calcId: null });
+      // Remove from list and deselect
+      setCalculations(prev => prev.filter(c => c.id !== deleteModal.calcId));
+      setSelectedIds(prev => prev.filter(id => id !== deleteModal.calcId));
+    } catch (error) {
+      console.error("Failed to delete calculation:", error);
+      alert("Failed to delete calculation. Please try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -319,8 +339,15 @@ export default function Calculations() {
                         )}`}
                     </span>
                   </div>
-                </div>
-              </div>
+                </div>                        
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => setDeleteModal({ show: true, calcId: calc.id })}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete calculation"
+                        >
+                          <Trash2 size={20} />
+                        </button>              </div>
             </div>
           ))}
                     </div>
@@ -355,6 +382,36 @@ export default function Calculations() {
               and N₂O impact)
             </li>
           </ul>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-3">
+              ⚠️ Delete Calculation?
+            </h3>
+            <p className="text-gray-700 mb-6">
+              This will permanently delete this carbon calculation. This action <strong>cannot be undone</strong>.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModal({ show: false, calcId: null })}
+                disabled={deleting}
+                className="flex-1 btn bg-gray-200 hover:bg-gray-300 text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 btn bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

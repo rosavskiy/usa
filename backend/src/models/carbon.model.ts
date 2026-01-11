@@ -87,4 +87,16 @@ export class CarbonModel {
     const result = await query(queryText, params);
     return result.rows;
   }
+
+  static async findById(id: number): Promise<CarbonCalculation | null> {
+    const result = await query(
+      `SELECT * FROM carbon_calculations WHERE id = $1`,
+      [id]
+    );
+    return result.rows[0] || null;
+  }
+
+  static async delete(id: number): Promise<void> {
+    await query(`DELETE FROM carbon_calculations WHERE id = $1`, [id]);
+  }
 }

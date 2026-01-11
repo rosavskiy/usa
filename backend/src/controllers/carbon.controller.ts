@@ -4,7 +4,7 @@ import { CarbonModel } from "../models/carbon.model";
 import { calculateEmissions } from "../services/carbon.service";
 import { generateRecommendations } from "../services/recommendations.service";
 import { generateCarbonReport } from "../services/report.service";
-import { asyncHandler } from "../middleware/error.middleware";
+import { asyncHandler, AppError } from "../middleware/error.middleware";
 
 export const calculateCarbon = asyncHandler(
   async (req: AuthRequest, res: Response) => {
@@ -63,5 +63,32 @@ export const exportReport = asyncHandler(
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
+  }
+);
+
+export const deleteCalculation = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const calculationId = parseInt(req.params.id);
+
+    // Get calculation to verify ownership
+    const calculation = await CarbonModel.findById(calculationId);
+
+    if (!calculation) {
+      throw new AppError("Calculation not found", 404);
+    }
+
+    if (calculation.user_id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    // Delete calculation
+    await CarbonModel.delete(calculationId);
+    console.log(`🗑️ Deleted calculation ${calculationId}`);
+
+    res.json({
+      success: true,
+      message: "Calculation deleted successfully",
+    });
   }
 );

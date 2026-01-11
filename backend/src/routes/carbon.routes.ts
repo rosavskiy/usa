@@ -4,6 +4,7 @@ import {
   getCalculations,
   getRecommendations,
   exportReport,
+  deleteCalculation,
 } from "../controllers/carbon.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -13,5 +14,6 @@ router.post("/calculate", authenticate, calculateCarbon);
 router.get("/calculations", authenticate, getCalculations);
 router.get("/recommendations", authenticate, getRecommendations);
 router.get("/export", authenticate, exportReport);
+router.delete("/calculations/:id", authenticate, deleteCalculation);
 
 export default router;
