@@ -99,4 +99,19 @@ export class CarbonModel {
   static async delete(id: number): Promise<void> {
     await query(`DELETE FROM carbon_calculations WHERE id = $1`, [id]);
   }
+
+  static async findPreviousByCategory(
+    userId: number,
+    category: string,
+    currentCalculationId: number
+  ): Promise<CarbonCalculation | null> {
+    const result = await query(
+      `SELECT * FROM carbon_calculations 
+       WHERE user_id = $1 AND category = $2 AND id != $3 
+       ORDER BY calculation_date DESC 
+       LIMIT 1`,
+      [userId, category, currentCalculationId]
+    );
+    return result.rows[0] || null;
+  }
 }

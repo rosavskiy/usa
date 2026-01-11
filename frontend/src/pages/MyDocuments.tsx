@@ -1,15 +1,28 @@
 import { useState, useEffect } from "react";
-import { Trash2, Download, FileText, AlertCircle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Trash2,
+  Download,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import api from "../api/axios";
 
 export default function MyDocuments() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "readable" | "unreadable">("all");
+  const [filter, setFilter] = useState<"all" | "readable" | "unreadable">(
+    "all"
+  );
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalDocs, setTotalDocs] = useState(0);
-  const [deleteModal, setDeleteModal] = useState<{ show: boolean; fileName: string | null }>({ show: false, fileName: null });
+  const [deleteModal, setDeleteModal] = useState<{
+    show: boolean;
+    fileName: string | null;
+  }>({ show: false, fileName: null });
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -20,7 +33,9 @@ export default function MyDocuments() {
     try {
       setLoading(true);
       const statusParam = filter === "all" ? "" : `&status=${filter}`;
-      const response = await api.get(`/upload?page=${page}&limit=20${statusParam}`);
+      const response = await api.get(
+        `/upload?page=${page}&limit=20${statusParam}`
+      );
       setDocuments(response.data.data);
       setTotalPages(response.data.pagination.totalPages);
       setTotalDocs(response.data.pagination.total);
@@ -37,7 +52,9 @@ export default function MyDocuments() {
     try {
       setDeleting(true);
       // Delete all documents with this filename
-      await api.delete(`/upload/by-filename/${encodeURIComponent(deleteModal.fileName)}`);
+      await api.delete(
+        `/upload/by-filename/${encodeURIComponent(deleteModal.fileName)}`
+      );
       setDeleteModal({ show: false, fileName: null });
       loadDocuments(); // Reload list
     } catch (error) {
@@ -101,7 +118,10 @@ export default function MyDocuments() {
       {/* Filter Tabs */}
       <div className="flex gap-2 border-b border-gray-200">
         <button
-          onClick={() => { setFilter("all"); setPage(1); }}
+          onClick={() => {
+            setFilter("all");
+            setPage(1);
+          }}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             filter === "all"
               ? "border-primary-500 text-primary-600"
@@ -111,7 +131,10 @@ export default function MyDocuments() {
           All Documents
         </button>
         <button
-          onClick={() => { setFilter("readable"); setPage(1); }}
+          onClick={() => {
+            setFilter("readable");
+            setPage(1);
+          }}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             filter === "readable"
               ? "border-green-500 text-green-600"
@@ -121,7 +144,10 @@ export default function MyDocuments() {
           Readable
         </button>
         <button
-          onClick={() => { setFilter("unreadable"); setPage(1); }}
+          onClick={() => {
+            setFilter("unreadable");
+            setPage(1);
+          }}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             filter === "unreadable"
               ? "border-red-500 text-red-600"
@@ -139,23 +165,30 @@ export default function MyDocuments() {
           <h3 className="text-xl font-medium text-gray-700 mb-2">
             No documents found
           </h3>
-          <p className="text-gray-500">
-            Upload your first bill to see it here
-          </p>
+          <p className="text-gray-500">Upload your first bill to see it here</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {documents.map((doc) => (
-            <div key={doc.id} className="card hover:shadow-lg transition-shadow">
+            <div
+              key={doc.id}
+              className="card hover:shadow-lg transition-shadow"
+            >
               {/* Info */}
               <div className="space-y-3">
                 <div className="flex items-start gap-2">
-                  <FileText className="text-gray-400 flex-shrink-0 mt-1" size={20} />
-                  <h3 className="font-medium text-sm break-all" title={doc.file_name}>
+                  <FileText
+                    className="text-gray-400 flex-shrink-0 mt-1"
+                    size={20}
+                  />
+                  <h3
+                    className="font-medium text-sm break-all"
+                    title={doc.file_name}
+                  >
                     {doc.file_name}
                   </h3>
                 </div>
-                
+
                 {getStatusBadge(doc.status)}
 
                 <p className="text-xs text-gray-500">
@@ -172,7 +205,9 @@ export default function MyDocuments() {
                     <span className="text-xs">Download</span>
                   </button>
                   <button
-                    onClick={() => setDeleteModal({ show: true, fileName: doc.file_name })}
+                    onClick={() =>
+                      setDeleteModal({ show: true, fileName: doc.file_name })
+                    }
                     className="flex-1 btn btn-sm bg-red-500 hover:bg-red-600 text-white flex items-center justify-center gap-1"
                   >
                     <Trash2 size={14} />
@@ -189,20 +224,20 @@ export default function MyDocuments() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
           <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             className="btn btn-sm disabled:opacity-50"
           >
             <ChevronLeft size={16} />
             Previous
           </button>
-          
+
           <span className="text-sm text-gray-600">
             Page {page} of {totalPages}
           </span>
 
           <button
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             className="btn btn-sm disabled:opacity-50"
           >
@@ -220,7 +255,8 @@ export default function MyDocuments() {
               ⚠️ Delete Document?
             </h3>
             <p className="text-gray-700 mb-6">
-              This action <strong>cannot be undone</strong>. The file will be permanently deleted from your account.
+              This action <strong>cannot be undone</strong>. The file will be
+              permanently deleted from your account.
             </p>
             <div className="flex gap-3">
               <button

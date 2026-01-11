@@ -53,7 +53,11 @@ router.post("/manual", authenticate, createManualDocument);
 router.get("/", authenticate, getDocuments);
 router.get("/:id", authenticate, getDocumentById);
 router.get("/download/:id", authenticate, downloadDocument);
-router.delete("/by-filename/:filename", authenticate, deleteDocumentsByFilename);
+router.delete(
+  "/by-filename/:filename",
+  authenticate,
+  deleteDocumentsByFilename
+);
 router.delete("/:id", authenticate, deleteDocument);
 
 export default router;

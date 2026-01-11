@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { BarChart3, Calendar, TrendingUp, Download, Trash2, FileDown } from "lucide-react";
+import {
+  BarChart3,
+  Calendar,
+  TrendingUp,
+  Download,
+  Trash2,
+  FileDown,
+} from "lucide-react";
 import api from "../api/axios";
 import { format } from "date-fns";
 
@@ -11,7 +18,10 @@ export default function Calculations() {
     "all"
   );
   const [downloading, setDownloading] = useState(false);
-  const [deleteModal, setDeleteModal] = useState<{ show: boolean; calcId: number | null }>({ show: false, calcId: null });
+  const [deleteModal, setDeleteModal] = useState<{
+    show: boolean;
+    calcId: number | null;
+  }>({ show: false, calcId: null });
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -75,16 +85,24 @@ export default function Calculations() {
     Object.keys(groups).forEach((dateKey) => {
       const items = groups[dateKey].flat();
       if (items.length === 0) return;
-      
-      items.sort((a, b) => new Date(b.created_at || b.calculation_date).getTime() - new Date(a.created_at || a.calculation_date).getTime());
-      
+
+      items.sort(
+        (a, b) =>
+          new Date(b.created_at || b.calculation_date).getTime() -
+          new Date(a.created_at || a.calculation_date).getTime()
+      );
+
       const batches: any[][] = [];
       let currentBatch: any[] = [items[0]];
-      
+
       for (let i = 1; i < items.length; i++) {
-        const prevTime = new Date(items[i - 1].created_at || items[i - 1].calculation_date).getTime();
-        const currTime = new Date(items[i].created_at || items[i].calculation_date).getTime();
-        
+        const prevTime = new Date(
+          items[i - 1].created_at || items[i - 1].calculation_date
+        ).getTime();
+        const currTime = new Date(
+          items[i].created_at || items[i].calculation_date
+        ).getTime();
+
         // If less than 30 seconds apart, same batch
         if (prevTime - currTime < 30000) {
           currentBatch.push(items[i]);
@@ -94,7 +112,7 @@ export default function Calculations() {
         }
       }
       batches.push(currentBatch);
-      
+
       groups[dateKey] = batches;
     });
 
@@ -104,14 +122,14 @@ export default function Calculations() {
   const grouped = groupByDate(calculations);
 
   const toggleSelection = (id: number) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
   const toggleAll = () => {
-    setSelectedIds(prev =>
-      prev.length === calculations.length ? [] : calculations.map(c => c.id)
+    setSelectedIds((prev) =>
+      prev.length === calculations.length ? [] : calculations.map((c) => c.id)
     );
   };
 
@@ -150,8 +168,10 @@ export default function Calculations() {
       await api.delete(`/carbon/calculations/${deleteModal.calcId}`);
       setDeleteModal({ show: false, calcId: null });
       // Remove from list and deselect
-      setCalculations(prev => prev.filter(c => c.id !== deleteModal.calcId));
-      setSelectedIds(prev => prev.filter(id => id !== deleteModal.calcId));
+      setCalculations((prev) =>
+        prev.filter((c) => c.id !== deleteModal.calcId)
+      );
+      setSelectedIds((prev) => prev.filter((id) => id !== deleteModal.calcId));
     } catch (error) {
       console.error("Failed to delete calculation:", error);
       alert("Failed to delete calculation. Please try again.");
@@ -163,13 +183,13 @@ export default function Calculations() {
   const handleDownloadPDF = async (calcId: number) => {
     try {
       const response = await api.get(`/carbon/calculations/${calcId}/report`, {
-        responseType: 'blob'
+        responseType: "blob",
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `carbon-report-${calcId}.pdf`);
+      link.setAttribute("download", `carbon-report-${calcId}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -218,141 +238,170 @@ export default function Calculations() {
               className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
             />
             <span className="font-medium text-gray-700">
-              {selectedIds.length === calculations.length ? 'Deselect All' : 'Select All'} ({selectedIds.length} selected for report)
+              {selectedIds.length === calculations.length
+                ? "Deselect All"
+                : "Select All"}{" "}
+              ({selectedIds.length} selected for report)
             </span>
           </div>
 
           {/* Render groups */}
           {Object.entries(grouped).map(([dateKey, batches]) => {
             if (batches.length === 0) return null;
-            
-            const displayDate = 
-              dateKey === 'today' ? '📅 Today' :
-              dateKey === 'yesterday' ? '📅 Yesterday' :
-              `📅 ${dateKey}`;
+
+            const displayDate =
+              dateKey === "today"
+                ? "📅 Today"
+                : dateKey === "yesterday"
+                ? "📅 Yesterday"
+                : `📅 ${dateKey}`;
 
             return (
               <div key={dateKey} className="space-y-4">
                 <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2">
                   {displayDate}
                 </h2>
-                
+
                 {/* Render batches */}
                 {batches.map((batch: any[], batchIdx: number) => (
-                  <div key={`${dateKey}-batch-${batchIdx}`} className="space-y-3">
+                  <div
+                    key={`${dateKey}-batch-${batchIdx}`}
+                    className="space-y-3"
+                  >
                     {/* Batch separator if not first batch */}
                     {batchIdx > 0 && (
                       <div className="flex items-center gap-3 my-4">
                         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                        <span className="text-xs text-gray-500 font-medium">Upload Session</span>
+                        <span className="text-xs text-gray-500 font-medium">
+                          Upload Session
+                        </span>
                         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
                       </div>
                     )}
-                    
+
                     <div className="grid gap-4">
                       {batch.map((calc) => (
-                    <div
-                      key={calc.id}
-                      className={`card hover:shadow-md transition-shadow ${
-                        selectedIds.includes(calc.id) ? 'ring-2 ring-primary-500 bg-primary-50' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Checkbox */}
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(calc.id)}
-                          onChange={() => toggleSelection(calc.id)}
-                          className="mt-1 w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                        />
-                        
-                        <div className="flex-1">
-                  {/* Watermark warning */}
-                  {calc.document?.parsed_data?.warning && (
-                    <div className="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                      <div className="flex items-start gap-2">
-                        <span className="text-yellow-600 text-xl">⚠️</span>
-                        <p className="text-sm text-yellow-800">{calc.document.parsed_data.warning}</p>
-                      </div>
-                    </div>
-                  )}
+                        <div
+                          key={calc.id}
+                          className={`card hover:shadow-md transition-shadow ${
+                            selectedIds.includes(calc.id)
+                              ? "ring-2 ring-primary-500 bg-primary-50"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-start gap-4">
+                            {/* Checkbox */}
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(calc.id)}
+                              onChange={() => toggleSelection(calc.id)}
+                              className="mt-1 w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
+                            />
 
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-bold capitalize">
-                      {calc.category}
-                    </h3>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getScopeColor(
-                        calc.emission_type
-                      )}`}
-                    >
-                      {calc.emission_type.toUpperCase()}
-                    </span>
-                  </div>
+                            <div className="flex-1">
+                              {/* Watermark warning */}
+                              {calc.document?.parsed_data?.warning && (
+                                <div className="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-yellow-600 text-xl">
+                                      ⚠️
+                                    </span>
+                                    <p className="text-sm text-yellow-800">
+                                      {calc.document.parsed_data.warning}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                    <div>
-                      <p className="text-sm text-gray-600">CO₂</p>
-                      <p className="font-bold text-gray-900">
-                        {(Number(calc.co2_kg) || 0).toFixed(2)} kg
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">CH₄</p>
-                      <p className="font-bold text-gray-900">
-                        {(Number(calc.ch4_kg) || 0).toFixed(3)} kg
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">N₂O</p>
-                      <p className="font-bold text-gray-900">
-                        {(Number(calc.n2o_kg) || 0).toFixed(3)} kg
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Total CO₂e</p>
-                      <p className="font-bold text-primary-600 text-lg">
-                        {(Number(calc.total_co2e_kg) || 0).toFixed(2)} kg
-                      </p>
-                    </div>
-                  </div>
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-lg font-bold capitalize">
+                                  {calc.category}
+                                </h3>
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${getScopeColor(
+                                    calc.emission_type
+                                  )}`}
+                                >
+                                  {calc.emission_type.toUpperCase()}
+                                </span>
+                              </div>
 
-                  <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
-                    <Calendar size={16} />
-                    <span>
-                      {calc.period_start &&
-                        format(new Date(calc.period_start), "MMM dd, yyyy")}
-                      {calc.period_end &&
-                        ` - ${format(
-                          new Date(calc.period_end),
-                          "MMM dd, yyyy"
-                        )}`}
-                    </span>
-                  </div>
-                </div>                        
-                        {/* Action Buttons */}
-                        <div className="flex flex-col gap-2">
-                          {/* Download PDF Button */}
-                          <button
-                            onClick={() => handleDownloadPDF(calc.id)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Download PDF Report"
-                          >
-                            <FileDown size={20} />
-                          </button>
-                          
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => setDeleteModal({ show: true, calcId: calc.id })}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete calculation"
-                          >
-                            <Trash2 size={20} />
-                          </button>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                <div>
+                                  <p className="text-sm text-gray-600">CO₂</p>
+                                  <p className="font-bold text-gray-900">
+                                    {(Number(calc.co2_kg) || 0).toFixed(2)} kg
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">CH₄</p>
+                                  <p className="font-bold text-gray-900">
+                                    {(Number(calc.ch4_kg) || 0).toFixed(3)} kg
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">N₂O</p>
+                                  <p className="font-bold text-gray-900">
+                                    {(Number(calc.n2o_kg) || 0).toFixed(3)} kg
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">
+                                    Total CO₂e
+                                  </p>
+                                  <p className="font-bold text-primary-600 text-lg">
+                                    {(Number(calc.total_co2e_kg) || 0).toFixed(
+                                      2
+                                    )}{" "}
+                                    kg
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
+                                <Calendar size={16} />
+                                <span>
+                                  {calc.period_start &&
+                                    format(
+                                      new Date(calc.period_start),
+                                      "MMM dd, yyyy"
+                                    )}
+                                  {calc.period_end &&
+                                    ` - ${format(
+                                      new Date(calc.period_end),
+                                      "MMM dd, yyyy"
+                                    )}`}
+                                </span>
+                              </div>
+                            </div>
+                            {/* Action Buttons */}
+                            <div className="flex flex-col gap-2">
+                              {/* Download PDF Button */}
+                              <button
+                                onClick={() => handleDownloadPDF(calc.id)}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                title="Download PDF Report"
+                              >
+                                <FileDown size={20} />
+                              </button>
+
+                              {/* Delete Button */}
+                              <button
+                                onClick={() =>
+                                  setDeleteModal({
+                                    show: true,
+                                    calcId: calc.id,
+                                  })
+                                }
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete calculation"
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-            </div>
-          ))}
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -396,7 +445,8 @@ export default function Calculations() {
               ⚠️ Delete Calculation?
             </h3>
             <p className="text-gray-700 mb-6">
-              This will permanently delete this carbon calculation. This action <strong>cannot be undone</strong>.
+              This will permanently delete this carbon calculation. This action{" "}
+              <strong>cannot be undone</strong>.
             </p>
             <div className="flex gap-3">
               <button

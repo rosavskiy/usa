@@ -113,9 +113,11 @@ export const downloadIndividualReport = asyncHandler(
     const doc = await generateIndividualReport(calculationId, userId);
 
     // Set response headers
-    const filename = `carbon-report-${calculationId}-${new Date().toISOString().split("T")[0]}.pdf`;
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    const filename = `carbon-report-${calculationId}-${
+      new Date().toISOString().split("T")[0]
+    }.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
     // Pipe PDF to response
     doc.pipe(res);

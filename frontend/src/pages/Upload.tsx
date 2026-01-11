@@ -43,7 +43,7 @@ export default function Upload() {
       try {
         const metadata: FileMetadata[] = JSON.parse(saved);
         // Convert metadata back to file structure (without actual File object)
-        const restoredFiles = metadata.map(m => ({
+        const restoredFiles = metadata.map((m) => ({
           file: { name: m.name, size: m.size },
           status: m.status,
           docId: m.docId,
@@ -51,9 +51,12 @@ export default function Upload() {
           progress: 0,
         }));
         setFiles(restoredFiles);
-        setUploadComplete(restoredFiles.length > 0 && restoredFiles.every(f => f.status === 'success'));
+        setUploadComplete(
+          restoredFiles.length > 0 &&
+            restoredFiles.every((f) => f.status === "success")
+        );
       } catch (err) {
-        console.error('Failed to load metadata:', err);
+        console.error("Failed to load metadata:", err);
       }
     }
   }, []);
@@ -61,13 +64,13 @@ export default function Upload() {
   // Save metadata whenever files change
   useEffect(() => {
     if (files.length > 0) {
-      const metadata: FileMetadata[] = files.map(f => ({
-        name: f.file?.name || 'Unknown',
+      const metadata: FileMetadata[] = files.map((f) => ({
+        name: f.file?.name || "Unknown",
         size: f.file?.size || 0,
         status: f.status,
         docId: f.docId,
         errorMsg: f.errorMsg,
-        warning: f.warning
+        warning: f.warning,
       }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(metadata));
     } else {
@@ -141,7 +144,9 @@ export default function Upload() {
     });
 
     const results = await Promise.all(uploadPromises);
-    const uploadedDocIds = results.filter(r => r.success && r.docId).map(r => r.docId as number);
+    const uploadedDocIds = results
+      .filter((r) => r.success && r.docId)
+      .map((r) => r.docId as number);
 
     setUploading(false);
 
@@ -162,11 +167,13 @@ export default function Upload() {
         // Check if all documents are processed
         try {
           const responses = await Promise.all(
-            uploadedDocIds.map(id => api.get(`/upload/${id}`))
+            uploadedDocIds.map((id) => api.get(`/upload/${id}`))
           );
-          
-          const allProcessed = responses.every(r => 
-            r.data.data.status === 'completed' || r.data.data.status === 'failed'
+
+          const allProcessed = responses.every(
+            (r) =>
+              r.data.data.status === "completed" ||
+              r.data.data.status === "failed"
           );
 
           if (allProcessed) {
@@ -174,7 +181,7 @@ export default function Upload() {
             break;
           }
         } catch (error) {
-          console.error('Error checking document status:', error);
+          console.error("Error checking document status:", error);
         }
       }
 
@@ -186,11 +193,11 @@ export default function Upload() {
         const docId = uploadedDocIds[i];
         try {
           await api.post("/carbon/calculate", { documentId: docId });
-          
+
           // Get document data to check for warnings
           const docResponse = await api.get(`/upload/${docId}`);
           const warning = docResponse.data.data?.parsed_data?.warning;
-          
+
           successCount++;
 
           // Mark file as SUCCESS (green checkmark) and save warning if present
@@ -223,7 +230,7 @@ export default function Upload() {
         const errorMessage = document.querySelector("[data-error-message]");
         const successMessage = document.querySelector("[data-success-message]");
         const targetElement = errors.length > 0 ? errorMessage : successMessage;
-        
+
         if (targetElement) {
           targetElement.scrollIntoView({
             behavior: "smooth",
@@ -337,23 +344,28 @@ export default function Upload() {
               </button>
             </div>
             {files.map((f, index) => (
-              <div
-                key={index}
-                className="p-3 bg-gray-50 rounded-lg"
-              >
+              <div key={index} className="p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <File className="text-gray-400" size={24} />
                     <div>
-                      <p className="font-medium">{f.file?.name || 'Unknown file'}</p>
+                      <p className="font-medium">
+                        {f.file?.name || "Unknown file"}
+                      </p>
                       <p className="text-sm text-gray-500">
-                        {f.file?.size ? (f.file.size / 1024 / 1024).toFixed(2) : '0.00'} MB
+                        {f.file?.size
+                          ? (f.file.size / 1024 / 1024).toFixed(2)
+                          : "0.00"}{" "}
+                        MB
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {f.status === "processing" && (
-                      <Loader2 className="animate-spin text-blue-500" size={24} />
+                      <Loader2
+                        className="animate-spin text-blue-500"
+                        size={24}
+                      />
                     )}
                     {f.status === "success" && !f.errorMsg && (
                       <CheckCircle className="text-green-500" size={24} />
@@ -391,7 +403,11 @@ export default function Upload() {
 
             <button
               onClick={uploadFiles}
-              disabled={uploading || processing || files.every(f => f.status === 'success')}
+              disabled={
+                uploading ||
+                processing ||
+                files.every((f) => f.status === "success")
+              }
               className="w-full btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {uploading && (
@@ -406,25 +422,42 @@ export default function Upload() {
                   AI processing & calculating...
                 </>
               )}
-              {!uploading && !processing && files.every(f => f.status === 'success') && "All Files Processed ✓"}
-              {!uploading && !processing && !files.every(f => f.status === 'success') && "Upload & Calculate"}
+              {!uploading &&
+                !processing &&
+                files.every((f) => f.status === "success") &&
+                "All Files Processed ✓"}
+              {!uploading &&
+                !processing &&
+                !files.every((f) => f.status === "success") &&
+                "Upload & Calculate"}
             </button>
 
             {/* Reprocess Failed button - only show if there are failed files */}
-            {files.some(f => f.status === 'error') && !uploading && !processing && (
-              <button
-                onClick={() => {
-                  // Remove failed files and re-upload them
-                  const failedFiles = files.filter(f => f.status === 'error');
-                  setFiles(failedFiles.map(f => ({ ...f, status: 'pending', docId: undefined, errorMsg: undefined })));
-                  setUploadComplete(false);
-                  setProcessingErrors([]);
-                }}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                🔄 Reprocess Failed Files Only
-              </button>
-            )}
+            {files.some((f) => f.status === "error") &&
+              !uploading &&
+              !processing && (
+                <button
+                  onClick={() => {
+                    // Remove failed files and re-upload them
+                    const failedFiles = files.filter(
+                      (f) => f.status === "error"
+                    );
+                    setFiles(
+                      failedFiles.map((f) => ({
+                        ...f,
+                        status: "pending",
+                        docId: undefined,
+                        errorMsg: undefined,
+                      }))
+                    );
+                    setUploadComplete(false);
+                    setProcessingErrors([]);
+                  }}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  🔄 Reprocess Failed Files Only
+                </button>
+              )}
           </div>
         )}
 

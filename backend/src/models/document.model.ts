@@ -83,7 +83,10 @@ export class DocumentModel {
     );
   }
 
-  static async findByFileName(userId: number, fileName: string): Promise<Document[]> {
+  static async findByFileName(
+    userId: number,
+    fileName: string
+  ): Promise<Document[]> {
     const result = await query(
       `SELECT * FROM documents WHERE user_id = $1 AND file_name = $2`,
       [userId, fileName]

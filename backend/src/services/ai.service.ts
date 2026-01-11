@@ -45,23 +45,32 @@ export async function parseDocumentWithAI(
         );
 
         // Check for timeout error (E101)
-        if (response.data.IsErroredOnProcessing && 
-            response.data.ErrorMessage && 
-            response.data.ErrorMessage[0]?.includes('E101')) {
+        if (
+          response.data.IsErroredOnProcessing &&
+          response.data.ErrorMessage &&
+          response.data.ErrorMessage[0]?.includes("E101")
+        ) {
           if (retries < maxRetries) {
-            console.log(`⏳ OCR timeout - retrying (${retries + 1}/${maxRetries})...`);
+            console.log(
+              `⏳ OCR timeout - retrying (${retries + 1}/${maxRetries})...`
+            );
             retries++;
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+            await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
             continue;
           }
         }
 
         break; // Success or non-timeout error
       } catch (error: any) {
-        if (retries < maxRetries && (error.code === 'ECONNABORTED' || error.message.includes('timeout'))) {
-          console.log(`⏳ Network timeout - retrying (${retries + 1}/${maxRetries})...`);
+        if (
+          retries < maxRetries &&
+          (error.code === "ECONNABORTED" || error.message.includes("timeout"))
+        ) {
+          console.log(
+            `⏳ Network timeout - retrying (${retries + 1}/${maxRetries})...`
+          );
           retries++;
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           continue;
         }
         throw error;
@@ -69,30 +78,41 @@ export async function parseDocumentWithAI(
     }
 
     if (!response) {
-      throw new Error("Photo processing timed out - please try uploading a smaller or clearer photo");
+      throw new Error(
+        "Photo processing timed out - please try uploading a smaller or clearer photo"
+      );
     }
 
     // Log full OCR.space response for debugging
     console.log(`🔍 OCR.space response status:`, response.data.OCRExitCode);
     console.log(`🔍 OCR.space error message:`, response.data.ErrorMessage);
-    console.log(`🔍 OCR.space IsErroredOnProcessing:`, response.data.IsErroredOnProcessing);
+    console.log(
+      `🔍 OCR.space IsErroredOnProcessing:`,
+      response.data.IsErroredOnProcessing
+    );
 
     // Check for OCR.space API errors
     if (response.data.IsErroredOnProcessing) {
-      throw new Error("Unable to process photo - please ensure it's clear, well-lit, and in focus");
+      throw new Error(
+        "Unable to process photo - please ensure it's clear, well-lit, and in focus"
+      );
     }
 
     if (
       !response.data.ParsedResults ||
       response.data.ParsedResults.length === 0
     ) {
-      throw new Error("Photo quality too low - please upload a clearer, higher resolution image");
+      throw new Error(
+        "Photo quality too low - please upload a clearer, higher resolution image"
+      );
     }
 
     const ocrText = response.data.ParsedResults[0].ParsedText || "";
 
     if (!ocrText || ocrText.trim().length < 10) {
-      throw new Error("Text not readable - please upload a clearer, higher resolution photo");
+      throw new Error(
+        "Text not readable - please upload a clearer, higher resolution photo"
+      );
     }
 
     console.log(`✨ OCR extracted text (${ocrText.length} chars):`);
@@ -108,7 +128,8 @@ export async function parseDocumentWithAI(
 
     // Add watermark warning if detected
     if (hasWatermark) {
-      parsedData.warning = "Обнаружен водяной знак на документе - возможны неточности в распознавании цифр. Проверьте правильность данных.";
+      parsedData.warning =
+        "Обнаружен водяной знак на документе - возможны неточности в распознавании цифр. Проверьте правильность данных.";
       console.log(`⚠️ Watermark detected in document`);
     }
 
@@ -135,7 +156,10 @@ export async function parseDocumentWithAI(
     const errorMessage = error instanceof Error ? error.message : String(error);
     let userFriendlyError = "Failed to process document";
 
-    if (errorMessage.includes("Image quality too low") || errorMessage.includes("clearer")) {
+    if (
+      errorMessage.includes("Image quality too low") ||
+      errorMessage.includes("clearer")
+    ) {
       userFriendlyError =
         "Photo is too blurry or low resolution - please upload a clearer, higher quality photo";
     } else if (
@@ -165,7 +189,7 @@ export async function parseDocumentWithAI(
 
 function detectWatermark(text: string): boolean {
   const lowerText = text.toLowerCase();
-  
+
   // Common watermark patterns
   const watermarkPatterns = [
     /roposh/i,
@@ -177,8 +201,8 @@ function detectWatermark(text: string): boolean {
     /for illustration only/i,
     /template/i,
   ];
-  
-  return watermarkPatterns.some(pattern => pattern.test(lowerText));
+
+  return watermarkPatterns.some((pattern) => pattern.test(lowerText));
 }
 
 function parseUtilityBillText(text: string): any {
@@ -189,23 +213,36 @@ function parseUtilityBillText(text: string): any {
   let provider = "Unknown";
 
   // FUEL - check for gallons (gas station receipts, fuel delivery)
-  if (lowerText.includes("gallon") || lowerText.includes("fuel sale") || lowerText.includes("gasoline")) {
+  if (
+    lowerText.includes("gallon") ||
+    lowerText.includes("fuel sale") ||
+    lowerText.includes("gasoline")
+  ) {
     type = "fuel";
     provider = "Fuel Supplier";
   }
   // GAS - natural gas utility bills
-  else if (lowerText.includes("socalgas") || lowerText.includes("north shore gas") || 
-           (lowerText.includes("gas") && (lowerText.includes("therm") || lowerText.includes("ccf")))) {
+  else if (
+    lowerText.includes("socalgas") ||
+    lowerText.includes("north shore gas") ||
+    (lowerText.includes("gas") &&
+      (lowerText.includes("therm") || lowerText.includes("ccf")))
+  ) {
     type = "gas";
     if (lowerText.includes("socalgas")) provider = "SoCalGas";
     else if (lowerText.includes("north shore")) provider = "North Shore Gas";
     else provider = "Gas Company";
   }
   // ELECTRICITY - electric utility bills
-  else if (lowerText.includes("edison") || lowerText.includes("electric") || lowerText.includes("kwh")) {
+  else if (
+    lowerText.includes("edison") ||
+    lowerText.includes("electric") ||
+    lowerText.includes("kwh")
+  ) {
     type = "electricity";
     if (lowerText.includes("edison")) provider = "Southern California Edison";
-    else if (lowerText.includes("pascoag")) provider = "Pascoag Utility District";
+    else if (lowerText.includes("pascoag"))
+      provider = "Pascoag Utility District";
     else provider = "Electric Company";
   }
 

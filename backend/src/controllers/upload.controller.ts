@@ -58,19 +58,19 @@ export const getDocuments = asyncHandler(
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const status = req.query.status as string; // 'readable' or 'unreadable'
-    
+
     const offset = (page - 1) * limit;
-    
+
     // Get unique documents (only one per file_name, keep latest)
     let documents = await DocumentModel.findUniqueByUserId(userId);
-    
+
     // Filter by status if provided
-    if (status === 'readable') {
-      documents = documents.filter(d => d.status === 'completed');
-    } else if (status === 'unreadable') {
-      documents = documents.filter(d => d.status === 'failed');
+    if (status === "readable") {
+      documents = documents.filter((d) => d.status === "completed");
+    } else if (status === "unreadable") {
+      documents = documents.filter((d) => d.status === "failed");
     }
-    
+
     const total = documents.length;
     const paginatedDocs = documents.slice(offset, offset + limit);
 
@@ -125,11 +125,13 @@ export const deleteDocument = asyncHandler(
     }
 
     // Delete associated calculations first
-    await query(`DELETE FROM carbon_calculations WHERE document_id = $1`, [documentId]);
+    await query(`DELETE FROM carbon_calculations WHERE document_id = $1`, [
+      documentId,
+    ]);
     console.log(`🗑️ Deleted calculations for document ${documentId}`);
 
     // Delete file from filesystem (if not manual entry)
-    if (document.file_path !== 'manual' && fs.existsSync(document.file_path)) {
+    if (document.file_path !== "manual" && fs.existsSync(document.file_path)) {
       fs.unlinkSync(document.file_path);
       console.log(`🗑️ Deleted file: ${document.file_path}`);
     }
@@ -150,11 +152,13 @@ export const deleteDocumentsByFilename = asyncHandler(
     const userId = req.userId!;
     const fileName = decodeURIComponent(req.params.filename);
 
-    console.log(`🗑️ Deleting all documents with filename: ${fileName} for user ${userId}`);
+    console.log(
+      `🗑️ Deleting all documents with filename: ${fileName} for user ${userId}`
+    );
 
     // Find all documents with this filename
     const documents = await DocumentModel.findByFileName(userId, fileName);
-    
+
     if (!documents || documents.length === 0) {
       throw new AppError("No documents found with this filename", 404);
     }
@@ -164,10 +168,12 @@ export const deleteDocumentsByFilename = asyncHandler(
     // Delete each document
     for (const doc of documents) {
       // Delete associated calculations
-      await query(`DELETE FROM carbon_calculations WHERE document_id = $1`, [doc.id]);
-      
+      await query(`DELETE FROM carbon_calculations WHERE document_id = $1`, [
+        doc.id,
+      ]);
+
       // Delete file from filesystem (if exists and not manual entry)
-      if (doc.file_path !== 'manual' && fs.existsSync(doc.file_path)) {
+      if (doc.file_path !== "manual" && fs.existsSync(doc.file_path)) {
         try {
           fs.unlinkSync(doc.file_path);
           console.log(`🗑️ Deleted file: ${doc.file_path}`);
@@ -181,7 +187,9 @@ export const deleteDocumentsByFilename = asyncHandler(
       deletedCount++;
     }
 
-    console.log(`🗑️ Deleted ${deletedCount} documents with filename: ${fileName}`);
+    console.log(
+      `🗑️ Deleted ${deletedCount} documents with filename: ${fileName}`
+    );
 
     res.json({
       success: true,
@@ -206,7 +214,7 @@ export const downloadDocument = asyncHandler(
       throw new AppError("Unauthorized", 403);
     }
 
-    if (document.file_path === 'manual') {
+    if (document.file_path === "manual") {
       throw new AppError("Cannot download manual entry", 400);
     }
 
