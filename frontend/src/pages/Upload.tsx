@@ -19,6 +19,7 @@ interface FileMetadata {
   status: string;
   docId?: number;
   errorMsg?: string;
+  warning?: string;
 }
 
 const STORAGE_KEY = "uploadMetadata";
@@ -185,12 +186,17 @@ export default function Upload() {
         const docId = uploadedDocIds[i];
         try {
           await api.post("/carbon/calculate", { documentId: docId });
+          
+          // Get document data to check for warnings
+          const docResponse = await api.get(`/upload/${docId}`);
+          const warning = docResponse.data.data?.parsed_data?.warning;
+          
           successCount++;
 
-          // Mark file as SUCCESS (green checkmark)
+          // Mark file as SUCCESS (green checkmark) and save warning if present
           setFiles((prev) =>
             prev.map((f) =>
-              f.docId === docId ? { ...f, status: "success" } : f
+              f.docId === docId ? { ...f, status: "success", warning } : f
             )
           );
         } catch (error: any) {
@@ -333,45 +339,53 @@ export default function Upload() {
             {files.map((f, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="p-3 bg-gray-50 rounded-lg"
               >
-                <div className="flex items-center gap-3 flex-1">
-                  <File className="text-gray-400" size={24} />
-                  <div>
-                    <p className="font-medium">{f.file?.name || 'Unknown file'}</p>
-                    <p className="text-sm text-gray-500">
-                      {f.file?.size ? (f.file.size / 1024 / 1024).toFixed(2) : '0.00'} MB
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <File className="text-gray-400" size={24} />
+                    <div>
+                      <p className="font-medium">{f.file?.name || 'Unknown file'}</p>
+                      <p className="text-sm text-gray-500">
+                        {f.file?.size ? (f.file.size / 1024 / 1024).toFixed(2) : '0.00'} MB
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {f.status === "processing" && (
+                      <Loader2 className="animate-spin text-blue-500" size={24} />
+                    )}
+                    {f.status === "success" && !f.errorMsg && (
+                      <CheckCircle className="text-green-500" size={24} />
+                    )}
+                    {f.status === "error" && (
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="text-red-500" size={24} />
+                        {f.errorMsg && (
+                          <span
+                            className="text-xs text-red-600 max-w-xs truncate"
+                            title={f.errorMsg}
+                          >
+                            {f.errorMsg}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="p-1 hover:bg-gray-200 rounded transition-colors"
+                      title="Remove file"
+                    >
+                      <X size={20} className="text-gray-500" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {f.status === "processing" && (
-                    <Loader2 className="animate-spin text-blue-500" size={24} />
-                  )}
-                  {f.status === "success" && !f.errorMsg && (
-                    <CheckCircle className="text-green-500" size={24} />
-                  )}
-                  {f.status === "error" && (
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="text-red-500" size={24} />
-                      {f.errorMsg && (
-                        <span
-                          className="text-xs text-red-600 max-w-xs truncate"
-                          title={f.errorMsg}
-                        >
-                          {f.errorMsg}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => removeFile(index)}
-                    className="p-1 hover:bg-gray-200 rounded transition-colors"
-                    title="Remove file"
-                  >
-                    <X size={20} className="text-gray-500" />
-                  </button>
-                </div>
+                {/* Watermark warning */}
+                {f.warning && (
+                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800">
+                    ⚠️ {f.warning}
+                  </div>
+                )}
               </div>
             ))}
 

@@ -287,6 +287,16 @@ export default function Calculations() {
                         />
                         
                         <div className="flex-1">
+                  {/* Watermark warning */}
+                  {calc.document?.parsed_data?.warning && (
+                    <div className="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <span className="text-yellow-600 text-xl">⚠️</span>
+                        <p className="text-sm text-yellow-800">{calc.document.parsed_data.warning}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-bold capitalize">
                       {calc.category}
