@@ -197,46 +197,6 @@ export default function Calculations() {
           </div>
         </div>
       </div>
-
-      {/* Export controls */}
-      {calculations.length > 0 && (
-        <div className="card bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h3 className="font-bold text-gray-900 mb-1">
-                📄 Export Official Report
-              </h3>
-              <p className="text-sm text-gray-600">
-                Generate PDF report compliant with GHG Protocol, EPA & ISO
-                14064-1
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <select
-                value={period}
-                onChange={(e) => setPeriod(e.target.value as any)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="all">All Time</option>
-                <option value="month">This Month</option>
-                <option value="quarter">This Quarter</option>
-                <option value="year">This Year</option>
-              </select>
-
-              <button
-                onClick={handleDownloadReport}
-                disabled={downloading}
-                className="btn btn-primary flex items-center gap-2 whitespace-nowrap"
-              >
-                <Download size={20} />
-                {downloading ? "Generating..." : "Download Report"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {calculations.length === 0 ? (
         <div className="card text-center py-12">
           <TrendingUp className="mx-auto text-gray-400 mb-4" size={48} />
