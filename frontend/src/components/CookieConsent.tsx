@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 
 export default function CookieConsent() {
   const [showConsent, setShowConsent] = useState(false);
 
   useEffect(() => {
     // Check if user has already consented
-    const consent = localStorage.getItem('cookie-consent');
+    const consent = localStorage.getItem("cookie-consent");
     if (!consent) {
       setShowConsent(true);
     }
   }, []);
 
   const acceptAll = () => {
-    localStorage.setItem('cookie-consent', 'accepted');
+    localStorage.setItem("cookie-consent", "accepted");
     setShowConsent(false);
   };
 
   const rejectAll = () => {
-    localStorage.setItem('cookie-consent', 'rejected');
+    localStorage.setItem("cookie-consent", "rejected");
     setShowConsent(false);
   };
 
@@ -31,8 +31,12 @@ export default function CookieConsent() {
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Privacy & Cookie Notice</h2>
-              <p className="text-sm text-gray-600 mt-1">We care about your privacy</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Privacy & Cookie Notice
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                We care about your privacy
+              </p>
             </div>
           </div>
         </div>
@@ -41,13 +45,16 @@ export default function CookieConsent() {
         <div className="p-6 space-y-4">
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <p className="text-sm text-blue-900">
-              <strong>Carbon Tracker AI Assistant</strong> использует cookies и обрабатывает персональные данные 
-              в соответствии с законами США, включая CCPA (California), CPRA, и другими штатами.
+              <strong>Carbon Tracker AI Assistant</strong> использует cookies и
+              обрабатывает персональные данные в соответствии с законами США,
+              включая CCPA (California), CPRA, и другими штатами.
             </p>
           </div>
 
           <div className="space-y-3 text-sm text-gray-700">
-            <h3 className="font-bold text-gray-900 text-base">Какие данные мы собираем:</h3>
+            <h3 className="font-bold text-gray-900 text-base">
+              Какие данные мы собираем:
+            </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>Email адрес и название компании (для регистрации)</li>
               <li>Загруженные счета и документы (для анализа)</li>
@@ -56,7 +63,9 @@ export default function CookieConsent() {
               <li>IP адрес и данные браузера (логирование безопасности)</li>
             </ul>
 
-            <h3 className="font-bold text-gray-900 text-base mt-4">Как мы используем данные:</h3>
+            <h3 className="font-bold text-gray-900 text-base mt-4">
+              Как мы используем данные:
+            </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>Обработка счетов через AI (OpenAI API)</li>
               <li>Расчет углеродного следа вашей компании</li>
@@ -64,41 +73,80 @@ export default function CookieConsent() {
               <li>Улучшение работы сервиса</li>
             </ul>
 
-            <h3 className="font-bold text-gray-900 text-base mt-4">Ваши права (CCPA/CPRA):</h3>
+            <h3 className="font-bold text-gray-900 text-base mt-4">
+              Ваши права (CCPA/CPRA):
+            </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li><strong>Право знать:</strong> какие данные мы собираем</li>
-              <li><strong>Право на удаление:</strong> запросить удаление ваших данных</li>
-              <li><strong>Право отказаться:</strong> от продажи данных (мы НЕ продаем данные)</li>
-              <li><strong>Право на доступ:</strong> получить копию ваших данных</li>
+              <li>
+                <strong>Право знать:</strong> какие данные мы собираем
+              </li>
+              <li>
+                <strong>Право на удаление:</strong> запросить удаление ваших
+                данных
+              </li>
+              <li>
+                <strong>Право отказаться:</strong> от продажи данных (мы НЕ
+                продаем данные)
+              </li>
+              <li>
+                <strong>Право на доступ:</strong> получить копию ваших данных
+              </li>
             </ul>
 
-            <h3 className="font-bold text-gray-900 text-base mt-4">Соответствие законам:</h3>
+            <h3 className="font-bold text-gray-900 text-base mt-4">
+              Соответствие законам:
+            </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li><strong>CCPA:</strong> California Consumer Privacy Act</li>
-              <li><strong>CPRA:</strong> California Privacy Rights Act</li>
-              <li><strong>Virginia CDPA:</strong> Virginia Consumer Data Protection Act</li>
-              <li><strong>Colorado CPA:</strong> Colorado Privacy Act</li>
-              <li><strong>Connecticut CTDPA:</strong> Connecticut Data Privacy Act</li>
-              <li><strong>Utah UCPA:</strong> Utah Consumer Privacy Act</li>
+              <li>
+                <strong>CCPA:</strong> California Consumer Privacy Act
+              </li>
+              <li>
+                <strong>CPRA:</strong> California Privacy Rights Act
+              </li>
+              <li>
+                <strong>Virginia CDPA:</strong> Virginia Consumer Data
+                Protection Act
+              </li>
+              <li>
+                <strong>Colorado CPA:</strong> Colorado Privacy Act
+              </li>
+              <li>
+                <strong>Connecticut CTDPA:</strong> Connecticut Data Privacy Act
+              </li>
+              <li>
+                <strong>Utah UCPA:</strong> Utah Consumer Privacy Act
+              </li>
             </ul>
 
             <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mt-4">
               <p className="text-sm text-green-900">
-                <strong>✓ ПРОФЕССИОНАЛЬНЫЕ СТАНДАРТЫ:</strong> Наши расчеты соответствуют GHG Protocol, EPA Emission Factors, 
-                ISO 14064-1. Подходят для официальной отчетности в CDP, SEC Climate Disclosure, GRI Standards. 
-                AI парсинг с точностью 95%+ на качественных документах.
+                <strong>✓ ПРОФЕССИОНАЛЬНЫЕ СТАНДАРТЫ:</strong> Наши расчеты
+                соответствуют GHG Protocol, EPA Emission Factors, ISO 14064-1.
+                Подходят для официальной отчетности в CDP, SEC Climate
+                Disclosure, GRI Standards. AI парсинг с точностью 95%+ на
+                качественных документах.
               </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded mt-4">
               <p className="text-xs text-gray-600">
-                Используя наш сервис, вы соглашаетесь с обработкой данных как описано выше. 
-                Мы применяем шифрование, безопасное хранение и регулярные аудиты безопасности. 
-                Данные не передаются третьим лицам, кроме OpenAI для AI обработки (согласно их 
-                <a href="https://openai.com/privacy" target="_blank" className="text-blue-600 hover:underline"> Privacy Policy</a>).
+                Используя наш сервис, вы соглашаетесь с обработкой данных как
+                описано выше. Мы применяем шифрование, безопасное хранение и
+                регулярные аудиты безопасности. Данные не передаются третьим
+                лицам, кроме OpenAI для AI обработки (согласно их
+                <a
+                  href="https://openai.com/privacy"
+                  target="_blank"
+                  className="text-blue-600 hover:underline"
+                >
+                  {" "}
+                  Privacy Policy
+                </a>
+                ).
               </p>
               <p className="text-xs text-gray-600 mt-2">
-                Для вопросов о конфиденциальности: <strong>privacy@carbontracker.ai</strong>
+                Для вопросов о конфиденциальности:{" "}
+                <strong>privacy@carbontracker.ai</strong>
               </p>
             </div>
           </div>
@@ -121,17 +169,17 @@ export default function CookieConsent() {
         </div>
 
         <div className="px-6 pb-4 text-center">
-          <a 
-            href="/privacy-policy" 
-            target="_blank" 
+          <a
+            href="/privacy-policy"
+            target="_blank"
             className="text-xs text-blue-600 hover:underline"
           >
             Read Full Privacy Policy
           </a>
-          {' | '}
-          <a 
-            href="/terms-of-service" 
-            target="_blank" 
+          {" | "}
+          <a
+            href="/terms-of-service"
+            target="_blank"
             className="text-xs text-blue-600 hover:underline"
           >
             Terms of Service

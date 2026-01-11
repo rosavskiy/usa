@@ -55,7 +55,7 @@ const EMISSION_FACTORS = {
 
 export async function calculateEmissions(userId: number, documentId: number) {
   console.log(`📊 Calculate emissions: userId=${userId}, docId=${documentId}`);
-  
+
   // Get document
   const document = await DocumentModel.findById(documentId);
   if (!document || document.user_id !== userId) {
@@ -63,17 +63,22 @@ export async function calculateEmissions(userId: number, documentId: number) {
     throw new AppError("Document not found", 404);
   }
 
-  console.log(`📄 Document status: ${document.status}, has parsed_data: ${!!document.parsed_data}`);
-  
+  console.log(
+    `📄 Document status: ${
+      document.status
+    }, has parsed_data: ${!!document.parsed_data}`
+  );
+
   if (document.status === "failed") {
-    const parsedData = typeof document.parsed_data === "string"
-      ? JSON.parse(document.parsed_data)
-      : document.parsed_data;
+    const parsedData =
+      typeof document.parsed_data === "string"
+        ? JSON.parse(document.parsed_data)
+        : document.parsed_data;
     const errorMsg = parsedData?.error || "Document processing failed";
     console.error(`❌ Document failed: ${errorMsg}`);
     throw new AppError(errorMsg, 400);
   }
-  
+
   if (document.status !== "completed" || !document.parsed_data) {
     console.error(`❌ Document not ready: status=${document.status}`);
     throw new AppError("Document is still being processed - please wait", 400);

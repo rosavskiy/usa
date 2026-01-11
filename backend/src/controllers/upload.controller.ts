@@ -14,7 +14,9 @@ export const uploadDocument = asyncHandler(
     const filePath = req.file.path;
     const fileName = req.file.originalname;
 
-    console.log(`📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`);
+    console.log(
+      `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`
+    );
 
     // Save document to database
     const document = await DocumentModel.create({
@@ -63,7 +65,8 @@ export const getDocuments = asyncHandler(
 export const createManualDocument = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
-    const { type, provider, date, amount, consumption, period, state } = req.body;
+    const { type, provider, date, amount, consumption, period, state } =
+      req.body;
 
     if (!consumption || !consumption.value || !consumption.unit) {
       throw new AppError("Consumption data is required", 400);

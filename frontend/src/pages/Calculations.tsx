@@ -5,6 +5,7 @@ import { format } from "date-fns";
 
 export default function Calculations() {
   const [calculations, setCalculations] = useState<any[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"month" | "quarter" | "year" | "all">(
     "all"
@@ -19,6 +20,8 @@ export default function Calculations() {
     try {
       const response = await api.get("/carbon/calculations");
       setCalculations(response.data.data);
+      // Select all by default
+      setSelectedIds(response.data.data.map((c: any) => c.id));
     } catch (error) {
       console.error("Failed to load calculations:", error);
     } finally {
@@ -37,6 +40,77 @@ export default function Calculations() {
       default:
         return "bg-gray-100 text-gray-700";
     }
+  };
+
+  // Group calculations by date
+  const groupByDate = (calcs: any[]) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const groups: { [key: string]: any[][] } = {
+      today: [],
+      yesterday: [],
+    };
+
+    calcs.forEach((calc) => {
+      const calcDate = new Date(calc.calculation_date || calc.created_at);
+      calcDate.setHours(0, 0, 0, 0);
+
+      if (calcDate.getTime() === today.getTime()) {
+        groups.today.push([calc]);
+      } else if (calcDate.getTime() === yesterday.getTime()) {
+        groups.yesterday.push([calc]);
+      } else {
+        const dateKey = format(calcDate, "dd.MM.yyyy");
+        if (!groups[dateKey]) groups[dateKey] = [];
+        groups[dateKey].push([calc]);
+      }
+    });
+
+    // Group into batches (files uploaded together within 30 seconds)
+    Object.keys(groups).forEach((dateKey) => {
+      const items = groups[dateKey].flat();
+      if (items.length === 0) return;
+      
+      items.sort((a, b) => new Date(b.created_at || b.calculation_date).getTime() - new Date(a.created_at || a.calculation_date).getTime());
+      
+      const batches: any[][] = [];
+      let currentBatch: any[] = [items[0]];
+      
+      for (let i = 1; i < items.length; i++) {
+        const prevTime = new Date(items[i - 1].created_at || items[i - 1].calculation_date).getTime();
+        const currTime = new Date(items[i].created_at || items[i].calculation_date).getTime();
+        
+        // If less than 30 seconds apart, same batch
+        if (prevTime - currTime < 30000) {
+          currentBatch.push(items[i]);
+        } else {
+          batches.push(currentBatch);
+          currentBatch = [items[i]];
+        }
+      }
+      batches.push(currentBatch);
+      
+      groups[dateKey] = batches;
+    });
+
+    return groups;
+  };
+
+  const grouped = groupByDate(calculations);
+
+  const toggleSelection = (id: number) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAll = () => {
+    setSelectedIds(prev =>
+      prev.length === calculations.length ? [] : calculations.map(c => c.id)
+    );
   };
 
   const handleDownloadReport = async () => {
@@ -134,14 +208,65 @@ export default function Calculations() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {calculations.map((calc) => (
-            <div
-              key={calc.id}
-              className="card hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
+        <div className="space-y-6">
+          {/* Select All Checkbox */}
+          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+            <input
+              type="checkbox"
+              checked={selectedIds.length === calculations.length}
+              onChange={toggleAll}
+              className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
+            />
+            <span className="font-medium text-gray-700">
+              {selectedIds.length === calculations.length ? 'Deselect All' : 'Select All'} ({selectedIds.length} selected for report)
+            </span>
+          </div>
+
+          {/* Render groups */}
+          {Object.entries(grouped).map(([dateKey, batches]) => {
+            if (batches.length === 0) return null;
+            
+            const displayDate = 
+              dateKey === 'today' ? '📅 Today' :
+              dateKey === 'yesterday' ? '📅 Yesterday' :
+              `📅 ${dateKey}`;
+
+            return (
+              <div key={dateKey} className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2">
+                  {displayDate}
+                </h2>
+                
+                {/* Render batches */}
+                {batches.map((batch: any[], batchIdx: number) => (
+                  <div key={`${dateKey}-batch-${batchIdx}`} className="space-y-3">
+                    {/* Batch separator if not first batch */}
+                    {batchIdx > 0 && (
+                      <div className="flex items-center gap-3 my-4">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                        <span className="text-xs text-gray-500 font-medium">Upload Session</span>
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                      </div>
+                    )}
+                    
+                    <div className="grid gap-4">
+                      {batch.map((calc) => (
+                    <div
+                      key={calc.id}
+                      className={`card hover:shadow-md transition-shadow ${
+                        selectedIds.includes(calc.id) ? 'ring-2 ring-primary-500 bg-primary-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Checkbox */}
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(calc.id)}
+                          onChange={() => toggleSelection(calc.id)}
+                          className="mt-1 w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
+                        />
+                        
+                        <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-bold capitalize">
                       {calc.category}
@@ -198,6 +323,12 @@ export default function Calculations() {
               </div>
             </div>
           ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}
 

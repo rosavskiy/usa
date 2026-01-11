@@ -164,7 +164,10 @@ export default function ManualInput() {
               list="states"
               value={formData.state}
               onChange={(e) =>
-                setFormData({ ...formData, state: e.target.value.toUpperCase() })
+                setFormData({
+                  ...formData,
+                  state: e.target.value.toUpperCase(),
+                })
               }
               className="input-field"
               placeholder="Type or select state (e.g., CA, Texas)"
@@ -200,7 +203,8 @@ export default function ManualInput() {
               <option value="WV">West Virginia</option>
             </datalist>
             <p className="text-xs text-gray-500 mt-1">
-              ⚡ Each state has different electricity emission factors (0.01-0.72 kg CO₂e/kWh). Gas & Fuel are universal.
+              ⚡ Each state has different electricity emission factors
+              (0.01-0.72 kg CO₂e/kWh). Gas & Fuel are universal.
             </p>
           </div>
         )}

@@ -123,7 +123,9 @@ export async function generateCarbonReport(
       .fontSize(10)
       .text(`Total CO₂e: ${(Number(totals.total) || 0).toFixed(2)} kg`)
       .text(`Scope 1 (Direct): ${(Number(totals.scope1) || 0).toFixed(2)} kg`)
-      .text(`Scope 2 (Electricity): ${(Number(totals.scope2) || 0).toFixed(2)} kg`)
+      .text(
+        `Scope 2 (Electricity): ${(Number(totals.scope2) || 0).toFixed(2)} kg`
+      )
       .text(`Scope 3 (Indirect): ${(Number(totals.scope3) || 0).toFixed(2)} kg`)
       .moveDown(1);
 
@@ -177,7 +179,9 @@ export async function generateCarbonReport(
         )
         .text(calc.emission_type, col2, y, { width: 90 })
         .text(calc.category, col3, y, { width: 90 })
-        .text((Number(calc.total_co2e_kg) || 0).toFixed(2), col4, y, { width: 90 })
+        .text((Number(calc.total_co2e_kg) || 0).toFixed(2), col4, y, {
+          width: 90,
+        })
         .text(calc.emission_type.toUpperCase(), col5, y, { width: 90 });
 
       doc.moveDown(0.5);

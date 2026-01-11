@@ -46,7 +46,9 @@ export default function Upload() {
     }
     return false;
   });
-  const [processingErrors, setProcessingErrors] = useState<{ docId: number; error: string }[]>([]);
+  const [processingErrors, setProcessingErrors] = useState<
+    { docId: number; error: string }[]
+  >([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -69,13 +71,15 @@ export default function Upload() {
   });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles(
-      acceptedFiles.map((file) => ({
+    // Add new files to existing ones (don't replace)
+    setFiles((prev) => [
+      ...prev,
+      ...acceptedFiles.map((file) => ({
         file,
         status: "pending",
         progress: 0,
-      }))
-    );
+      })),
+    ]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -91,8 +95,13 @@ export default function Upload() {
     setUploading(true);
     const uploadedDocIds: number[] = [];
 
-    // Step 1: Upload files
+    // Step 1: Upload ONLY pending files (skip already processed)
     for (let i = 0; i < files.length; i++) {
+      // Skip files that are already successfully processed
+      if (files[i].status === "success") {
+        continue;
+      }
+
       try {
         const formData = new FormData();
         formData.append("document", files[i].file);
@@ -106,7 +115,9 @@ export default function Upload() {
 
         // Mark as processing (show spinner, not checkmark yet)
         setFiles((prev) =>
-          prev.map((f, idx) => (idx === i ? { ...f, status: "processing", docId } : f))
+          prev.map((f, idx) =>
+            idx === i ? { ...f, status: "processing", docId } : f
+          )
         );
       } catch (error) {
         setFiles((prev) =>
@@ -128,25 +139,30 @@ export default function Upload() {
       // Calculate emissions for each document
       const errors: { docId: number; error: string }[] = [];
       let successCount = 0;
-      
+
       for (let i = 0; i < uploadedDocIds.length; i++) {
         const docId = uploadedDocIds[i];
         try {
           await api.post("/carbon/calculate", { documentId: docId });
           successCount++;
-          
+
           // Mark file as SUCCESS (green checkmark)
           setFiles((prev) =>
-            prev.map((f) => (f.docId === docId ? { ...f, status: "success" } : f))
+            prev.map((f) =>
+              f.docId === docId ? { ...f, status: "success" } : f
+            )
           );
         } catch (error: any) {
-          const errorMsg = error.response?.data?.message || "Failed to process document";
+          const errorMsg =
+            error.response?.data?.message || "Failed to process document";
           console.error(`Failed to calculate for doc ${docId}:`, errorMsg);
           errors.push({ docId, error: errorMsg });
-          
+
           // Mark file as ERROR (red X)
           setFiles((prev) =>
-            prev.map((f) => (f.docId === docId ? { ...f, status: "error", errorMsg } : f))
+            prev.map((f) =>
+              f.docId === docId ? { ...f, status: "error", errorMsg } : f
+            )
           );
         }
       }
@@ -155,11 +171,17 @@ export default function Upload() {
       setUploadComplete(true);
       setProcessingErrors(errors);
 
-      // Auto-scroll to success message
+      // Auto-scroll to error/success message
       setTimeout(() => {
-        const successMessage = document.querySelector('[data-success-message]');
-        if (successMessage) {
-          successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const errorMessage = document.querySelector("[data-error-message]");
+        const successMessage = document.querySelector("[data-success-message]");
+        const targetElement = errors.length > 0 ? errorMessage : successMessage;
+        
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
         }
       }, 100);
     }
@@ -292,7 +314,10 @@ export default function Upload() {
                     <div className="flex items-center gap-2">
                       <AlertCircle className="text-red-500" size={24} />
                       {f.errorMsg && (
-                        <span className="text-xs text-red-600 max-w-xs truncate" title={f.errorMsg}>
+                        <span
+                          className="text-xs text-red-600 max-w-xs truncate"
+                          title={f.errorMsg}
+                        >
                           {f.errorMsg}
                         </span>
                       )}
@@ -311,7 +336,7 @@ export default function Upload() {
 
             <button
               onClick={uploadFiles}
-              disabled={uploading || processing}
+              disabled={uploading || processing || files.every(f => f.status === 'success')}
               className="w-full btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {uploading && (
@@ -326,8 +351,25 @@ export default function Upload() {
                   AI processing & calculating...
                 </>
               )}
-              {!uploading && !processing && "Upload & Calculate"}
+              {!uploading && !processing && files.every(f => f.status === 'success') && "All Files Processed ✓"}
+              {!uploading && !processing && !files.every(f => f.status === 'success') && "Upload & Calculate"}
             </button>
+
+            {/* Reprocess Failed button - only show if there are failed files */}
+            {files.some(f => f.status === 'error') && !uploading && !processing && (
+              <button
+                onClick={() => {
+                  // Remove failed files and re-upload them
+                  const failedFiles = files.filter(f => f.status === 'error');
+                  setFiles(failedFiles.map(f => ({ ...f, status: 'pending', docId: undefined, errorMsg: undefined })));
+                  setUploadComplete(false);
+                  setProcessingErrors([]);
+                }}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                🔄 Reprocess Failed Files Only
+              </button>
+            )}
           </div>
         )}
 
@@ -336,8 +378,8 @@ export default function Upload() {
           <>
             {/* All failed */}
             {processingErrors.length === files.length && (
-              <div 
-                data-success-message
+              <div
+                data-error-message
                 className="mt-6 p-8 bg-gradient-to-r from-red-50 to-orange-50 border-4 border-red-400 rounded-xl text-center shadow-xl"
               >
                 <AlertCircle className="mx-auto text-red-600 mb-4" size={80} />
@@ -355,9 +397,7 @@ export default function Upload() {
                     </p>
                   ))}
                 </div>
-                <p className="text-lg text-gray-600 mb-6">
-                  Please try:
-                </p>
+                <p className="text-lg text-gray-600 mb-6">Please try:</p>
                 <div className="flex gap-4 justify-center">
                   <button
                     onClick={() => {
@@ -379,53 +419,63 @@ export default function Upload() {
                 </div>
               </div>
             )}
-            
+
             {/* Some succeeded */}
-            {processingErrors.length > 0 && processingErrors.length < files.length && (
-              <div 
-                data-success-message
-                className="mt-6 p-8 bg-gradient-to-r from-yellow-50 to-orange-50 border-4 border-yellow-400 rounded-xl text-center shadow-xl"
-              >
-                <AlertCircle className="mx-auto text-yellow-600 mb-4" size={80} />
-                <h3 className="text-3xl font-bold text-yellow-900 mb-3">
-                  ⚠️ Partial Success
-                </h3>
-                <p className="text-xl text-gray-700 mb-3">
-                  {files.length - processingErrors.length} of {files.length} files processed successfully
-                </p>
-                <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg text-left">
-                  <p className="font-bold text-red-900 mb-2">Failed to recognize:</p>
-                  {processingErrors.map((err, idx) => (
-                    <p key={idx} className="text-red-700 text-sm mb-1">
-                      • {err.error}
+            {processingErrors.length > 0 &&
+              processingErrors.length < files.length && (
+                <div
+                  data-error-message
+                  className="mt-6 p-8 bg-gradient-to-r from-yellow-50 to-orange-50 border-4 border-yellow-400 rounded-xl text-center shadow-xl"
+                >
+                  <AlertCircle
+                    className="mx-auto text-yellow-600 mb-4"
+                    size={80}
+                  />
+                  <h3 className="text-3xl font-bold text-yellow-900 mb-3">
+                    ⚠️ Partial Success
+                  </h3>
+                  <p className="text-xl text-gray-700 mb-3">
+                    {files.length - processingErrors.length} of {files.length}{" "}
+                    files processed successfully
+                  </p>
+                  <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg text-left">
+                    <p className="font-bold text-red-900 mb-2">
+                      Failed to recognize:
                     </p>
-                  ))}
+                    {processingErrors.map((err, idx) => (
+                      <p key={idx} className="text-red-700 text-sm mb-1">
+                        • {err.error}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => navigate("/calculations")}
+                      className="inline-flex items-center gap-3 bg-green-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-green-700 transition-all text-xl shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      View Successful Results
+                      <ArrowRight size={28} />
+                    </button>
+                    <button
+                      onClick={() => navigate("/manual-entry")}
+                      className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all text-lg"
+                    >
+                      ✍️ Enter Remaining Manually
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={() => navigate("/calculations")}
-                    className="inline-flex items-center gap-3 bg-green-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-green-700 transition-all text-xl shadow-lg hover:shadow-xl transform hover:scale-105"
-                  >
-                    View Successful Results
-                    <ArrowRight size={28} />
-                  </button>
-                  <button
-                    onClick={() => navigate("/manual-entry")}
-                    className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all text-lg"
-                  >
-                    ✍️ Enter Remaining Manually
-                  </button>
-                </div>
-              </div>
-            )}
-            
+              )}
+
             {/* All succeeded */}
             {processingErrors.length === 0 && (
-              <div 
+              <div
                 data-success-message
                 className="mt-6 p-8 bg-gradient-to-r from-green-50 to-blue-50 border-4 border-green-400 rounded-xl text-center shadow-xl animate-pulse"
               >
-                <CheckCircle className="mx-auto text-green-600 mb-4" size={80} />
+                <CheckCircle
+                  className="mx-auto text-green-600 mb-4"
+                  size={80}
+                />
                 <h3 className="text-3xl font-bold text-green-900 mb-3">
                   ✅ All Documents Recognized!
                 </h3>
@@ -433,7 +483,8 @@ export default function Upload() {
                   All bills successfully analyzed and emissions calculated
                 </p>
                 <p className="text-lg text-gray-600 mb-8">
-                  View detailed carbon footprint breakdown on the <strong>Calculations</strong> page
+                  View detailed carbon footprint breakdown on the{" "}
+                  <strong>Calculations</strong> page
                 </p>
                 <button
                   onClick={() => navigate("/calculations")}
