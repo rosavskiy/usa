@@ -40,7 +40,7 @@ export async function parseDocumentWithAI(
               ...formData.getHeaders(),
               apikey: process.env.OCR_SPACE_API_KEY || "K87899142388957", // Free API key
             },
-            timeout: 60000, // 60 second timeout
+            timeout: 30000, // 30 second timeout
           }
         );
 

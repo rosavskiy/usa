@@ -133,8 +133,33 @@ export default function Upload() {
       setProcessing(true);
       setProcessingErrors([]);
 
-      // Wait longer for AI to parse documents (15 seconds instead of 5)
-      await new Promise((resolve) => setTimeout(resolve, 15000));
+      // Poll document status instead of fixed wait
+      const checkInterval = 2000; // Check every 2 seconds
+      const maxWaitTime = 30000; // Max 30 seconds
+      let elapsedTime = 0;
+
+      while (elapsedTime < maxWaitTime) {
+        await new Promise((resolve) => setTimeout(resolve, checkInterval));
+        elapsedTime += checkInterval;
+
+        // Check if all documents are processed
+        try {
+          const responses = await Promise.all(
+            uploadedDocIds.map(id => api.get(`/upload/${id}`))
+          );
+          
+          const allProcessed = responses.every(r => 
+            r.data.data.status === 'completed' || r.data.data.status === 'failed'
+          );
+
+          if (allProcessed) {
+            console.log(`✅ All documents processed in ${elapsedTime / 1000}s`);
+            break;
+          }
+        } catch (error) {
+          console.error('Error checking document status:', error);
+        }
+      }
 
       // Calculate emissions for each document
       const errors: { docId: number; error: string }[] = [];

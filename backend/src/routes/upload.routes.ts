@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   uploadDocument,
   getDocuments,
+  getDocumentById,
   createManualDocument,
   deleteDocument,
   deleteDocumentsByFilename,
@@ -50,6 +51,7 @@ const upload = multer({
 router.post("/", authenticate, upload.single("document"), uploadDocument);
 router.post("/manual", authenticate, createManualDocument);
 router.get("/", authenticate, getDocuments);
+router.get("/:id", authenticate, getDocumentById);
 router.get("/download/:id", authenticate, downloadDocument);
 router.delete("/by-filename/:filename", authenticate, deleteDocumentsByFilename);
 router.delete("/:id", authenticate, deleteDocument);

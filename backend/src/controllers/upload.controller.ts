@@ -87,6 +87,28 @@ export const getDocuments = asyncHandler(
   }
 );
 
+export const getDocumentById = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const documentId = parseInt(req.params.id);
+
+    const document = await DocumentModel.findById(documentId);
+
+    if (!document) {
+      throw new AppError("Document not found", 404);
+    }
+
+    if (document.user_id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    res.json({
+      success: true,
+      data: document,
+    });
+  }
+);
+
 export const deleteDocument = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
