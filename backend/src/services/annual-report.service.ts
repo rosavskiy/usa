@@ -166,58 +166,31 @@ export async function generateAnnualReport(
     .text("Emissions by Scope", { underline: true });
   doc.moveDown(1);
 
-  // PIE CHART - Scope Breakdown
-  const centerX = 300;
-  const centerY = 200;
-  const radius = 80;
-
   const scopeData = [
     { name: "Scope 1", value: scope1Total, color: "#ef4444" },
     { name: "Scope 2", value: scope2Total, color: "#f59e0b" },
     { name: "Scope 3", value: scope3Total, color: "#3b82f6" },
   ].filter(s => s.value > 0);
 
-  let startAngle = 0;
-  scopeData.forEach((scope) => {
-    const percentage = totalEmissions > 0 ? (scope.value / totalEmissions) * 100 : 0;
-    const angle = (percentage / 100) * 360;
-    const endAngle = startAngle + angle;
-
-    // Draw pie slice
-    if (angle > 0) {
-      const startRad = (startAngle - 90) * Math.PI / 180;
-      const endRad = (endAngle - 90) * Math.PI / 180;
-      
-      doc.save();
-      doc.path(`M ${centerX} ${centerY}`)
-         .lineTo(centerX + radius * Math.cos(startRad), centerY + radius * Math.sin(startRad))
-         .arc(centerX, centerY, radius, startRad, endRad)
-         .lineTo(centerX, centerY)
-         .fill(scope.color);
-      doc.restore();
-    }
-
-    startAngle = endAngle;
-  });
-
-  // Draw white circle in center for donut effect
-  doc.circle(centerX, centerY, radius * 0.5).fill('#fff');
-
-  // Legend
-  let legendY = 350;
   scopeData.forEach((scope) => {
     const percentage = totalEmissions > 0 ? (scope.value / totalEmissions) * 100 : 0;
 
-    // Color box
-    doc.rect(80, legendY, 15, 15).fill(scope.color);
-    
-    // Text
-    doc.fontSize(11).font("Helvetica-Bold").fillColor('#000')
-       .text(scope.name, 100, legendY + 2);
-    doc.font("Helvetica")
-       .text(`${scope.value.toFixed(2)} kg CO₂e (${percentage.toFixed(1)}%)`, 200, legendY + 2);
+    doc.fontSize(12).font("Helvetica-Bold").text(scope.name);
+    doc.moveDown(0.3);
+    doc
+      .fontSize(11)
+      .font("Helvetica")
+      .text(`${scope.value.toFixed(2)} kg CO₂e (${percentage.toFixed(1)}%)`);
 
-    legendY += 25;
+    // Progress bar
+    const barWidth = 400;
+    const barHeight = 20;
+    const filledWidth = (percentage / 100) * barWidth;
+
+    doc.rect(50, doc.y + 5, barWidth, barHeight).stroke("#ccc");
+    doc.rect(50, doc.y + 5, filledWidth, barHeight).fill(scope.color);
+
+    doc.moveDown(2);
   });
 
   // Page 4: Category Breakdown
@@ -232,55 +205,14 @@ export async function generateAnnualReport(
     (a, b) => b[1] - a[1]
   );
 
-  // PIE CHART - Category Breakdown
-  const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316'];
-  const categoryData = sortedCategories.slice(0, 7).map(([name, value], i) => ({
-    name,
-    value,
-    color: colors[i % colors.length]
-  }));
+  sortedCategories.forEach(([category, value]) => {
+    const percentage = (value / totalEmissions) * 100;
 
-  const catCenterX = 300;
-  const catCenterY = 200;
-  const catRadius = 80;
-
-  let catStartAngle = 0;
-  categoryData.forEach((cat) => {
-    const percentage = totalEmissions > 0 ? (cat.value / totalEmissions) * 100 : 0;
-    const angle = (percentage / 100) * 360;
-    const catEndAngle = catStartAngle + angle;
-
-    if (angle > 0) {
-      const startRad = (catStartAngle - 90) * Math.PI / 180;
-      const endRad = (catEndAngle - 90) * Math.PI / 180;
-      
-      doc.save();
-      doc.path(`M ${catCenterX} ${catCenterY}`)
-         .lineTo(catCenterX + catRadius * Math.cos(startRad), catCenterY + catRadius * Math.sin(startRad))
-         .arc(catCenterX, catCenterY, catRadius, startRad, endRad)
-         .lineTo(catCenterX, catCenterY)
-         .fill(cat.color);
-      doc.restore();
-    }
-
-    catStartAngle = catEndAngle;
-  });
-
-  // Donut center
-  doc.circle(catCenterX, catCenterY, catRadius * 0.5).fill('#fff');
-
-  // Legend
-  let catLegendY = 350;
-  categoryData.forEach((cat) => {
-    const percentage = (cat.value / totalEmissions) * 100;
-
-    doc.rect(80, catLegendY, 15, 15).fill(cat.color);
-    doc.fontSize(10).font("Helvetica-Bold").fillColor('#000')
-       .text(cat.name, 100, catLegendY + 2);
-    doc.font("Helvetica")
-       .text(`${cat.value.toFixed(2)} kg (${percentage.toFixed(1)}%)`, 250, catLegendY + 2);
-
-    catLegendY += 20;
+    doc
+      .fontSize(11)
+      .font("Helvetica-Bold")
+      .text(`${category}: ${value.toFixed(2)} kg CO₂e (${percentage.toFixed(1)}%)`);
+    doc.moveDown(0.5);
   });
 
   // Page 5: Monthly Trend
