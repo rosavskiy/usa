@@ -19,26 +19,6 @@ export const uploadDocument = asyncHandler(
       `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`
     );
 
-    // Check for duplicate filename
-    const existingDoc = await DocumentModel.findByFileName(userId, fileName);
-    if (existingDoc) {
-      console.log(`⚠️ Duplicate file detected: ${fileName} - skipping upload`);
-      // Delete uploaded file
-      fs.unlinkSync(filePath);
-      
-      res.status(200).json({
-        success: true,
-        data: {
-          id: existingDoc.id,
-          fileName: existingDoc.file_name,
-          uploadedAt: existingDoc.created_at,
-          status: existingDoc.status,
-          duplicate: true,
-        },
-      });
-      return;
-    }
-
     // Save document to database
     const document = await DocumentModel.create({
       userId,
@@ -80,7 +60,8 @@ export const getDocuments = asyncHandler(
     
     const offset = (page - 1) * limit;
     
-    let documents = await DocumentModel.findByUserId(userId);
+    // Get unique documents (only one per file_name, keep latest)
+    let documents = await DocumentModel.findUniqueByUserId(userId);
     
     // Filter by status if provided
     if (status === 'readable') {

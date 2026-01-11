@@ -53,6 +53,17 @@ export class DocumentModel {
     return result.rows;
   }
 
+  static async findUniqueByUserId(userId: number): Promise<Document[]> {
+    const result = await query(
+      `SELECT DISTINCT ON (file_name) * 
+       FROM documents 
+       WHERE user_id = $1 
+       ORDER BY file_name, created_at DESC`,
+      [userId]
+    );
+    return result.rows;
+  }
+
   static async findById(id: number): Promise<Document | null> {
     const result = await query("SELECT * FROM documents WHERE id = $1", [id]);
     return result.rows[0] || null;
