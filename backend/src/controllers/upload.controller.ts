@@ -3,6 +3,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { DocumentModel } from "../models/document.model";
 import { AppError, asyncHandler } from "../middleware/error.middleware";
 import { parseDocumentWithAI } from "../services/ai.service";
+import { query } from "../config/database";
 import fs from "fs";
 
 export const uploadDocument = asyncHandler(
