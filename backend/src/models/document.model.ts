@@ -68,4 +68,16 @@ export class DocumentModel {
       [JSON.stringify(parsedData), status, id]
     );
   }
+
+  static async findByFileName(userId: number, fileName: string): Promise<Document | null> {
+    const result = await query(
+      `SELECT * FROM documents WHERE user_id = $1 AND file_name = $2 LIMIT 1`,
+      [userId, fileName]
+    );
+    return result.rows[0] || null;
+  }
+
+  static async delete(id: number): Promise<void> {
+    await query(`DELETE FROM documents WHERE id = $1`, [id]);
+  }
 }

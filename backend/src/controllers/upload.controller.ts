@@ -3,6 +3,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { DocumentModel } from "../models/document.model";
 import { AppError, asyncHandler } from "../middleware/error.middleware";
 import { parseDocumentWithAI } from "../services/ai.service";
+import fs from "fs";
 
 export const uploadDocument = asyncHandler(
   async (req: AuthRequest, res: Response, _next: NextFunction) => {
@@ -17,6 +18,26 @@ export const uploadDocument = asyncHandler(
     console.log(
       `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`
     );
+
+    // Check for duplicate filename
+    const existingDoc = await DocumentModel.findByFileName(userId, fileName);
+    if (existingDoc) {
+      console.log(`⚠️ Duplicate file detected: ${fileName} - skipping upload`);
+      // Delete uploaded file
+      fs.unlinkSync(filePath);
+      
+      res.status(200).json({
+        success: true,
+        data: {
+          id: existingDoc.id,
+          fileName: existingDoc.file_name,
+          uploadedAt: existingDoc.created_at,
+          status: existingDoc.status,
+          duplicate: true,
+        },
+      });
+      return;
+    }
 
     // Save document to database
     const document = await DocumentModel.create({
@@ -53,12 +74,93 @@ export const uploadDocument = asyncHandler(
 export const getDocuments = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
-    const documents = await DocumentModel.findByUserId(userId);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const status = req.query.status as string; // 'readable' or 'unreadable'
+    
+    const offset = (page - 1) * limit;
+    
+    let documents = await DocumentModel.findByUserId(userId);
+    
+    // Filter by status if provided
+    if (status === 'readable') {
+      documents = documents.filter(d => d.status === 'completed');
+    } else if (status === 'unreadable') {
+      documents = documents.filter(d => d.status === 'failed');
+    }
+    
+    const total = documents.length;
+    const paginatedDocs = documents.slice(offset, offset + limit);
 
     res.json({
       success: true,
-      data: documents,
+      data: paginatedDocs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     });
+  }
+);
+
+export const deleteDocument = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const documentId = parseInt(req.params.id);
+
+    const document = await DocumentModel.findById(documentId);
+
+    if (!document) {
+      throw new AppError("Document not found", 404);
+    }
+
+    if (document.user_id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    // Delete file from filesystem (if not manual entry)
+    if (document.file_path !== 'manual' && fs.existsSync(document.file_path)) {
+      fs.unlinkSync(document.file_path);
+      console.log(`🗑️ Deleted file: ${document.file_path}`);
+    }
+
+    // Delete from database
+    await DocumentModel.delete(documentId);
+    console.log(`🗑️ Deleted document ${documentId}`);
+
+    res.json({
+      success: true,
+      message: "Document deleted successfully",
+    });
+  }
+);
+
+export const downloadDocument = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const documentId = parseInt(req.params.id);
+
+    const document = await DocumentModel.findById(documentId);
+
+    if (!document) {
+      throw new AppError("Document not found", 404);
+    }
+
+    if (document.user_id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    if (document.file_path === 'manual') {
+      throw new AppError("Cannot download manual entry", 400);
+    }
+
+    if (!fs.existsSync(document.file_path)) {
+      throw new AppError("File not found on server", 404);
+    }
+
+    res.download(document.file_path, document.file_name);
   }
 );
 

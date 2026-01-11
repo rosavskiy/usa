@@ -50,13 +50,13 @@ export async function parseDocumentWithAI(
       !response.data.ParsedResults ||
       response.data.ParsedResults.length === 0
     ) {
-      throw new Error("No text detected in image");
+      throw new Error("Image quality too low - please upload a clearer photo or use Manual Entry");
     }
 
     const ocrText = response.data.ParsedResults[0].ParsedText || "";
 
-    if (!ocrText) {
-      throw new Error("No text detected in image");
+    if (!ocrText || ocrText.trim().length < 10) {
+      throw new Error("Image quality too low - please upload a clearer, higher resolution photo");
     }
 
     console.log(`✨ OCR extracted text (${ocrText.length} chars):`);
@@ -90,7 +90,10 @@ export async function parseDocumentWithAI(
     const errorMessage = error instanceof Error ? error.message : String(error);
     let userFriendlyError = "Failed to process document";
 
-    if (
+    if (errorMessage.includes("Image quality too low") || errorMessage.includes("clearer")) {
+      userFriendlyError =
+        "Photo is too blurry or low resolution - please upload a clearer, higher quality photo";
+    } else if (
       errorMessage.includes("unreadable") ||
       errorMessage.includes("consumption data")
     ) {

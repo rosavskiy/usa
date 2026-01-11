@@ -7,6 +7,7 @@ import {
   Lightbulb,
   LogOut,
   Calculator,
+  FolderOpen,
 } from "lucide-react";
 
 export default function Layout() {
@@ -19,6 +20,7 @@ export default function Layout() {
     { path: "/manual", label: "Manual Entry", icon: Calculator },
     { path: "/calculations", label: "Calculations", icon: BarChart3 },
     { path: "/recommendations", label: "Recommendations", icon: Lightbulb },
+    { path: "/my-documents", label: "My Documents", icon: FolderOpen },
   ];
 
   return (
