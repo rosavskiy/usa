@@ -160,6 +160,26 @@ export default function Calculations() {
     }
   };
 
+  const handleDownloadPDF = async (calcId: number) => {
+    try {
+      const response = await api.get(`/carbon/calculations/${calcId}/report`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `carbon-report-${calcId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download PDF:", error);
+      alert("Failed to download PDF. Please try again.");
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12">Loading calculations...</div>;
   }
