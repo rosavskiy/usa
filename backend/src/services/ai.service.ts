@@ -98,10 +98,19 @@ export async function parseDocumentWithAI(
     console.log(`✨ OCR extracted text (${ocrText.length} chars):`);
     console.log(ocrText); // Print FULL text for debugging
 
+    // Check for watermarks
+    const hasWatermark = detectWatermark(ocrText);
+
     // Parse the text using regex patterns
     console.log(`🔍 Parsing extracted text...`);
     const parsedData = parseUtilityBillText(ocrText);
     console.log(`🎯 Parsed data:`, parsedData);
+
+    // Add watermark warning if detected
+    if (hasWatermark) {
+      parsedData.warning = "Обнаружен водяной знак на документе - возможны неточности в распознавании цифр. Проверьте правильность данных.";
+      console.log(`⚠️ Watermark detected in document`);
+    }
 
     // Validate that we got meaningful data
     if (
@@ -152,6 +161,24 @@ export async function parseDocumentWithAI(
     );
     throw new Error(userFriendlyError);
   }
+}
+
+function detectWatermark(text: string): boolean {
+  const lowerText = text.toLowerCase();
+  
+  // Common watermark patterns
+  const watermarkPatterns = [
+    /roposh/i,
+    /sample/i,
+    /demo/i,
+    /specimen/i,
+    /watermark/i,
+    /not valid/i,
+    /for illustration only/i,
+    /template/i,
+  ];
+  
+  return watermarkPatterns.some(pattern => pattern.test(lowerText));
 }
 
 function parseUtilityBillText(text: string): any {

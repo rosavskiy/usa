@@ -66,6 +66,7 @@ export default function Upload() {
         status: f.status,
         docId: f.docId,
         errorMsg: f.errorMsg,
+        warning: f.warning
       }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(metadata));
     } else {
