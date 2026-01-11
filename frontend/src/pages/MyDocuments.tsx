@@ -9,7 +9,7 @@ export default function MyDocuments() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalDocs, setTotalDocs] = useState(0);
-  const [deleteModal, setDeleteModal] = useState<{ show: boolean; docId: number | null }>({ show: false, docId: null });
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean; fileName: string | null }>({ show: false, fileName: null });
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -32,12 +32,13 @@ export default function MyDocuments() {
   };
 
   const handleDelete = async () => {
-    if (!deleteModal.docId) return;
+    if (!deleteModal.fileName) return;
 
     try {
       setDeleting(true);
-      await api.delete(`/upload/${deleteModal.docId}`);
-      setDeleteModal({ show: false, docId: null });
+      // Delete all documents with this filename
+      await api.delete(`/upload/by-filename/${encodeURIComponent(deleteModal.fileName)}`);
+      setDeleteModal({ show: false, fileName: null });
       loadDocuments(); // Reload list
     } catch (error) {
       console.error("Failed to delete document:", error);
@@ -171,7 +172,7 @@ export default function MyDocuments() {
                     <span className="text-xs">Download</span>
                   </button>
                   <button
-                    onClick={() => setDeleteModal({ show: true, docId: doc.id })}
+                    onClick={() => setDeleteModal({ show: true, fileName: doc.file_name })}
                     className="flex-1 btn btn-sm bg-red-500 hover:bg-red-600 text-white flex items-center justify-center gap-1"
                   >
                     <Trash2 size={14} />
@@ -223,7 +224,7 @@ export default function MyDocuments() {
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => setDeleteModal({ show: false, docId: null })}
+                onClick={() => setDeleteModal({ show: false, fileName: null })}
                 disabled={deleting}
                 className="flex-1 btn bg-gray-200 hover:bg-gray-300 text-gray-800"
               >

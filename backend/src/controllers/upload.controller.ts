@@ -101,6 +101,10 @@ export const deleteDocument = asyncHandler(
       throw new AppError("Unauthorized", 403);
     }
 
+    // Delete associated calculations first
+    await query(`DELETE FROM carbon_calculations WHERE document_id = $1`, [documentId]);
+    console.log(`🗑️ Deleted calculations for document ${documentId}`);
+
     // Delete file from filesystem (if not manual entry)
     if (document.file_path !== 'manual' && fs.existsSync(document.file_path)) {
       fs.unlinkSync(document.file_path);
@@ -114,6 +118,52 @@ export const deleteDocument = asyncHandler(
     res.json({
       success: true,
       message: "Document deleted successfully",
+    });
+  }
+);
+
+export const deleteDocumentsByFilename = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const fileName = decodeURIComponent(req.params.filename);
+
+    console.log(`🗑️ Deleting all documents with filename: ${fileName} for user ${userId}`);
+
+    // Find all documents with this filename
+    const documents = await DocumentModel.findByFileName(userId, fileName);
+    
+    if (!documents || documents.length === 0) {
+      throw new AppError("No documents found with this filename", 404);
+    }
+
+    let deletedCount = 0;
+
+    // Delete each document
+    for (const doc of documents) {
+      // Delete associated calculations
+      await query(`DELETE FROM carbon_calculations WHERE document_id = $1`, [doc.id]);
+      
+      // Delete file from filesystem (if exists and not manual entry)
+      if (doc.file_path !== 'manual' && fs.existsSync(doc.file_path)) {
+        try {
+          fs.unlinkSync(doc.file_path);
+          console.log(`🗑️ Deleted file: ${doc.file_path}`);
+        } catch (err) {
+          console.error(`Failed to delete file ${doc.file_path}:`, err);
+        }
+      }
+
+      // Delete from database
+      await DocumentModel.delete(doc.id);
+      deletedCount++;
+    }
+
+    console.log(`🗑️ Deleted ${deletedCount} documents with filename: ${fileName}`);
+
+    res.json({
+      success: true,
+      message: `Deleted ${deletedCount} document(s) successfully`,
+      count: deletedCount,
     });
   }
 );

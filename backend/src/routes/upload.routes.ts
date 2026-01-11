@@ -4,6 +4,7 @@ import {
   getDocuments,
   createManualDocument,
   deleteDocument,
+  deleteDocumentsByFilename,
   downloadDocument,
 } from "../controllers/upload.controller";
 import { authenticate } from "../middleware/auth.middleware";
@@ -50,6 +51,7 @@ router.post("/", authenticate, upload.single("document"), uploadDocument);
 router.post("/manual", authenticate, createManualDocument);
 router.get("/", authenticate, getDocuments);
 router.get("/download/:id", authenticate, downloadDocument);
+router.delete("/by-filename/:filename", authenticate, deleteDocumentsByFilename);
 router.delete("/:id", authenticate, deleteDocument);
 
 export default router;

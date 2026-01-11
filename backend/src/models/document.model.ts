@@ -80,12 +80,12 @@ export class DocumentModel {
     );
   }
 
-  static async findByFileName(userId: number, fileName: string): Promise<Document | null> {
+  static async findByFileName(userId: number, fileName: string): Promise<Document[]> {
     const result = await query(
-      `SELECT * FROM documents WHERE user_id = $1 AND file_name = $2 LIMIT 1`,
+      `SELECT * FROM documents WHERE user_id = $1 AND file_name = $2`,
       [userId, fileName]
     );
-    return result.rows[0] || null;
+    return result.rows;
   }
 
   static async delete(id: number): Promise<void> {
