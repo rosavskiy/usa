@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BarChart3, Calendar, TrendingUp, Download, Trash2 } from "lucide-react";
+import { BarChart3, Calendar, TrendingUp, Download, Trash2, FileDown } from "lucide-react";
 import api from "../api/axios";
 import { format } from "date-fns";
 
@@ -350,14 +350,27 @@ export default function Calculations() {
                     </span>
                   </div>
                 </div>                        
-                        {/* Delete Button */}
-                        <button
-                          onClick={() => setDeleteModal({ show: true, calcId: calc.id })}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete calculation"
-                        >
-                          <Trash2 size={20} />
-                        </button>              </div>
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-2">
+                          {/* Download PDF Button */}
+                          <button
+                            onClick={() => handleDownloadPDF(calc.id)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Download PDF Report"
+                          >
+                            <FileDown size={20} />
+                          </button>
+                          
+                          {/* Delete Button */}
+                          <button
+                            onClick={() => setDeleteModal({ show: true, calcId: calc.id })}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete calculation"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                      </div>
             </div>
           ))}
                     </div>

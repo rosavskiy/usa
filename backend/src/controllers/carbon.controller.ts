@@ -4,6 +4,7 @@ import { CarbonModel } from "../models/carbon.model";
 import { calculateEmissions } from "../services/carbon.service";
 import { generateRecommendations } from "../services/recommendations.service";
 import { generateCarbonReport } from "../services/report.service";
+import { generateCarbonReport as generateIndividualReport } from "../services/pdf.service";
 import { asyncHandler, AppError } from "../middleware/error.middleware";
 
 export const calculateCarbon = asyncHandler(
@@ -90,5 +91,34 @@ export const deleteCalculation = asyncHandler(
       success: true,
       message: "Calculation deleted successfully",
     });
+  }
+);
+
+export const downloadIndividualReport = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const calculationId = parseInt(req.params.id);
+
+    // Verify ownership
+    const calculation = await CarbonModel.findById(calculationId);
+    if (!calculation) {
+      throw new AppError("Calculation not found", 404);
+    }
+
+    if (calculation.user_id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    // Generate PDF
+    const doc = await generateIndividualReport(calculationId, userId);
+
+    // Set response headers
+    const filename = `carbon-report-${calculationId}-${new Date().toISOString().split("T")[0]}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Pipe PDF to response
+    doc.pipe(res);
+    doc.end();
   }
 );
