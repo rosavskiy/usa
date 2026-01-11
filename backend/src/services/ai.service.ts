@@ -25,16 +25,52 @@ export async function parseDocumentWithAI(
     formData.append("scale", "true");
     formData.append("OCREngine", "2"); // Engine 2 is more accurate
 
-    const response = await axios.post(
-      "https://api.ocr.space/parse/image",
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-          apikey: process.env.OCR_SPACE_API_KEY || "K87899142388957", // Free API key
-        },
+    let response;
+    let retries = 0;
+    const maxRetries = 2;
+
+    // Retry logic for OCR.space timeouts
+    while (retries <= maxRetries) {
+      try {
+        response = await axios.post(
+          "https://api.ocr.space/parse/image",
+          formData,
+          {
+            headers: {
+              ...formData.getHeaders(),
+              apikey: process.env.OCR_SPACE_API_KEY || "K87899142388957", // Free API key
+            },
+            timeout: 60000, // 60 second timeout
+          }
+        );
+
+        // Check for timeout error (E101)
+        if (response.data.IsErroredOnProcessing && 
+            response.data.ErrorMessage && 
+            response.data.ErrorMessage[0]?.includes('E101')) {
+          if (retries < maxRetries) {
+            console.log(`⏳ OCR timeout - retrying (${retries + 1}/${maxRetries})...`);
+            retries++;
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+            continue;
+          }
+        }
+
+        break; // Success or non-timeout error
+      } catch (error: any) {
+        if (retries < maxRetries && (error.code === 'ECONNABORTED' || error.message.includes('timeout'))) {
+          console.log(`⏳ Network timeout - retrying (${retries + 1}/${maxRetries})...`);
+          retries++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+        throw error;
       }
-    );
+    }
+
+    if (!response) {
+      throw new Error("OCR service error - maximum retries exceeded");
+    }
 
     // Log full OCR.space response for debugging
     console.log(`🔍 OCR.space response status:`, response.data.OCRExitCode);
