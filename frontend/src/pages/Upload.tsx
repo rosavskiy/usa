@@ -110,6 +110,23 @@ export default function Upload() {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
+        // Check if this is a duplicate file
+        if (response.data.data.duplicate) {
+          // Mark as error with duplicate message
+          setFiles((prev) =>
+            prev.map((f, idx) =>
+              idx === i
+                ? {
+                    ...f,
+                    status: "error",
+                    errorMessage: `Duplicate: ${response.data.data.fileName} already exists`,
+                  }
+                : f
+            )
+          );
+          continue; // Skip processing for duplicates
+        }
+
         const docId = response.data.data.id;
         uploadedDocIds.push(docId);
 
