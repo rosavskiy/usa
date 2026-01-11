@@ -52,10 +52,24 @@ export default function Upload() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Save to localStorage whenever files change
+  // Clear localStorage on component mount to avoid NaN issues
   useEffect(() => {
-    if (files.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  // Save to localStorage whenever files change (only pending/processing files)
+  useEffect(() => {
+    const filesToSave = files.filter(f => f.status !== 'success');
+    if (filesToSave.length > 0) {
+      // Don't save File objects, just metadata
+      const metadata = filesToSave.map(f => ({
+        name: f.file?.name,
+        size: f.file?.size,
+        status: f.status,
+        docId: f.docId,
+        errorMsg: f.errorMsg,
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(metadata));
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -325,9 +339,9 @@ export default function Upload() {
                 <div className="flex items-center gap-3 flex-1">
                   <File className="text-gray-400" size={24} />
                   <div>
-                    <p className="font-medium">{f.file.name}</p>
+                    <p className="font-medium">{f.file?.name || 'Unknown file'}</p>
                     <p className="text-sm text-gray-500">
-                      {(f.file.size / 1024 / 1024).toFixed(2)} MB
+                      {f.file?.size ? (f.file.size / 1024 / 1024).toFixed(2) : '0.00'} MB
                     </p>
                   </div>
                 </div>
