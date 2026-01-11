@@ -53,9 +53,19 @@ export class CarbonModel {
     return result.rows[0];
   }
 
-  static async findByUserId(userId: number): Promise<CarbonCalculation[]> {
+  static async findByUserId(userId: number): Promise<any[]> {
     const result = await query(
-      `SELECT * FROM carbon_calculations WHERE user_id = $1 ORDER BY calculation_date DESC`,
+      `SELECT 
+        c.*,
+        json_build_object(
+          'id', d.id,
+          'file_name', d.file_name,
+          'parsed_data', d.parsed_data
+        ) as document
+       FROM carbon_calculations c
+       LEFT JOIN documents d ON c.document_id = d.id
+       WHERE c.user_id = $1 
+       ORDER BY c.calculation_date DESC`,
       [userId]
     );
     return result.rows;

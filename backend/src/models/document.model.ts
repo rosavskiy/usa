@@ -75,12 +75,19 @@ export class DocumentModel {
   static async updateParsedData(
     id: number,
     parsedData: any,
-    status: string
+    status?: string
   ): Promise<void> {
-    await query(
-      `UPDATE documents SET parsed_data = $1, status = $2, updated_at = NOW() WHERE id = $3`,
-      [JSON.stringify(parsedData), status, id]
-    );
+    if (status) {
+      await query(
+        `UPDATE documents SET parsed_data = $1, status = $2, updated_at = NOW() WHERE id = $3`,
+        [JSON.stringify(parsedData), status, id]
+      );
+    } else {
+      await query(
+        `UPDATE documents SET parsed_data = $1, updated_at = NOW() WHERE id = $2`,
+        [JSON.stringify(parsedData), id]
+      );
+    }
   }
 
   static async findByFileName(

@@ -92,11 +92,27 @@ export async function calculateEmissions(userId: number, documentId: number) {
 
   console.log(`📋 Parsed data:`, JSON.stringify(parsedData, null, 2));
 
-  // Get state from document first, fallback to user profile
-  let userState = parsedData.state || null;
-  if (!userState) {
-    const user = await UserModel.findById(userId);
-    userState = user?.state || null;
+  // PRIORITY: Get state from user profile FIRST (company location)
+  const user = await UserModel.findById(userId);
+  let userState = user?.state || parsedData.state || null;
+  
+  console.log(`🌎 Using state: ${userState} (from ${user?.state ? 'company profile' : 'OCR'})`);
+
+  // DATE VALIDATION
+  const billDate = new Date(parsedData.period?.start || parsedData.date);
+  const currentYear = new Date().getFullYear();
+  const billYear = billDate.getFullYear();
+  
+  let dateWarning = null;
+  if (billYear < currentYear - 5) {
+    dateWarning = `⚠️ Bill is from ${billYear} - very old data (${currentYear - billYear} years ago)`;
+    console.warn(dateWarning);
+  } else if (billYear > currentYear) {
+    dateWarning = `⚠️ Bill date is in the future (${billYear}) - check if OCR read correctly`;
+    console.warn(dateWarning);
+  } else if (billYear < currentYear - 1) {
+    dateWarning = `ℹ️ Bill is from previous year (${billYear}) - ensure it's assigned to correct reporting period`;
+    console.log(dateWarning);
   }
 
   // Determine emission type and category
@@ -152,6 +168,15 @@ export async function calculateEmissions(userId: number, documentId: number) {
   const n2oKg = co2e_kg * 0.01; // ~1% equivalent from N2O
   const totalCo2eKg = co2e_kg;
 
+  // Save date warning to document's parsed_data
+  if (dateWarning) {
+    const updatedParsedData = {
+      ...parsedData,
+      dateWarning: dateWarning,
+    };
+    await DocumentModel.updateParsedData(documentId, updatedParsedData);
+  }
+
   // Save calculation
   const calculation = await CarbonModel.create({
     userId,
@@ -178,6 +203,7 @@ export async function calculateEmissions(userId: number, documentId: number) {
       totalCo2eKg,
     },
     period: parsedData.period,
+    dateWarning: dateWarning, // Include date validation warning
     calculationDetails: {
       method: "EPA/eGRID 2023",
       factor_value: factorUsed,
@@ -185,6 +211,8 @@ export async function calculateEmissions(userId: number, documentId: number) {
         category === "electricity"
           ? `EPA eGRID 2023 - ${region}`
           : "EPA Emission Factors",
+      state_used: userState,
+      state_source: user?.state ? 'company_profile' : 'ocr_detected',
     },
   };
 }

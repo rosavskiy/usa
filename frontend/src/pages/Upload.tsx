@@ -192,18 +192,23 @@ export default function Upload() {
       for (let i = 0; i < uploadedDocIds.length; i++) {
         const docId = uploadedDocIds[i];
         try {
-          await api.post("/carbon/calculate", { documentId: docId });
+          const calcResponse = await api.post("/carbon/calculate", { documentId: docId });
 
-          // Get document data to check for warnings
+          // Get document data and calculation warnings
           const docResponse = await api.get(`/upload/${docId}`);
-          const warning = docResponse.data.data?.parsed_data?.warning;
+          const ocrWarning = docResponse.data.data?.parsed_data?.warning;
+          const dateWarning = calcResponse.data.data?.dateWarning;
+          
+          // Combine warnings
+          const warnings = [ocrWarning, dateWarning].filter(Boolean);
+          const combinedWarning = warnings.length > 0 ? warnings.join(' | ') : undefined;
 
           successCount++;
 
-          // Mark file as SUCCESS (green checkmark) and save warning if present
+          // Mark file as SUCCESS (green checkmark) and save warnings if present
           setFiles((prev) =>
             prev.map((f) =>
-              f.docId === docId ? { ...f, status: "success", warning } : f
+              f.docId === docId ? { ...f, status: "success", warning: combinedWarning } : f
             )
           );
         } catch (error: any) {
