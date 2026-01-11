@@ -11,7 +11,6 @@ export default function MyDocuments() {
   const [totalDocs, setTotalDocs] = useState(0);
   const [deleteModal, setDeleteModal] = useState<{ show: boolean; docId: number | null }>({ show: false, docId: null });
   const [deleting, setDeleting] = useState(false);
-  const [deleteAllModal, setDeleteAllModal] = useState(false);
 
   useEffect(() => {
     loadDocuments();
@@ -43,34 +42,6 @@ export default function MyDocuments() {
     } catch (error) {
       console.error("Failed to delete document:", error);
       alert("Failed to delete document. Please try again.");
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleDeleteAll = async () => {
-    try {
-      setDeleting(true);
-      
-      // Get ALL documents with current filter (not just current page)
-      const statusParam = filter === "all" ? "" : `&status=${filter}`;
-      const response = await api.get(`/upload?page=1&limit=1000${statusParam}`);
-      const allDocs = response.data.data;
-      
-      if (allDocs.length === 0) {
-        setDeleteAllModal(false);
-        return;
-      }
-      
-      // Delete all documents
-      await Promise.all(allDocs.map((doc: any) => api.delete(`/upload/${doc.id}`)));
-      
-      setDeleteAllModal(false);
-      setPage(1); // Reset to first page
-      loadDocuments(); // Reload list
-    } catch (error) {
-      console.error("Failed to delete all documents:", error);
-      alert("Failed to delete all documents. Please try again.");
     } finally {
       setDeleting(false);
     }
@@ -124,15 +95,6 @@ export default function MyDocuments() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
-        {totalDocs > 0 && (
-          <button
-            onClick={() => setDeleteAllModal(true)}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-          >
-            <Trash2 size={18} />
-            Delete All ({totalDocs})
-          </button>
-        )}
       </div>
 
       {/* Filter Tabs */}
@@ -273,38 +235,6 @@ export default function MyDocuments() {
                 className="flex-1 btn bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
               >
                 {deleting ? "Deleting..." : "Delete Forever"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete All Confirmation Modal */}
-      {deleteAllModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-red-600 mb-3">
-              ⚠️ Delete All {totalDocs} Documents?
-            </h3>
-            <p className="text-gray-700 mb-6">
-              <strong>WARNING:</strong> This will permanently delete ALL {totalDocs} documents {filter !== 'all' && `(${filter})`} and their files. 
-              <br/><br/>
-              <strong>This action CANNOT be undone!</strong>
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteAllModal(false)}
-                disabled={deleting}
-                className="flex-1 btn bg-gray-200 hover:bg-gray-300 text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteAll}
-                disabled={deleting}
-                className="flex-1 btn bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 font-bold"
-              >
-                {deleting ? "Deleting..." : "Delete All Forever"}
               </button>
             </div>
           </div>
