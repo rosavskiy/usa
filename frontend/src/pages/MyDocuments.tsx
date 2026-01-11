@@ -171,29 +171,14 @@ export default function MyDocuments() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {documents.map((doc) => (
             <div key={doc.id} className="card hover:shadow-lg transition-shadow">
-              {/* Thumbnail */}
-              <div className="relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-3">
-                {doc.file_path !== 'manual' ? (
-                  <img
-                    src={`http://localhost:5000/${doc.file_path.replace(/\\/g, '/')}`}
-                    alt={doc.file_name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23f3f4f6' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E";
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <FileText className="text-gray-400" size={48} />
-                  </div>
-                )}
-              </div>
-
               {/* Info */}
-              <div className="space-y-2">
-                <h3 className="font-medium text-sm truncate" title={doc.file_name}>
-                  {doc.file_name}
-                </h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <FileText className="text-gray-400 flex-shrink-0 mt-1" size={20} />
+                  <h3 className="font-medium text-sm break-all" title={doc.file_name}>
+                    {doc.file_name}
+                  </h3>
+                </div>
                 
                 {getStatusBadge(doc.status)}
 
@@ -203,15 +188,13 @@ export default function MyDocuments() {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
-                  {doc.file_path !== 'manual' && (
-                    <button
-                      onClick={() => handleDownload(doc)}
-                      className="flex-1 btn btn-sm bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-1"
-                    >
-                      <Download size={14} />
-                      <span className="text-xs">Download</span>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleDownload(doc)}
+                    className="flex-1 btn btn-sm bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-1"
+                  >
+                    <Download size={14} />
+                    <span className="text-xs">Download</span>
+                  </button>
                   <button
                     onClick={() => setDeleteModal({ show: true, docId: doc.id })}
                     className="flex-1 btn btn-sm bg-red-500 hover:bg-red-600 text-white flex items-center justify-center gap-1"

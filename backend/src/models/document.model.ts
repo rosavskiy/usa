@@ -57,7 +57,7 @@ export class DocumentModel {
     const result = await query(
       `SELECT DISTINCT ON (file_name) * 
        FROM documents 
-       WHERE user_id = $1 
+       WHERE user_id = $1 AND file_path != 'manual'
        ORDER BY file_name, created_at DESC`,
       [userId]
     );
