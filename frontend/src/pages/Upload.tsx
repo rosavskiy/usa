@@ -13,67 +13,17 @@ import {
 } from "lucide-react";
 import api from "../api/axios";
 
-const STORAGE_KEY = "uploadedFiles";
-
 export default function Upload() {
   const navigate = useNavigate();
-  const [files, setFiles] = useState<any[]>(() => {
-    // Load from localStorage on mount
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [files, setFiles] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [uploadComplete, setUploadComplete] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const savedFiles = JSON.parse(saved);
-        return (
-          savedFiles.length > 0 &&
-          savedFiles.every((f: any) => f.status === "success")
-        );
-      } catch {
-        return false;
-      }
-    }
-    return false;
-  });
+  const [uploadComplete, setUploadComplete] = useState(false);
   const [processingErrors, setProcessingErrors] = useState<
     { docId: number; error: string }[]
   >([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-
-  // Clear localStorage on component mount to avoid NaN issues
-  useEffect(() => {
-    localStorage.removeItem(STORAGE_KEY);
-  }, []);
-
-  // Save to localStorage whenever files change (only pending/processing files)
-  useEffect(() => {
-    const filesToSave = files.filter(f => f.status !== 'success');
-    if (filesToSave.length > 0) {
-      // Don't save File objects, just metadata
-      const metadata = filesToSave.map(f => ({
-        name: f.file?.name,
-        size: f.file?.size,
-        status: f.status,
-        docId: f.docId,
-        errorMsg: f.errorMsg,
-      }));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(metadata));
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [files]);
 
   // Detect mobile device
   useState(() => {
