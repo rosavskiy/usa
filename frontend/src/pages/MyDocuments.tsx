@@ -8,6 +8,7 @@ export default function MyDocuments() {
   const [filter, setFilter] = useState<"all" | "readable" | "unreadable">("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(0);
   const [deleteModal, setDeleteModal] = useState<{ show: boolean; docId: number | null }>({ show: false, docId: null });
   const [deleting, setDeleting] = useState(false);
   const [deleteAllModal, setDeleteAllModal] = useState(false);
@@ -23,6 +24,7 @@ export default function MyDocuments() {
       const response = await api.get(`/upload?page=${page}&limit=20${statusParam}`);
       setDocuments(response.data.data);
       setTotalPages(response.data.pagination.totalPages);
+      setTotalDocs(response.data.pagination.total);
     } catch (error) {
       console.error("Failed to load documents:", error);
     } finally {
@@ -47,13 +49,24 @@ export default function MyDocuments() {
   };
 
   const handleDeleteAll = async () => {
-    if (documents.length === 0) return;
-
     try {
       setDeleting(true);
-      // Delete all current page documents
-      await Promise.all(documents.map(doc => api.delete(`/upload/${doc.id}`)));
+      
+      // Get ALL documents with current filter (not just current page)
+      const statusParam = filter === "all" ? "" : `&status=${filter}`;
+      const response = await api.get(`/upload?page=1&limit=1000${statusParam}`);
+      const allDocs = response.data.data;
+      
+      if (allDocs.length === 0) {
+        setDeleteAllModal(false);
+        return;
+      }
+      
+      // Delete all documents
+      await Promise.all(allDocs.map((doc: any) => api.delete(`/upload/${doc.id}`)));
+      
       setDeleteAllModal(false);
+      setPage(1); // Reset to first page
       loadDocuments(); // Reload list
     } catch (error) {
       console.error("Failed to delete all documents:", error);
@@ -111,13 +124,13 @@ export default function MyDocuments() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
-        {documents.length > 0 && (
+        {totalDocs > 0 && (
           <button
             onClick={() => setDeleteAllModal(true)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
           >
             <Trash2 size={18} />
-            Delete All ({documents.length})
+            Delete All ({totalDocs})
           </button>
         )}
       </div>
@@ -271,10 +284,10 @@ export default function MyDocuments() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-bold text-red-600 mb-3">
-              ⚠️ Delete All {documents.length} Documents?
+              ⚠️ Delete All {totalDocs} Documents?
             </h3>
             <p className="text-gray-700 mb-6">
-              <strong>WARNING:</strong> This will permanently delete all {documents.length} documents shown on this page and their files. 
+              <strong>WARNING:</strong> This will permanently delete ALL {totalDocs} documents {filter !== 'all' && `(${filter})`} and their files. 
               <br/><br/>
               <strong>This action CANNOT be undone!</strong>
             </p>
