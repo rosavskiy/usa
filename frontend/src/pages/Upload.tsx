@@ -93,7 +93,6 @@ export default function Upload() {
 
   const uploadFiles = async () => {
     setUploading(true);
-    const uploadedDocIds: number[] = [];
 
     // Step 1: Upload files in parallel (not sequentially!)
     const filesToUpload = files
@@ -110,7 +109,6 @@ export default function Upload() {
         });
 
         const docId = response.data.data.id;
-        uploadedDocIds.push(docId);
 
         // Mark as processing (show spinner, not checkmark yet)
         setFiles((prev) =>
@@ -124,11 +122,12 @@ export default function Upload() {
         setFiles((prev) =>
           prev.map((f, idx) => (idx === index ? { ...f, status: "error" } : f))
         );
-        return { success: false, index };
+        return { success: false, docId: null, index };
       }
     });
 
-    await Promise.all(uploadPromises);
+    const results = await Promise.all(uploadPromises);
+    const uploadedDocIds = results.filter(r => r.success && r.docId).map(r => r.docId as number);
 
     setUploading(false);
 
