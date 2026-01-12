@@ -62,7 +62,10 @@ export default function Login() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    e.target.setCustomValidity('');
+                  }}
                   className="input-field pl-10"
                   placeholder="your@email.com"
                   required
@@ -82,7 +85,10 @@ export default function Login() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    e.target.setCustomValidity('');
+                  }}
                   className="input-field pl-10 pr-10"
                   placeholder="••••••••"
                   required

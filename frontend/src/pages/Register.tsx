@@ -50,6 +50,20 @@ export default function Register() {
     setError('');
     setFieldErrors({});
 
+    // Custom validation messages (English)
+    const form = e.target as HTMLFormElement;
+    const inputs = form.querySelectorAll('input[required], select[required]');
+    
+    inputs.forEach((input: any) => {
+      if (input.validity.valueMissing) {
+        input.setCustomValidity('Please fill in this field');
+      } else if (input.validity.typeMismatch) {
+        input.setCustomValidity('Please enter a valid value');
+      } else {
+        input.setCustomValidity('');
+      }
+    });
+
     // Validate all required fields
     const errors: {[key: string]: boolean} = {};
     if (!companyName.trim()) errors.companyName = true;
@@ -111,7 +125,10 @@ export default function Register() {
                 <input
                   type="text"
                   value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  onChange={(e) => {
+                    setCompanyName(e.target.value);
+                    e.target.setCustomValidity('');
+                  }}
                   className={`input-field pl-10 ${fieldErrors.companyName ? 'border-red-500 border-2' : ''}`}
                   placeholder="Your Company Inc."
                   required
@@ -125,7 +142,10 @@ export default function Register() {
               </label>
               <select
                 value={state}
-                onChange={(e) => setState(e.target.value)}
+                onChange={(e) => {
+                  setState(e.target.value);
+                  e.target.setCustomValidity('');
+                }}
                 className={`input-field ${fieldErrors.state ? 'border-red-500 border-2' : ''}`}
                 required
               >
@@ -150,7 +170,10 @@ export default function Register() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    e.target.setCustomValidity('');
+                  }}
                   className={`input-field pl-10 ${fieldErrors.email ? 'border-red-500 border-2' : ''}`}
                   placeholder="your@email.com"
                   required
@@ -167,7 +190,10 @@ export default function Register() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    e.target.setCustomValidity('');
+                  }}
                   className={`input-field pl-10 pr-10 ${fieldErrors.password ? 'border-red-500 border-2' : ''}`}
                   placeholder="••••••••"
                   required
