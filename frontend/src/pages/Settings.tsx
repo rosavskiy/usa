@@ -270,11 +270,11 @@ export default function Settings() {
               </select>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-4 border-t border-gray-200">
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="px-8 py-3 bg-green-600 text-white font-semibold text-lg rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-md"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
