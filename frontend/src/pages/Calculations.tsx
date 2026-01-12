@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   BarChart3,
   Calendar,
@@ -7,6 +7,7 @@ import {
   Trash2,
   FileDown,
   Edit,
+  Upload,
 } from "lucide-react";
 import api from "../api/axios";
 import { format } from "date-fns";
@@ -35,6 +36,13 @@ export default function Calculations() {
     period_end: "",
   });
   const [saving, setSaving] = useState(false);
+  const [replaceModal, setReplaceModal] = useState<{
+    show: boolean;
+    calcId: number | null;
+    docId: number | null;
+  }>({ show: false, calcId: null, docId: null });
+  const replaceFileInputRef = useRef<HTMLInputElement>(null);
+  const [replacing, setReplacing] = useState(false);
 
   useEffect(() => {
     loadCalculations();
@@ -300,6 +308,77 @@ export default function Calculations() {
     }
   };
 
+  const handleReplaceClick = (calc: any) => {
+    setReplaceModal({
+      show: true,
+      calcId: calc.id,
+      docId: calc.document?.id || null,
+    });
+  };
+
+  const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !replaceModal.docId) return;
+
+    setReplacing(true);
+
+    try {
+      // Step 1: Upload new file
+      const formData = new FormData();
+      formData.append("document", file);
+
+      const uploadResponse = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const newDocId = uploadResponse.data.data.id;
+
+      // Step 2: Wait for OCR processing
+      let processed = false;
+      const maxWait = 30000;
+      const interval = 2000;
+      let elapsed = 0;
+
+      while (!processed && elapsed < maxWait) {
+        await new Promise((resolve) => setTimeout(resolve, interval));
+        elapsed += interval;
+
+        const statusResponse = await api.get(`/upload/${newDocId}`);
+        if (
+          statusResponse.data.data.status === "completed" ||
+          statusResponse.data.data.status === "failed"
+        ) {
+          processed = true;
+        }
+      }
+
+      // Step 3: Replace document in calculation
+      await api.put(`/carbon/calculations/${replaceModal.calcId}/replace`, {
+        newDocumentId: newDocId,
+      });
+
+      // Step 4: Recalculate emissions
+      await api.post("/carbon/calculate", {
+        documentId: newDocId,
+      });
+
+      // Reload calculations
+      await loadCalculations();
+      setReplaceModal({ show: false, calcId: null, docId: null });
+      alert("✅ Bill replaced successfully!");
+    } catch (error: any) {
+      console.error("Failed to replace bill:", error);
+      alert(
+        error.response?.data?.message || "Failed to replace bill. Please try again."
+      );
+    } finally {
+      setReplacing(false);
+      if (replaceFileInputRef.current) {
+        replaceFileInputRef.current.value = "";
+      }
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-12">Loading calculations...</div>;
   }
@@ -440,7 +519,8 @@ export default function Calculations() {
 
                             <div className="flex-1">
                               {/* Warnings (Watermark + Date) */}
-                              {(calc.document?.parsed_data?.warning || calc.document?.parsed_data?.dateWarning) && (
+                              {(calc.document?.parsed_data?.warning ||
+                                calc.document?.parsed_data?.dateWarning) && (
                                 <div className="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
                                   <div className="flex items-start gap-2">
                                     <span className="text-yellow-600 text-xl">
@@ -448,10 +528,18 @@ export default function Calculations() {
                                     </span>
                                     <div className="text-sm text-yellow-800 space-y-1">
                                       {calc.document.parsed_data.warning && (
-                                        <p>{calc.document.parsed_data.warning}</p>
+                                        <p>
+                                          {calc.document.parsed_data.warning}
+                                        </p>
                                       )}
-                                      {calc.document.parsed_data.dateWarning && (
-                                        <p>{calc.document.parsed_data.dateWarning}</p>
+                                      {calc.document.parsed_data
+                                        .dateWarning && (
+                                        <p>
+                                          {
+                                            calc.document.parsed_data
+                                              .dateWarning
+                                          }
+                                        </p>
                                       )}
                                     </div>
                                   </div>
@@ -521,6 +609,15 @@ export default function Calculations() {
                             </div>
                             {/* Action Buttons */}
                             <div className="flex flex-col gap-2">
+                              {/* Replace Bill Button */}
+                              <button
+                                onClick={() => handleReplaceClick(calc)}
+                                className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                title="Replace with new bill"
+                              >
+                                <Upload size={20} />
+                              </button>
+
                               {/* Edit Button */}
                               <button
                                 onClick={() => handleEditClick(calc)}
@@ -736,6 +833,50 @@ export default function Calculations() {
                 className="flex-1 btn bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
               >
                 {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Replace Bill Modal */}
+      {replaceModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-3">
+              🔄 Replace Bill
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Upload a new bill file to replace the current one. The calculation
+              will be automatically recalculated.
+            </p>
+            <div className="mb-6">
+              <input
+                ref={replaceFileInputRef}
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={handleReplaceFile}
+                disabled={replacing}
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Supported formats: PNG, JPG, PDF (up to 10MB)
+              </p>
+            </div>
+            {replacing && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm">
+                ⏳ Processing new bill... This may take 10-30 seconds.
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() =>
+                  setReplaceModal({ show: false, calcId: null, docId: null })
+                }
+                disabled={replacing}
+                className="flex-1 btn bg-gray-200 hover:bg-gray-300 text-gray-800 disabled:opacity-50"
+              >
+                Cancel
               </button>
             </div>
           </div>
