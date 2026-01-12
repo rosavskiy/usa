@@ -23,6 +23,7 @@ interface AuthContextType {
     companyName: string
   ) => Promise<void>;
   logout: () => void;
+  setToken: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,8 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const setTokenAndLoadUser = async (token: string) => {
+    localStorage.setItem("token", token);
+    await loadUser();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, setToken: setTokenAndLoadUser }}>
       {children}
     </AuthContext.Provider>
   );
