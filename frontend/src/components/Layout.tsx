@@ -11,6 +11,7 @@ import {
   Settings,
 } from "lucide-react";
 import CookieConsent from "./CookieConsent";
+import ProfileCompleteModal from "./ProfileCompleteModal";
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -81,6 +82,9 @@ export default function Layout() {
         {/* Page Content */}
         <Outlet />
       </div>
+      
+      {/* Profile Complete Modal */}
+      <ProfileCompleteModal />
       
       {/* Cookie Consent - показывается только авторизованным */}
       <CookieConsent />

@@ -8,8 +8,8 @@ import { z } from "zod";
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  companyName: z.string().min(2),
-  state: z.string().length(2).optional(),
+  companyName: z.string().optional().default(''),
+  state: z.string().length(2).optional().default(''),
 });
 
 const loginSchema = z.object({
