@@ -118,19 +118,20 @@ export async function parseDocumentWithAI(
     console.log(`✨ OCR extracted text (${ocrText.length} chars):`);
     console.log(ocrText); // Print FULL text for debugging
 
-    // Check for watermarks
-    const hasWatermark = detectWatermark(ocrText);
-
     // Parse the text using regex patterns
     console.log(`🔍 Parsing extracted text...`);
     const parsedData = parseUtilityBillText(ocrText);
     console.log(`🎯 Parsed data:`, parsedData);
 
-    // Add watermark warning if detected
-    if (hasWatermark) {
+    // Check for watermarks ONLY if parsing failed or suspicious values
+    const hasWatermark = detectWatermark(ocrText);
+    const hasLowConfidence = parsedData.consumption && (parsedData.consumption.value === 0 || !parsedData.consumption.value);
+    
+    // Add watermark warning ONLY if it affects data quality
+    if (hasWatermark && hasLowConfidence) {
       parsedData.warning =
-        "Обнаружен водяной знак на документе - возможны неточности в распознавании цифр. Проверьте правильность данных.";
-      console.log(`⚠️ Watermark detected in document`);
+        "Watermark detected - numbers may be partially obscured. Please verify the extracted data is correct.";
+      console.log(`⚠️ Watermark detected and affecting readability`);
     }
 
     // Validate that we got meaningful data

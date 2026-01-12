@@ -45,56 +45,56 @@ export default function CookieConsent() {
         <div className="p-6 space-y-4">
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <p className="text-sm text-blue-900">
-              <strong>Carbon Tracker AI Assistant</strong> использует cookies и
-              обрабатывает персональные данные в соответствии с законами США,
-              включая CCPA (California), CPRA, и другими штатами.
+              <strong>Carbon Tracker AI Assistant</strong> uses cookies and
+              processes personal data in accordance with US privacy laws,
+              including CCPA (California), CPRA, and other state regulations.
             </p>
           </div>
 
           <div className="space-y-3 text-sm text-gray-700">
             <h3 className="font-bold text-gray-900 text-base">
-              Какие данные мы собираем:
+              What Data We Collect:
             </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Email адрес и название компании (для регистрации)</li>
-              <li>Загруженные счета и документы (для анализа)</li>
-              <li>Результаты расчетов выбросов CO₂</li>
-              <li>Cookies для аутентификации и функционирования сайта</li>
-              <li>IP адрес и данные браузера (логирование безопасности)</li>
+              <li>Email address and company name (for registration)</li>
+              <li>Uploaded bills and documents (for analysis)</li>
+              <li>CO₂ emission calculation results</li>
+              <li>Cookies for authentication and site functionality</li>
+              <li>IP address and browser data (security logging)</li>
             </ul>
 
             <h3 className="font-bold text-gray-900 text-base mt-4">
-              Как мы используем данные:
+              How We Use Data:
             </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Обработка счетов через AI (OpenAI API)</li>
-              <li>Расчет углеродного следа вашей компании</li>
-              <li>Генерация персонализированных рекомендаций</li>
-              <li>Улучшение работы сервиса</li>
+              <li>Process bills through AI (OpenAI API)</li>
+              <li>Calculate your company's carbon footprint</li>
+              <li>Generate personalized recommendations</li>
+              <li>Improve service functionality</li>
             </ul>
 
             <h3 className="font-bold text-gray-900 text-base mt-4">
-              Ваши права (CCPA/CPRA):
+              Your Rights (CCPA/CPRA):
             </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>
-                <strong>Право знать:</strong> какие данные мы собираем
+                <strong>Right to know:</strong> what data we collect
               </li>
               <li>
-                <strong>Право на удаление:</strong> запросить удаление ваших
-                данных
+                <strong>Right to delete:</strong> request deletion of your
+                data
               </li>
               <li>
-                <strong>Право отказаться:</strong> от продажи данных (мы НЕ
-                продаем данные)
+                <strong>Right to opt-out:</strong> of data sales (we do NOT
+                sell data)
               </li>
               <li>
-                <strong>Право на доступ:</strong> получить копию ваших данных
+                <strong>Right to access:</strong> get a copy of your data
               </li>
             </ul>
 
             <h3 className="font-bold text-gray-900 text-base mt-4">
-              Соответствие законам:
+              Legal Compliance:
             </h3>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>
@@ -120,20 +120,20 @@ export default function CookieConsent() {
 
             <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mt-4">
               <p className="text-sm text-green-900">
-                <strong>✓ ПРОФЕССИОНАЛЬНЫЕ СТАНДАРТЫ:</strong> Наши расчеты
-                соответствуют GHG Protocol, EPA Emission Factors, ISO 14064-1.
-                Подходят для официальной отчетности в CDP, SEC Climate
-                Disclosure, GRI Standards. AI парсинг с точностью 95%+ на
-                качественных документах.
+                <strong>✓ PROFESSIONAL STANDARDS:</strong> Our calculations
+                comply with GHG Protocol, EPA Emission Factors, ISO 14064-1.
+                Suitable for official reporting to CDP, SEC Climate
+                Disclosure, GRI Standards. AI parsing with 95%+ accuracy on
+                quality documents.
               </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded mt-4">
               <p className="text-xs text-gray-600">
-                Используя наш сервис, вы соглашаетесь с обработкой данных как
-                описано выше. Мы применяем шифрование, безопасное хранение и
-                регулярные аудиты безопасности. Данные не передаются третьим
-                лицам, кроме OpenAI для AI обработки (согласно их
+                By using our service, you agree to data processing as
+                described above. We implement encryption, secure storage, and
+                regular security audits. Data is not shared with third parties,
+                except OpenAI for AI processing (per their
                 <a
                   href="https://openai.com/privacy"
                   target="_blank"
@@ -145,7 +145,7 @@ export default function CookieConsent() {
                 ).
               </p>
               <p className="text-xs text-gray-600 mt-2">
-                Для вопросов о конфиденциальности:{" "}
+                For privacy questions:{" "}
                 <strong>privacy@carbontracker.ai</strong>
               </p>
             </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Layout from "../components/Layout";
 import api from "../api/axios";
 
 interface UserProfile {
@@ -83,17 +82,14 @@ export default function Settings() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-        </div>
-      </Layout>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
 
         {message && (
@@ -286,6 +282,5 @@ export default function Settings() {
           </form>
         </div>
       </div>
-    </Layout>
   );
 }

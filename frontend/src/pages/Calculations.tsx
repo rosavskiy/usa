@@ -939,8 +939,9 @@ export default function Calculations() {
               </p>
             </div>
             {replacing && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm">
-                ⏳ Processing new bill... This may take 10-30 seconds.
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm flex items-center gap-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                <span>⏳ Processing new bill... This may take 10-30 seconds.</span>
               </div>
             )}
             <div className="flex gap-3">

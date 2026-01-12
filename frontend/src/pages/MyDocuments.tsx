@@ -18,7 +18,6 @@ export default function MyDocuments() {
   );
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalDocs, setTotalDocs] = useState(0);
   const [deleteModal, setDeleteModal] = useState<{
     show: boolean;
     fileName: string | null;
@@ -38,7 +37,6 @@ export default function MyDocuments() {
       );
       setDocuments(response.data.data);
       setTotalPages(response.data.pagination.totalPages);
-      setTotalDocs(response.data.pagination.total);
     } catch (error) {
       console.error("Failed to load documents:", error);
     } finally {

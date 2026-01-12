@@ -60,8 +60,6 @@ export async function uploadToStorage(
 
   // Fallback to local storage
   console.log("💾 Using local storage (S3 not configured):", fileName);
-  const uploadDir = process.env.UPLOAD_DIR || "./uploads";
-  const localPath = path.join(uploadDir, fileName);
 
   return {
     location: `/uploads/${fileName}`,

@@ -35,10 +35,6 @@ export default function Upload() {
   >([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-  
-  // Manual category override
-  const [manualScope, setManualScope] = useState<string>("");
-  const [manualCategory, setManualCategory] = useState<string>("");
 
   // Load metadata on mount
   useEffect(() => {
@@ -198,8 +194,6 @@ export default function Upload() {
         try {
           const calcResponse = await api.post("/carbon/calculate", {
             documentId: docId,
-            manualScope: manualScope || undefined,
-            manualCategory: manualCategory || undefined,
           });
 
           // Get document data and calculation warnings
@@ -358,50 +352,6 @@ export default function Upload() {
               >
                 Clear All
               </button>
-            </div>
-
-            {/* Manual Category Override */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-              <h4 className="font-medium text-blue-900">
-                🎯 Override Category (Optional)
-              </h4>
-              <p className="text-sm text-blue-700">
-                By default, OCR detects category automatically. Override only if
-                needed:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Emission Scope
-                  </label>
-                  <select
-                    value={manualScope}
-                    onChange={(e) => setManualScope(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Auto-detect from OCR</option>
-                    <option value="scope1">Scope 1 (Direct)</option>
-                    <option value="scope2">Scope 2 (Electricity)</option>
-                    <option value="scope3">Scope 3 (Indirect)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category Type
-                  </label>
-                  <select
-                    value={manualCategory}
-                    onChange={(e) => setManualCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Auto-detect from OCR</option>
-                    <option value="electricity">Electricity</option>
-                    <option value="gas">Natural Gas</option>
-                    <option value="fuel">Fuel / Diesel</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              </div>
             </div>
 
             {files.map((f, index) => (

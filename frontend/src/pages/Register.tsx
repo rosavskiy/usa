@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Leaf, Mail, Lock, Building } from 'lucide-react';
+import { Leaf, Mail, Lock, Building, Eye, EyeOff } from 'lucide-react';
 
 const US_STATES = [
   { code: 'CA', name: 'California' },
@@ -40,15 +40,32 @@ export default function Register() {
   const [state, setState] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: boolean}>({});
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
+
+    // Validate all required fields
+    const errors: {[key: string]: boolean} = {};
+    if (!companyName.trim()) errors.companyName = true;
+    if (!state) errors.state = true;
+    if (!email.trim()) errors.email = true;
+    if (!password) errors.password = true;
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Please fill in all required fields');
+      return;
+    }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters');
+      setFieldErrors({ password: true });
       return;
     }
 
@@ -95,7 +112,7 @@ export default function Register() {
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  className="input-field pl-10"
+                  className={`input-field pl-10 ${fieldErrors.companyName ? 'border-red-500 border-2' : ''}`}
                   placeholder="Your Company Inc."
                   required
                 />
@@ -104,14 +121,15 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                State (for accurate electricity emissions)
+                State <span className="text-red-500">*</span>
               </label>
               <select
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                className="input-field"
+                className={`input-field ${fieldErrors.state ? 'border-red-500 border-2' : ''}`}
+                required
               >
-                <option value="">Select state (optional)</option>
+                <option value="">Select your state</option>
                 {US_STATES.map((s) => (
                   <option key={s.code} value={s.code}>
                     {s.name}
@@ -133,7 +151,7 @@ export default function Register() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-field pl-10"
+                  className={`input-field pl-10 ${fieldErrors.email ? 'border-red-500 border-2' : ''}`}
                   placeholder="your@email.com"
                   required
                 />
@@ -147,14 +165,21 @@ export default function Register() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pl-10"
+                  className={`input-field pl-10 pr-10 ${fieldErrors.password ? 'border-red-500 border-2' : ''}`}
                   placeholder="••••••••"
                   required
                   minLength={8}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
             </div>
