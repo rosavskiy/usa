@@ -472,42 +472,16 @@ export default function Calculations() {
         </div>
       )}
 
-      {/* Annual Report Section */}
+      {/* Download Instructions */}
       {calculations.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <h3 className="font-bold text-green-900 mb-2 flex items-center gap-2">
             <Download size={20} />
-            Annual Reports & Export
+            Download Individual Reports
           </h3>
-          <p className="text-sm text-blue-800 mb-3">
-            Download comprehensive annual carbon footprint reports with detailed
-            breakdowns, trends, and compliance statements.
+          <p className="text-sm text-green-800">
+            To download an official GHG Protocol report for any calculation, click the <span className="font-semibold text-green-600">green download button</span> (📄) next to that calculation.
           </p>
-          <div className="flex flex-wrap gap-2">
-            {Array.from(
-              new Set(
-                calculations.map((c) =>
-                  new Date(c.calculation_date).getFullYear()
-                )
-              )
-            )
-              .sort((a, b) => b - a)
-              .map((year) => (
-                <button
-                  key={year}
-                  onClick={() => handleDownloadAnnualReport(year)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                >
-                  Download {year} Report
-                </button>
-              ))}
-            <button
-              onClick={handleExportCSV}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-            >
-              Export CSV
-            </button>
-          </div>
         </div>
       )}
 
