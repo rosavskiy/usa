@@ -111,9 +111,6 @@ export async function calculateEmissions(
     })`
   );
 
-  // DATE VALIDATION
-  const billDate = new Date(parsedData.period?.start || parsedData.date);
-
   // Determine emission type and category
   let emissionType = options.manualScope || "scope3";
   let category = options.manualCategory || parsedData.type || "other";
@@ -171,14 +168,6 @@ export async function calculateEmissions(
   const n2oKg = co2e_kg * 0.01; // ~1% equivalent from N2O
   const totalCo2eKg = co2e_kg;
 
-  // Save date warning to document's parsed_data
-  if (dateWarning) {
-    const updatedParsedData = {
-      ...parsedData,
-      dateWarning: dateWarning,
-    };
-    await DocumentModel.updateParsedData(documentId, updatedParsedData);
-  }
 
   // Save calculation
   const calculation = await CarbonModel.create({
