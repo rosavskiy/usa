@@ -18,7 +18,6 @@ import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Layout from "./components/Layout";
-import CookieConsent from "./components/CookieConsent";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -38,7 +37,6 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <CookieConsent />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

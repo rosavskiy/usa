@@ -113,22 +113,6 @@ export async function calculateEmissions(
 
   // DATE VALIDATION
   const billDate = new Date(parsedData.period?.start || parsedData.date);
-  const currentYear = new Date().getFullYear();
-  const billYear = billDate.getFullYear();
-
-  let dateWarning = null;
-  if (billYear < currentYear - 5) {
-    dateWarning = `⚠️ Bill is from ${billYear} - very old data (${
-      currentYear - billYear
-    } years ago)`;
-    console.warn(dateWarning);
-  } else if (billYear > currentYear) {
-    dateWarning = `⚠️ Bill date is in the future (${billYear}) - check if OCR read correctly`;
-    console.warn(dateWarning);
-  } else if (billYear < currentYear - 1) {
-    dateWarning = `ℹ️ Bill is from previous year (${billYear}) - ensure it's assigned to correct reporting period`;
-    console.log(dateWarning);
-  }
 
   // Determine emission type and category
   let emissionType = options.manualScope || "scope3";
@@ -222,7 +206,6 @@ export async function calculateEmissions(
       totalCo2eKg,
     },
     period: parsedData.period,
-    dateWarning: dateWarning, // Include date validation warning
     calculationDetails: {
       method: "EPA/eGRID 2023",
       factor_value: factorUsed,

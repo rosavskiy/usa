@@ -196,15 +196,9 @@ export default function Upload() {
             documentId: docId,
           });
 
-          // Get document data and calculation warnings
+          // Get document data and OCR warnings
           const docResponse = await api.get(`/upload/${docId}`);
           const ocrWarning = docResponse.data.data?.parsed_data?.warning;
-          const dateWarning = calcResponse.data.data?.dateWarning;
-
-          // Combine warnings
-          const warnings = [ocrWarning, dateWarning].filter(Boolean);
-          const combinedWarning =
-            warnings.length > 0 ? warnings.join(" | ") : undefined;
 
           successCount++;
 

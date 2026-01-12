@@ -593,29 +593,15 @@ export default function Calculations() {
                             />
 
                             <div className="flex-1">
-                              {/* Warnings (Watermark + Date) */}
-                              {(calc.document?.parsed_data?.warning ||
-                                calc.document?.parsed_data?.dateWarning) && (
+                              {/* OCR Warnings */}
+                              {calc.document?.parsed_data?.warning && (
                                 <div className="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
                                   <div className="flex items-start gap-2">
                                     <span className="text-yellow-600 text-xl">
                                       ⚠️
                                     </span>
-                                    <div className="text-sm text-yellow-800 space-y-1">
-                                      {calc.document.parsed_data.warning && (
-                                        <p>
-                                          {calc.document.parsed_data.warning}
-                                        </p>
-                                      )}
-                                      {calc.document.parsed_data
-                                        .dateWarning && (
-                                        <p>
-                                          {
-                                            calc.document.parsed_data
-                                              .dateWarning
-                                          }
-                                        </p>
-                                      )}
+                                    <div className="text-sm text-yellow-800">
+                                      <p>{calc.document.parsed_data.warning}</p>
                                     </div>
                                   </div>
                                 </div>

@@ -121,7 +121,7 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                State <span className="text-red-500">*</span>
+                State
               </label>
               <select
                 value={state}

@@ -10,6 +10,7 @@ import {
   FolderOpen,
   Settings,
 } from "lucide-react";
+import CookieConsent from "./CookieConsent";
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -80,6 +81,9 @@ export default function Layout() {
         {/* Page Content */}
         <Outlet />
       </div>
+      
+      {/* Cookie Consent - показывается только авторизованным */}
+      <CookieConsent />
     </div>
   );
 }
