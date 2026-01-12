@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
+import passport from "./config/passport";
 import authRoutes from "./routes/auth.routes";
 import uploadRoutes from "./routes/upload.routes";
 import carbonRoutes from "./routes/carbon.routes";
@@ -28,6 +29,9 @@ app.use(
     credentials: true,
   })
 );
+
+// Initialize passport
+app.use(passport.initialize());
 
 // Rate limiting
 const limiter = rateLimit({

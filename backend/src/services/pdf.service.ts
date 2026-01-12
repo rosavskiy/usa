@@ -94,8 +94,12 @@ export async function generateCarbonReport(
     .text("Prepared by: CarbonEasy.ai (AI-powered tool)", { align: "center" });
 
   doc.moveDown(1);
-  doc.fontSize(10).fillColor('#2C5F2D')
-     .text("Calculated in accordance with GHG Protocol Corporate Standard", { align: 'center' });
+  doc
+    .fontSize(10)
+    .fillColor("#2C5F2D")
+    .text("Calculated in accordance with GHG Protocol Corporate Standard", {
+      align: "center",
+    });
 
   doc.moveDown(7);
   doc.fontSize(10).fillColor("#999").text("Version 1.0", { align: "center" });
@@ -110,24 +114,36 @@ export async function generateCarbonReport(
 
   doc.moveDown(1);
 
-  doc.fontSize(12).font('Helvetica').fillColor('#000')
-     .text('This report covers the following organizational scope:', { align: 'justify' });
+  doc
+    .fontSize(12)
+    .font("Helvetica")
+    .fillColor("#000")
+    .text("This report covers the following organizational scope:", {
+      align: "justify",
+    });
 
   doc.moveDown(0.5);
 
   // Location/Region coverage
-  const location = parsedData?.state || 'United States';
-  const provider = parsedData?.provider || 'Not specified';
+  const location = parsedData?.state || "United States";
+  const provider = parsedData?.provider || "Not specified";
 
-  doc.fontSize(11).fillColor('#000')
-     .text(`Location: ${location}`, { indent: 20 })
-     .text(`Service Provider: ${provider}`, { indent: 20 })
-     .text(`Report Period: ${periodStart} - ${periodEnd}`, { indent: 20 });
+  doc
+    .fontSize(11)
+    .fillColor("#000")
+    .text(`Location: ${location}`, { indent: 20 })
+    .text(`Service Provider: ${provider}`, { indent: 20 })
+    .text(`Report Period: ${periodStart} - ${periodEnd}`, { indent: 20 });
 
   doc.moveDown(1);
 
-  doc.fontSize(10).fillColor('#666')
-     .text('Note: This report represents emissions from utility consumption at the specified location during the reporting period. Organizational boundaries are defined in accordance with the GHG Protocol Corporate Accounting and Reporting Standard.', { align: 'justify' });
+  doc
+    .fontSize(10)
+    .fillColor("#666")
+    .text(
+      "Note: This report represents emissions from utility consumption at the specified location during the reporting period. Organizational boundaries are defined in accordance with the GHG Protocol Corporate Accounting and Reporting Standard.",
+      { align: "justify" }
+    );
 
   // ==================== PAGE 3: EXECUTIVE SUMMARY ====================
   doc.addPage();
@@ -219,16 +235,27 @@ export async function generateCarbonReport(
     const changePercent = ((change / previousTotal) * 100).toFixed(1);
     const isReduction = change < 0;
 
-    doc.font("Helvetica").fillColor("#000")
-       .text(`Previous: ${previousTotal.toFixed(2)} kg CO2e`, { indent: 20 })
-       .text(`Current: ${currentTotal.toFixed(2)} kg CO2e`, { indent: 20 });
+    doc
+      .font("Helvetica")
+      .fillColor("#000")
+      .text(`Previous: ${previousTotal.toFixed(2)} kg CO2e`, { indent: 20 })
+      .text(`Current: ${currentTotal.toFixed(2)} kg CO2e`, { indent: 20 });
 
-    doc.fillColor(isReduction ? '#16a34a' : '#dc2626')
-       .text(`Change: ${isReduction ? '' : '+'}${change.toFixed(2)} kg CO2e (${isReduction ? '' : '+'}${changePercent}%)`, { indent: 20 });
+    doc
+      .fillColor(isReduction ? "#16a34a" : "#dc2626")
+      .text(
+        `Change: ${isReduction ? "" : "+"}${change.toFixed(2)} kg CO2e (${
+          isReduction ? "" : "+"
+        }${changePercent}%)`,
+        { indent: 20 }
+      );
 
     if (isReduction) {
-      doc.fillColor('#16a34a')
-         .text(`✓ Emissions reduced by ${Math.abs(change).toFixed(2)} kg CO2e`, { indent: 20 });
+      doc
+        .fillColor("#16a34a")
+        .text(`✓ Emissions reduced by ${Math.abs(change).toFixed(2)} kg CO2e`, {
+          indent: 20,
+        });
     }
   }
 
@@ -242,79 +269,131 @@ export async function generateCarbonReport(
 
   doc.moveDown(1);
 
-  doc.fontSize(11).font('Helvetica').fillColor('#666')
-     .text('All calculations performed in accordance with GHG Protocol Corporate Standard.', { align: 'justify' });
+  doc
+    .fontSize(11)
+    .font("Helvetica")
+    .fillColor("#666")
+    .text(
+      "All calculations performed in accordance with GHG Protocol Corporate Standard.",
+      { align: "justify" }
+    );
 
   doc.moveDown(1);
 
   // TRANSPARENCY: Show detailed formula
-  doc.fontSize(14).font('Helvetica-Bold').fillColor('#000')
-     .text('Calculation Formula:', { underline: true });
+  doc
+    .fontSize(14)
+    .font("Helvetica-Bold")
+    .fillColor("#000")
+    .text("Calculation Formula:", { underline: true });
 
   doc.moveDown(0.5);
 
   // Calculation details with exact coefficients
-  doc.fillColor('#000').font('Helvetica').fontSize(11);
-  
-  if (calculation.category === 'electricity') {
+  doc.fillColor("#000").font("Helvetica").fontSize(11);
+
+  if (calculation.category === "electricity") {
     const consumption = parsedData?.consumption?.value || 0;
     const factor = calculation.total_co2e_kg / consumption;
-    const region = parsedData?.state || 'US';
-    
-    doc.text('Step 1: Consumption Data', { indent: 20, underline: true });
-    doc.text(`   Electricity consumed: ${consumption.toLocaleString()} kWh`, { indent: 20 });
-    
+    const region = parsedData?.state || "US";
+
+    doc.text("Step 1: Consumption Data", { indent: 20, underline: true });
+    doc.text(`   Electricity consumed: ${consumption.toLocaleString()} kWh`, {
+      indent: 20,
+    });
+
     doc.moveDown(0.5);
-    doc.text('Step 2: Emission Factor', { indent: 20, underline: true });
+    doc.text("Step 2: Emission Factor", { indent: 20, underline: true });
     doc.text(`   Region: ${region}`, { indent: 20 });
-    doc.text(`   EPA eGRID 2023 factor: ${factor.toFixed(4)} kg CO2e/kWh`, { indent: 20 });
-    
+    doc.text(`   EPA eGRID 2023 factor: ${factor.toFixed(4)} kg CO2e/kWh`, {
+      indent: 20,
+    });
+
     doc.moveDown(0.5);
-    doc.text('Step 3: Calculation', { indent: 20, underline: true });
-    doc.fillColor('#2C5F2D').font('Helvetica-Bold');
-    doc.text(`   ${consumption.toLocaleString()} kWh × ${factor.toFixed(4)} = ${totalCO2e} kg CO2e`, { indent: 20 });
-    
-  } else if (calculation.category === 'gas') {
+    doc.text("Step 3: Calculation", { indent: 20, underline: true });
+    doc.fillColor("#2C5F2D").font("Helvetica-Bold");
+    doc.text(
+      `   ${consumption.toLocaleString()} kWh × ${factor.toFixed(
+        4
+      )} = ${totalCO2e} kg CO2e`,
+      { indent: 20 }
+    );
+  } else if (calculation.category === "gas") {
     const consumption = parsedData?.consumption?.value || 0;
-    const unit = parsedData?.consumption?.unit || 'therms';
+    const unit = parsedData?.consumption?.unit || "therms";
     const factor = calculation.total_co2e_kg / consumption;
-    
-    doc.text('Step 1: Consumption Data', { indent: 20, underline: true });
-    doc.text(`   Natural gas consumed: ${consumption.toLocaleString()} ${unit}`, { indent: 20 });
-    
+
+    doc.text("Step 1: Consumption Data", { indent: 20, underline: true });
+    doc.text(
+      `   Natural gas consumed: ${consumption.toLocaleString()} ${unit}`,
+      { indent: 20 }
+    );
+
     doc.moveDown(0.5);
-    doc.text('Step 2: Emission Factor', { indent: 20, underline: true });
-    doc.text(`   EPA emission factor: ${factor.toFixed(4)} kg CO2e/${unit}`, { indent: 20 });
-    
+    doc.text("Step 2: Emission Factor", { indent: 20, underline: true });
+    doc.text(`   EPA emission factor: ${factor.toFixed(4)} kg CO2e/${unit}`, {
+      indent: 20,
+    });
+
     doc.moveDown(0.5);
-    doc.text('Step 3: Calculation', { indent: 20, underline: true });
-    doc.fillColor('#2C5F2D').font('Helvetica-Bold');
-    doc.text(`   ${consumption.toLocaleString()} ${unit} × ${factor.toFixed(4)} = ${totalCO2e} kg CO2e`, { indent: 20 });
-    
-  } else if (calculation.category === 'fuel') {
+    doc.text("Step 3: Calculation", { indent: 20, underline: true });
+    doc.fillColor("#2C5F2D").font("Helvetica-Bold");
+    doc.text(
+      `   ${consumption.toLocaleString()} ${unit} × ${factor.toFixed(
+        4
+      )} = ${totalCO2e} kg CO2e`,
+      { indent: 20 }
+    );
+  } else if (calculation.category === "fuel") {
     const consumption = parsedData?.consumption?.value || 0;
-    const unit = parsedData?.consumption?.unit || 'gallons';
+    const unit = parsedData?.consumption?.unit || "gallons";
     const factor = calculation.total_co2e_kg / consumption;
-    
-    doc.text('Step 1: Consumption Data', { indent: 20, underline: true });
-    doc.text(`   Fuel consumed: ${consumption.toLocaleString()} ${unit}`, { indent: 20 });
-    
+
+    doc.text("Step 1: Consumption Data", { indent: 20, underline: true });
+    doc.text(`   Fuel consumed: ${consumption.toLocaleString()} ${unit}`, {
+      indent: 20,
+    });
+
     doc.moveDown(0.5);
-    doc.text('Step 2: Emission Factor', { indent: 20, underline: true });
-    doc.text(`   EPA emission factor: ${factor.toFixed(4)} kg CO2e/${unit}`, { indent: 20 });
-    
+    doc.text("Step 2: Emission Factor", { indent: 20, underline: true });
+    doc.text(`   EPA emission factor: ${factor.toFixed(4)} kg CO2e/${unit}`, {
+      indent: 20,
+    });
+
     doc.moveDown(0.5);
-    doc.text('Step 3: Calculation', { indent: 20, underline: true });
-    doc.fillColor('#2C5F2D').font('Helvetica-Bold');
-    doc.text(`   ${consumption.toLocaleString()} ${unit} × ${factor.toFixed(4)} = ${totalCO2e} kg CO2e`, { indent: 20 });
+    doc.text("Step 3: Calculation", { indent: 20, underline: true });
+    doc.fillColor("#2C5F2D").font("Helvetica-Bold");
+    doc.text(
+      `   ${consumption.toLocaleString()} ${unit} × ${factor.toFixed(
+        4
+      )} = ${totalCO2e} kg CO2e`,
+      { indent: 20 }
+    );
   }
 
   doc.moveDown(1);
-  doc.fillColor('#000').font('Helvetica').fontSize(11);
-  doc.text('Step 4: GHG Components', { indent: 20, underline: true });
-  doc.text(`   CO2: ${co2} kg (${((Number(co2) / Number(totalCO2e)) * 100).toFixed(1)}%)`, { indent: 20 });
-  doc.text(`   CH4 (CO2 equivalent): ${ch4} kg (${((Number(ch4) / Number(totalCO2e)) * 100).toFixed(1)}%)`, { indent: 20 });
-  doc.text(`   N2O (CO2 equivalent): ${n2o} kg (${((Number(n2o) / Number(totalCO2e)) * 100).toFixed(1)}%)`, { indent: 20 });
+  doc.fillColor("#000").font("Helvetica").fontSize(11);
+  doc.text("Step 4: GHG Components", { indent: 20, underline: true });
+  doc.text(
+    `   CO2: ${co2} kg (${((Number(co2) / Number(totalCO2e)) * 100).toFixed(
+      1
+    )}%)`,
+    { indent: 20 }
+  );
+  doc.text(
+    `   CH4 (CO2 equivalent): ${ch4} kg (${(
+      (Number(ch4) / Number(totalCO2e)) *
+      100
+    ).toFixed(1)}%)`,
+    { indent: 20 }
+  );
+  doc.text(
+    `   N2O (CO2 equivalent): ${n2o} kg (${(
+      (Number(n2o) / Number(totalCO2e)) *
+      100
+    ).toFixed(1)}%)`,
+    { indent: 20 }
+  );
 
   // ==================== PAGE 5: SCOPE BREAKDOWN ====================
   doc.addPage();
@@ -341,26 +420,40 @@ export async function generateCarbonReport(
 
   doc.moveDown(1);
 
-  doc.fillColor('#2C5F2D').font('Helvetica-Bold').fontSize(12)
-     .text('GHG Protocol Classification:');
+  doc
+    .fillColor("#2C5F2D")
+    .font("Helvetica-Bold")
+    .fontSize(12)
+    .text("GHG Protocol Classification:");
 
   doc.moveDown(0.5);
-  doc.fillColor("#000").font('Helvetica').fontSize(11);
+  doc.fillColor("#000").font("Helvetica").fontSize(11);
 
   if (calculation.category === "electricity") {
-    doc.text(`Category: Purchased Electricity (Scope 2)`, { indent: 20 })
-       .text(`Source: ${parsedData?.provider || 'Utility Provider'}`, { indent: 20 })
-       .text(`Region: ${parsedData?.state || 'US'}`, { indent: 20 })
-       .text(`Reporting Standard: GHG Protocol Scope 2 Guidance`, { indent: 20 });
+    doc
+      .text(`Category: Purchased Electricity (Scope 2)`, { indent: 20 })
+      .text(`Source: ${parsedData?.provider || "Utility Provider"}`, {
+        indent: 20,
+      })
+      .text(`Region: ${parsedData?.state || "US"}`, { indent: 20 })
+      .text(`Reporting Standard: GHG Protocol Scope 2 Guidance`, {
+        indent: 20,
+      });
   } else if (calculation.category === "gas") {
-    doc.text(`Category: Stationary Combustion (Scope 1)`, { indent: 20 })
-       .text(`Fuel Type: Natural Gas`, { indent: 20 })
-       .text(`Source: ${parsedData?.provider || 'Gas Utility'}`, { indent: 20 })
-       .text(`Reporting Standard: GHG Protocol Corporate Standard`, { indent: 20 });
+    doc
+      .text(`Category: Stationary Combustion (Scope 1)`, { indent: 20 })
+      .text(`Fuel Type: Natural Gas`, { indent: 20 })
+      .text(`Source: ${parsedData?.provider || "Gas Utility"}`, { indent: 20 })
+      .text(`Reporting Standard: GHG Protocol Corporate Standard`, {
+        indent: 20,
+      });
   } else if (calculation.category === "fuel") {
-    doc.text(`Category: Mobile Combustion (Scope 1)`, { indent: 20 })
-       .text(`Fuel Type: Gasoline/Diesel`, { indent: 20 })
-       .text(`Reporting Standard: GHG Protocol Corporate Standard`, { indent: 20 });
+    doc
+      .text(`Category: Mobile Combustion (Scope 1)`, { indent: 20 })
+      .text(`Fuel Type: Gasoline/Diesel`, { indent: 20 })
+      .text(`Reporting Standard: GHG Protocol Corporate Standard`, {
+        indent: 20,
+      });
   }
 
   doc.moveDown(1);
@@ -459,15 +552,18 @@ export async function generateCarbonReport(
   doc.fillColor("#666").text("Version: 1.0");
 
   doc.moveDown(1);
-  doc.fillColor('#2C5F2D').font('Helvetica-Bold')
-     .text('Compliance Statement:');
+  doc.fillColor("#2C5F2D").font("Helvetica-Bold").text("Compliance Statement:");
 
   doc.moveDown(0.5);
-  doc.fillColor('#000').font('Helvetica')
-     .text('This report has been calculated in accordance with:', { indent: 20 })
-     .text('- GHG Protocol Corporate Accounting and Reporting Standard', { indent: 30 })
-     .text('- EPA eGRID 2023 emission factors', { indent: 30 })
-     .text('- ISO 14064-1:2018 guidelines', { indent: 30 });
+  doc
+    .fillColor("#000")
+    .font("Helvetica")
+    .text("This report has been calculated in accordance with:", { indent: 20 })
+    .text("- GHG Protocol Corporate Accounting and Reporting Standard", {
+      indent: 30,
+    })
+    .text("- EPA eGRID 2023 emission factors", { indent: 30 })
+    .text("- ISO 14064-1:2018 guidelines", { indent: 30 });
 
   doc.moveDown(2);
   doc

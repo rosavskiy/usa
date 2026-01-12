@@ -51,7 +51,8 @@ export async function generateAnnualReport(
   const byCategory: { [key: string]: number } = {};
   calculations.forEach((calc) => {
     const category = calc.category || "Unknown";
-    byCategory[category] = (byCategory[category] || 0) + Number(calc.total_co2e_kg);
+    byCategory[category] =
+      (byCategory[category] || 0) + Number(calc.total_co2e_kg);
   });
 
   // Group by month
@@ -72,10 +73,7 @@ export async function generateAnnualReport(
     .font("Helvetica-Bold")
     .text("Annual Carbon Footprint Report", { align: "center" });
   doc.moveDown(1);
-  doc
-    .fontSize(24)
-    .font("Helvetica")
-    .text(`Year ${year}`, { align: "center" });
+  doc.fontSize(24).font("Helvetica").text(`Year ${year}`, { align: "center" });
   doc.moveDown(2);
   doc
     .fontSize(14)
@@ -140,18 +138,14 @@ export async function generateAnnualReport(
   rows.forEach((row, index) => {
     // Alternate row colors
     if (index % 2 === 0) {
-      doc
-        .rect(col1X, currentY - 3, 495, 20)
-        .fillAndStroke("#f3f4f6", "#000");
+      doc.rect(col1X, currentY - 3, 495, 20).fillAndStroke("#f3f4f6", "#000");
     }
 
     doc
       .fillColor("#000")
       .font("Helvetica-Bold")
       .text(row[0], col1X + 5, currentY, { width: 280 });
-    doc
-      .font("Helvetica")
-      .text(row[1], col2X + 5, currentY, { width: 180 });
+    doc.font("Helvetica").text(row[1], col2X + 5, currentY, { width: 180 });
 
     currentY += 20;
   });
@@ -170,10 +164,11 @@ export async function generateAnnualReport(
     { name: "Scope 1", value: scope1Total, color: "#ef4444" },
     { name: "Scope 2", value: scope2Total, color: "#f59e0b" },
     { name: "Scope 3", value: scope3Total, color: "#3b82f6" },
-  ].filter(s => s.value > 0);
+  ].filter((s) => s.value > 0);
 
   scopeData.forEach((scope) => {
-    const percentage = totalEmissions > 0 ? (scope.value / totalEmissions) * 100 : 0;
+    const percentage =
+      totalEmissions > 0 ? (scope.value / totalEmissions) * 100 : 0;
 
     doc.fontSize(12).font("Helvetica-Bold").text(scope.name);
     doc.moveDown(0.3);
@@ -211,7 +206,9 @@ export async function generateAnnualReport(
     doc
       .fontSize(11)
       .font("Helvetica-Bold")
-      .text(`${category}: ${value.toFixed(2)} kg CO₂e (${percentage.toFixed(1)}%)`);
+      .text(
+        `${category}: ${value.toFixed(2)} kg CO₂e (${percentage.toFixed(1)}%)`
+      );
     doc.moveDown(0.5);
   });
 
@@ -263,10 +260,14 @@ export async function generateAnnualReport(
     doc
       .font("Helvetica-Bold")
       .text(`${index + 1}. ${calc.category} (${calc.emission_type})`);
-    doc.font("Helvetica").text(`Date: ${new Date(calc.calculation_date).toLocaleDateString()}`);
+    doc
+      .font("Helvetica")
+      .text(`Date: ${new Date(calc.calculation_date).toLocaleDateString()}`);
     doc.text(`Total CO₂e: ${Number(calc.total_co2e_kg).toFixed(2)} kg`);
     doc.text(
-      `Breakdown: CO₂=${Number(calc.co2_kg).toFixed(2)} kg, CH₄=${Number(calc.ch4_kg).toFixed(3)} kg, N₂O=${Number(calc.n2o_kg).toFixed(3)} kg`
+      `Breakdown: CO₂=${Number(calc.co2_kg).toFixed(2)} kg, CH₄=${Number(
+        calc.ch4_kg
+      ).toFixed(3)} kg, N₂O=${Number(calc.n2o_kg).toFixed(3)} kg`
     );
     doc.moveDown(0.5);
   });

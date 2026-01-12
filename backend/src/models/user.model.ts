@@ -10,6 +10,7 @@ export interface User {
   industry?: string | null;
   currency?: string | null;
   unit_system?: string | null;
+  google_id?: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -110,6 +111,27 @@ export class UserModel {
     await query(
       "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2",
       [hashedPassword, userId]
+    );
+  }
+
+  static async createFromGoogle(data: {
+    email: string;
+    name: string;
+    googleId: string;
+  }): Promise<User> {
+    const result = await query(
+      `INSERT INTO users (email, password_hash, company_name, google_id) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING id, email, company_name, google_id, created_at, updated_at`,
+      [data.email, "", data.name, data.googleId]
+    );
+    return result.rows[0];
+  }
+
+  static async updateGoogleId(userId: number, googleId: string): Promise<void> {
+    await query(
+      "UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2",
+      [googleId, userId]
     );
   }
 }

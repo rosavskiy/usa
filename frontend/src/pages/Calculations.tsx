@@ -14,6 +14,7 @@ import { format } from "date-fns";
 
 export default function Calculations() {
   const [calculations, setCalculations] = useState<any[]>([]);
+  const [allCalculations, setAllCalculations] = useState<any[]>([]); // Store all for filtering
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"month" | "quarter" | "year" | "all">(
@@ -43,6 +44,7 @@ export default function Calculations() {
   }>({ show: false, calcId: null, docId: null });
   const replaceFileInputRef = useRef<HTMLInputElement>(null);
   const [replacing, setReplacing] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<number | "all">("all"); // Archive filter
 
   useEffect(() => {
     loadCalculations();
@@ -51,15 +53,31 @@ export default function Calculations() {
   const loadCalculations = async () => {
     try {
       const response = await api.get("/carbon/calculations");
-      setCalculations(response.data.data);
-      // Select all by default
-      setSelectedIds(response.data.data.map((c: any) => c.id));
+      const data = response.data.data;
+      setAllCalculations(data); // Store all
+      setCalculations(data); // Initially show all
+      setSelectedIds(data.map((c: any) => c.id));
     } catch (error) {
       console.error("Failed to load calculations:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Filter by year when selectedYear changes
+  useEffect(() => {
+    if (selectedYear === "all") {
+      setCalculations(allCalculations);
+      setSelectedIds(allCalculations.map((c) => c.id));
+    } else {
+      const filtered = allCalculations.filter((c) => {
+        const year = new Date(c.calculation_date).getFullYear();
+        return year === selectedYear;
+      });
+      setCalculations(filtered);
+      setSelectedIds(filtered.map((c) => c.id));
+    }
+  }, [selectedYear, allCalculations]);
 
   const getScopeColor = (scope: string) => {
     switch (scope) {
@@ -392,10 +410,67 @@ export default function Calculations() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <BarChart3 size={20} />
-            <span>{calculations.length} total calculations</span>
+            <span>{calculations.length} calculations</span>
+            {selectedYear !== "all" && (
+              <span className="text-blue-600 font-medium">
+                (Year {selectedYear})
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Archive Filter */}
+      {allCalculations.length > 0 && (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <h3 className="font-bold text-purple-900 mb-3 flex items-center gap-2">
+            <Calendar size={20} />
+            📂 Archive - Filter by Fiscal Year
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedYear("all")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                selectedYear === "all"
+                  ? "bg-purple-600 text-white"
+                  : "bg-white text-purple-600 hover:bg-purple-100"
+              }`}
+            >
+              All Years ({allCalculations.length})
+            </button>
+            {Array.from(
+              new Set(
+                allCalculations.map((c) =>
+                  new Date(c.calculation_date).getFullYear()
+                )
+              )
+            )
+              .sort((a, b) => b - a)
+              .map((year) => {
+                const count = allCalculations.filter(
+                  (c) => new Date(c.calculation_date).getFullYear() === year
+                ).length;
+                return (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      selectedYear === year
+                        ? "bg-purple-600 text-white"
+                        : "bg-white text-purple-600 hover:bg-purple-100"
+                    }`}
+                  >
+                    {year} ({count})
+                  </button>
+                );
+              })}
+          </div>
+          <p className="text-xs text-purple-700 mt-3">
+            💡 Use this to review past fiscal years for compliance audits and
+            historical trend analysis
+          </p>
+        </div>
+      )}
 
       {/* Annual Report Section */}
       {calculations.length > 0 && (

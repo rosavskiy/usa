@@ -27,9 +27,8 @@ export async function generateRecommendations(
   }, {} as Record<string, number>);
 
   const categoryValues: number[] = Object.values(categoryTotals);
-  const totalEmissions: number = categoryValues.length > 0 
-    ? categoryValues.reduce((a, b) => a + b, 0)
-    : 0;
+  const totalEmissions: number =
+    categoryValues.length > 0 ? categoryValues.reduce((a, b) => a + b, 0) : 0;
 
   // Try to generate AI recommendations
   try {

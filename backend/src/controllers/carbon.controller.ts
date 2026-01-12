@@ -11,9 +11,12 @@ import { asyncHandler, AppError } from "../middleware/error.middleware";
 export const calculateCarbon = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
-    const { documentId } = req.body;
+    const { documentId, manualScope, manualCategory } = req.body;
 
-    const calculation = await calculateEmissions(userId, documentId);
+    const calculation = await calculateEmissions(userId, documentId, {
+      manualScope,
+      manualCategory,
+    });
 
     res.json({
       success: true,
@@ -91,6 +94,34 @@ export const deleteCalculation = asyncHandler(
     res.json({
       success: true,
       message: "Calculation deleted successfully",
+    });
+  }
+);
+
+export const replaceDocument = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const calculationId = parseInt(req.params.id);
+    const { newDocumentId } = req.body;
+
+    // Verify calculation ownership
+    const calculation = await CarbonModel.findById(calculationId);
+
+    if (!calculation) {
+      throw new AppError("Calculation not found", 404);
+    }
+
+    if (calculation.user_id !== userId) {
+      throw new AppError("Unauthorized", 403);
+    }
+
+    // Update calculation with new document ID
+    await CarbonModel.updateDocument(calculationId, newDocumentId);
+    console.log(`🔄 Replaced document for calculation ${calculationId} with doc ${newDocumentId}`);
+
+    res.json({
+      success: true,
+      message: "Document replaced successfully",
     });
   }
 );

@@ -53,7 +53,16 @@ const EMISSION_FACTORS = {
   },
 };
 
-export async function calculateEmissions(userId: number, documentId: number) {
+interface CalculationOptions {
+  manualScope?: string;
+  manualCategory?: string;
+}
+
+export async function calculateEmissions(
+  userId: number,
+  documentId: number,
+  options: CalculationOptions = {}
+) {
   console.log(`📊 Calculate emissions: userId=${userId}, docId=${documentId}`);
 
   // Get document
@@ -95,17 +104,23 @@ export async function calculateEmissions(userId: number, documentId: number) {
   // PRIORITY: Get state from user profile FIRST (company location)
   const user = await UserModel.findById(userId);
   let userState = user?.state || parsedData.state || null;
-  
-  console.log(`🌎 Using state: ${userState} (from ${user?.state ? 'company profile' : 'OCR'})`);
+
+  console.log(
+    `🌎 Using state: ${userState} (from ${
+      user?.state ? "company profile" : "OCR"
+    })`
+  );
 
   // DATE VALIDATION
   const billDate = new Date(parsedData.period?.start || parsedData.date);
   const currentYear = new Date().getFullYear();
   const billYear = billDate.getFullYear();
-  
+
   let dateWarning = null;
   if (billYear < currentYear - 5) {
-    dateWarning = `⚠️ Bill is from ${billYear} - very old data (${currentYear - billYear} years ago)`;
+    dateWarning = `⚠️ Bill is from ${billYear} - very old data (${
+      currentYear - billYear
+    } years ago)`;
     console.warn(dateWarning);
   } else if (billYear > currentYear) {
     dateWarning = `⚠️ Bill date is in the future (${billYear}) - check if OCR read correctly`;
@@ -116,15 +131,19 @@ export async function calculateEmissions(userId: number, documentId: number) {
   }
 
   // Determine emission type and category
-  let emissionType = "scope3";
-  let category = parsedData.type || "other";
+  let emissionType = options.manualScope || "scope3";
+  let category = options.manualCategory || parsedData.type || "other";
 
-  // Map categories to emission types
-  if (parsedData.type === "electricity") {
-    emissionType = "scope2";
-  } else if (parsedData.type === "gas" || parsedData.type === "fuel") {
-    emissionType = "scope1";
+  // Map categories to emission types (if manual override not provided)
+  if (!options.manualScope) {
+    if (category === "electricity") {
+      emissionType = "scope2";
+    } else if (category === "gas" || category === "fuel") {
+      emissionType = "scope1";
+    }
   }
+
+  console.log(`🎯 Category: ${category}, Scope: ${emissionType}${options.manualCategory || options.manualScope ? ' (manual override)' : ' (auto-detected)'}`);
 
   const consumption = parsedData.consumption?.value || 0;
   const unit = (parsedData.consumption?.unit || "kWh").toLowerCase();
@@ -212,7 +231,7 @@ export async function calculateEmissions(userId: number, documentId: number) {
           ? `EPA eGRID 2023 - ${region}`
           : "EPA Emission Factors",
       state_used: userState,
-      state_source: user?.state ? 'company_profile' : 'ocr_detected',
+      state_source: user?.state ? "company_profile" : "ocr_detected",
     },
   };
 }

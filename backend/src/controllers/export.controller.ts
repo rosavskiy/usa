@@ -32,9 +32,7 @@ export const exportCSV = asyncHandler(
       Number(calc.ch4_kg).toFixed(3),
       Number(calc.n2o_kg).toFixed(3),
       Number(calc.total_co2e_kg).toFixed(2),
-      calc.period_start
-        ? new Date(calc.period_start).toLocaleDateString()
-        : "",
+      calc.period_start ? new Date(calc.period_start).toLocaleDateString() : "",
       calc.period_end ? new Date(calc.period_end).toLocaleDateString() : "",
     ]);
 
@@ -45,9 +43,9 @@ export const exportCSV = asyncHandler(
     ].join("\n");
 
     // Send as file
-    const filename = `carbon-calculations-${new Date()
-      .toISOString()
-      .split("T")[0]}.csv`;
+    const filename = `carbon-calculations-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
 
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);

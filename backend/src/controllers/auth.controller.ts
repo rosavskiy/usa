@@ -17,6 +17,22 @@ const loginSchema = z.object({
   password: z.string(),
 });
 
+export const googleCallback = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user as any;
+    
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=auth_failed`);
+    }
+
+    // Generate JWT token
+    const token = generateToken({ userId: user.id, email: user.email });
+
+    // Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}`);
+  }
+);
+
 export const register = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction) => {
     const validated = registerSchema.parse(req.body);

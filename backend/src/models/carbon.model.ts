@@ -110,6 +110,13 @@ export class CarbonModel {
     await query(`DELETE FROM carbon_calculations WHERE id = $1`, [id]);
   }
 
+  static async updateDocument(id: number, documentId: number): Promise<void> {
+    await query(
+      `UPDATE carbon_calculations SET document_id = $1 WHERE id = $2`,
+      [documentId, id]
+    );
+  }
+
   static async update(
     id: number,
     data: {
@@ -130,7 +137,10 @@ export class CarbonModel {
     let ch4_kg = current.ch4_kg;
     let n2o_kg = current.n2o_kg;
 
-    if (data.total_co2e_kg !== undefined && data.total_co2e_kg !== current.total_co2e_kg) {
+    if (
+      data.total_co2e_kg !== undefined &&
+      data.total_co2e_kg !== current.total_co2e_kg
+    ) {
       const ratio = data.total_co2e_kg / current.total_co2e_kg;
       co2_kg = current.co2_kg * ratio;
       ch4_kg = current.ch4_kg * ratio;

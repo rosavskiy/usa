@@ -8,6 +8,7 @@ import {
   updateCalculation,
   downloadIndividualReport,
   downloadAnnualReport,
+  replaceDocument,
 } from "../controllers/carbon.controller";
 import { exportCSV } from "../controllers/export.controller";
 import { authenticate } from "../middleware/auth.middleware";
@@ -21,6 +22,7 @@ router.get("/export", authenticate, exportReport);
 router.get("/export-csv", authenticate, exportCSV);
 router.delete("/calculations/:id", authenticate, deleteCalculation);
 router.put("/calculations/:id", authenticate, updateCalculation);
+router.put("/calculations/:id/replace", authenticate, replaceDocument);
 router.get("/calculations/:id/report", authenticate, downloadIndividualReport);
 router.get("/annual-report/:year", authenticate, downloadAnnualReport);
 
