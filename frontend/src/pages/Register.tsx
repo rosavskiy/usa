@@ -102,7 +102,7 @@ export default function Register() {
                     setPassword(e.target.value);
                     e.target.setCustomValidity('');
                   }}
-                  className={`input-field pl-10 pr-10 ${fieldErrors.password ? 'border-red-500 border-2' : ''}`}
+                  className="input-field pl-10 pr-10"
                   placeholder="••••••••"
                   required
                   minLength={8}
