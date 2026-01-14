@@ -11,11 +11,15 @@ import { asyncHandler, AppError } from "../middleware/error.middleware";
 export const calculateCarbon = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
-    const { documentId, manualScope, manualCategory } = req.body;
+    const { documentId, manualScope, manualCategory, hfcsKg, pfcsKg, sf6Kg, otherKg } = req.body;
 
     const calculation = await calculateEmissions(userId, documentId, {
       manualScope,
       manualCategory,
+      hfcsKg,
+      pfcsKg,
+      sf6Kg,
+      otherKg,
     });
 
     res.json({

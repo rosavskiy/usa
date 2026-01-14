@@ -56,6 +56,10 @@ const EMISSION_FACTORS = {
 interface CalculationOptions {
   manualScope?: string;
   manualCategory?: string;
+  hfcsKg?: number;
+  pfcsKg?: number;
+  sf6Kg?: number;
+  otherKg?: number;
 }
 
 export async function calculateEmissions(
@@ -174,6 +178,12 @@ export async function calculateEmissions(
   const n2oKg = co2e_kg * 0.01; // ~1% equivalent from N2O
   const totalCo2eKg = co2e_kg;
 
+  // F-gases from manual input OR from OCR (refrigerant reports, etc.)
+  const hfcsKg = options.hfcsKg || parsedData.hfcsKg || 0;
+  const pfcsKg = options.pfcsKg || parsedData.pfcsKg || 0;
+  const sf6Kg = options.sf6Kg || parsedData.sf6Kg || 0;
+  const otherKg = options.otherKg || parsedData.otherKg || 0;
+
   // Save calculation
   const calculation = await CarbonModel.create({
     userId,
@@ -183,6 +193,10 @@ export async function calculateEmissions(
     co2Kg,
     ch4Kg,
     n2oKg,
+    hfcsKg,
+    pfcsKg,
+    sf6Kg,
+    otherKg,
     totalCo2eKg,
     periodStart: new Date(parsedData.period?.start || parsedData.date),
     periodEnd: new Date(parsedData.period?.end || parsedData.date),

@@ -1,7 +1,5 @@
 import { DocumentModel } from "../models/document.model";
-import FormData from "form-data";
-import fs from "fs";
-import axios from "axios";
+import { extractTextFromImage } from "./ocr.service";
 
 export async function parseDocumentWithAI(
   documentId: number,
@@ -14,109 +12,10 @@ export async function parseDocumentWithAI(
     await DocumentModel.updateParsedData(documentId, {}, "processing");
     console.log(`📝 Status updated to processing`);
 
-    // Use OCR.space API (25,000 free requests/month)
-    console.log(`📸 Starting OCR with OCR.space API...`);
-
-    const formData = new FormData();
-    formData.append("file", fs.createReadStream(filePath));
-    formData.append("language", "eng");
-    formData.append("isOverlayRequired", "false");
-    formData.append("detectOrientation", "true");
-    formData.append("scale", "true");
-    formData.append("OCREngine", "2"); // Engine 2 is more accurate
-
-    let response;
-    let retries = 0;
-    const maxRetries = 2;
-
-    // Retry logic for OCR.space timeouts
-    while (retries <= maxRetries) {
-      try {
-        response = await axios.post(
-          "https://api.ocr.space/parse/image",
-          formData,
-          {
-            headers: {
-              ...formData.getHeaders(),
-              apikey: process.env.OCR_SPACE_API_KEY || "K87899142388957", // Free API key
-            },
-            timeout: 30000, // 30 second timeout
-          }
-        );
-
-        // Check for timeout error (E101)
-        if (
-          response.data.IsErroredOnProcessing &&
-          response.data.ErrorMessage &&
-          response.data.ErrorMessage[0]?.includes("E101")
-        ) {
-          if (retries < maxRetries) {
-            console.log(
-              `⏳ OCR timeout - retrying (${retries + 1}/${maxRetries})...`
-            );
-            retries++;
-            await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
-            continue;
-          }
-        }
-
-        break; // Success or non-timeout error
-      } catch (error: any) {
-        if (
-          retries < maxRetries &&
-          (error.code === "ECONNABORTED" || error.message.includes("timeout"))
-        ) {
-          console.log(
-            `⏳ Network timeout - retrying (${retries + 1}/${maxRetries})...`
-          );
-          retries++;
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          continue;
-        }
-        throw error;
-      }
-    }
-
-    if (!response) {
-      throw new Error(
-        "Photo processing timed out - please try uploading a smaller or clearer photo"
-      );
-    }
-
-    // Log full OCR.space response for debugging
-    console.log(`🔍 OCR.space response status:`, response.data.OCRExitCode);
-    console.log(`🔍 OCR.space error message:`, response.data.ErrorMessage);
-    console.log(
-      `🔍 OCR.space IsErroredOnProcessing:`,
-      response.data.IsErroredOnProcessing
-    );
-
-    // Check for OCR.space API errors
-    if (response.data.IsErroredOnProcessing) {
-      throw new Error(
-        "Unable to process photo - please ensure it's clear, well-lit, and in focus"
-      );
-    }
-
-    if (
-      !response.data.ParsedResults ||
-      response.data.ParsedResults.length === 0
-    ) {
-      throw new Error(
-        "Photo quality too low - please upload a clearer, higher resolution image"
-      );
-    }
-
-    const ocrText = response.data.ParsedResults[0].ParsedText || "";
-
-    if (!ocrText || ocrText.trim().length < 10) {
-      throw new Error(
-        "Text not readable - please upload a clearer, higher resolution photo"
-      );
-    }
-
+    // Extract text using OCR (Azure CV with rotation -> OCR.space fallback)
+    const ocrText = await extractTextFromImage(filePath);
     console.log(`✨ OCR extracted text (${ocrText.length} chars):`);
-    console.log(ocrText); // Print FULL text for debugging
+    console.log(ocrText);
 
     // Parse the text using regex patterns
     console.log(`🔍 Parsing extracted text...`);
@@ -209,7 +108,16 @@ function detectWatermark(text: string): boolean {
 }
 
 function parseUtilityBillText(text: string): any {
-  const lowerText = text.toLowerCase();
+  console.log(`🔍 Parsing extracted text...`);
+  
+  // Normalize text for better regex matching
+  const normalizedText = text
+    .replace(/\r\n/g, '\n') // Normalize line breaks
+    .replace(/\s+/g, ' ') // Collapse multiple spaces
+    .replace(/\n\s+/g, '\n') // Remove leading spaces after newlines
+    .trim();
+  
+  const lowerText = normalizedText.toLowerCase();
 
   // Detect bill type (PRIORITY ORDER: specific first)
   let type = "other";
@@ -340,44 +248,105 @@ function parseUtilityBillText(text: string): any {
     }
   }
 
+  // Extract billing period (start and end dates)
+  let periodStart = date;
+  let periodEnd = date;
+  
+  const periodPatterns = [
+    // Edison format: "Apr 2 '08 to May 1'08"
+    /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})\s*'?(\d{2,4})\s+to\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})\s*'?(\d{2,4})/i,
+    // "From Apr 2, 2008 to May 1, 2008"
+    /from\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2}),?\s*(\d{4})\s+to\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2}),?\s*(\d{4})/i,
+    // "04/02/08 - 05/01/08"
+    /(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s*[-–]\s*(\d{1,2})\/(\d{1,2})\/(\d{2,4})/,
+  ];
+
+  for (const pattern of periodPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      try {
+        if (pattern.source.includes('jan|feb')) {
+          // Month name format
+          const monthMap: { [key: string]: number } = {
+            jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+            jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+          };
+          
+          const startMonth = monthMap[match[1].toLowerCase()];
+          const startDay = parseInt(match[2]);
+          let startYear = parseInt(match[3]);
+          if (startYear < 100) startYear += 2000; // Handle '08 -> 2008
+          
+          const endMonth = monthMap[match[4].toLowerCase()];
+          const endDay = parseInt(match[5]);
+          let endYear = parseInt(match[6]);
+          if (endYear < 100) endYear += 2000;
+          
+          periodStart = new Date(startYear, startMonth, startDay).toISOString().split("T")[0];
+          periodEnd = new Date(endYear, endMonth, endDay).toISOString().split("T")[0];
+        } else {
+          // Numeric date format
+          const startMonth = parseInt(match[1]) - 1;
+          const startDay = parseInt(match[2]);
+          let startYear = parseInt(match[3]);
+          if (startYear < 100) startYear += 2000;
+          
+          const endMonth = parseInt(match[4]) - 1;
+          const endDay = parseInt(match[5]);
+          let endYear = parseInt(match[6]);
+          if (endYear < 100) endYear += 2000;
+          
+          periodStart = new Date(startYear, startMonth, startDay).toISOString().split("T")[0];
+          periodEnd = new Date(endYear, endMonth, endDay).toISOString().split("T")[0];
+        }
+        break;
+      } catch (e) {
+        // Continue to next pattern
+      }
+    }
+  }
+
   // Extract consumption value and unit
   let consumptionValue = 0;
   let unit =
     type === "gas" ? "therms" : type === "electricity" ? "kWh" : "gallons";
 
+  console.log(`🔎 Searching for consumption (type: ${type})...`);
+  
   // Pattern: number followed by unit (MOST SPECIFIC FIRST!)
   const consumptionPatterns = [
     // ELECTRICITY - Edison bill format (MUST BE FIRST - very specific)
-    /total\s+electricity\s+you\s+used\s+this\s+month\s+in\s+(?:kwh\s+)?(\d{1,3}(?:,\d{3})*)/i,
+    /total\s+electricity\s+you\s+used\s+(?:this\s+month\s+)?(?:in\s+)?(?:kwh\s+)?(\d{1,3}(?:,\d{3})*)/i,
     /total\s+(?:kwh\s+)?usage[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
+    /(\d{1,3}(?:,\d{3})*)\s*kwh/i,
 
     // GAS - Various formats (SoCalGas, North Shore Gas, etc.)
-    /gas\s+usage\s+history[^\d]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i, // "Gas Usage History ... 55 Therms"
+    /gas\s+usage\s+history[^\d]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
     /(?:total\s+)?therms?\s+used[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
     /total\s+therma?s?[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
-    /difference[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*therms?/i, // "Difference: 37 Therms"
-    /gas\s+service[^\d]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*therms?/i, // "Gas Service: 37 Therms"
-    /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s+therms?(?!\s*allowance)/i, // Exclude baseline
-    /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*ccf/i, // CCF (hundred cubic feet) - some utilities use this
+    /difference[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*therms?/i,
+    /gas\s+service[^\d]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*therms?/i,
+    /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s+therms?(?!\s*allowance)/i,
+    /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*ccf/i,
 
-    // FUEL - Gas station / fuel delivery receipts (HIGH PRIORITY)
-    /gallons?[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i, // "GALLONS: 357"
-    /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*gal(?:lons?)?(?!\s*per)/i, // "357 gallons" (exclude "gal per mile")
-    /fuel\s+sale[^\d]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i, // "FUEL SALE ... 357"
+    // FUEL - Gas station / fuel delivery receipts
+    /gallons?[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
+    /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*gal(?:lons?)?(?!\s*per)/i,
+    /fuel\s+sale[^\d]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
 
     // GENERIC patterns (last resort)
-    /(\d{1,3}(?:,\d{3})*)\s*kwh/i,
     /usage[:\s]*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)(?:\s*(?:kwh|therms?|gal))?/i,
   ];
 
   // Try patterns
   for (const pattern of consumptionPatterns) {
-    const match = text.match(pattern);
+    const match = normalizedText.match(pattern);
     if (match) {
       const numStr = match[1].replace(/,/g, "");
       const num = parseFloat(numStr);
-      if (num >= 1 && num < 1000000) {
+      if (num >= 1 && num < 10000000) {
         consumptionValue = num;
+        console.log(`✅ Found consumption: ${consumptionValue} (raw match: "${match[0].substring(0, 50)}")`);
         if (match[2]) {
           const unitMatch = match[2].toLowerCase();
           if (unitMatch.includes("kwh") || unitMatch.includes("kilowatt"))
@@ -389,58 +358,101 @@ function parseUtilityBillText(text: string): any {
       }
     }
   }
+  
+  if (consumptionValue === 0) {
+    console.log(`⚠️ Consumption not found`);
+  }
 
-  // Extract amount (total bill cost)
+  // Extract amount (total bill cost) - improved patterns
   let amount = 0;
   const amountPatterns = [
-    /total\s*(?:amount\s*)?due[:\s]*\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
-    /amount\s*due[:\s]*\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
-    /total[:\s]*\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
+    // Most specific first
+    /total\s*(?:balance\s*)?due[^$\d]{0,20}\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
+    /total\s*amount\s*(?:you\s*)?(?:owe|due)[^$\d]{0,20}\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
+    /amount\s*(?:you\s*)?(?:owe|due)[^$\d]{0,20}\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
+    /(?:total\s*)?current\s*charges[^$\d]{0,20}\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
+    /(?:your\s*)?new\s*charges[^$\d]{0,20}\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
+    // Generic fallback
+    /total[^$\d]{0,25}\$\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,
   ];
 
+  console.log(`🔎 Searching for amount...`);
   for (const pattern of amountPatterns) {
-    const match = text.match(pattern);
+    const match = normalizedText.match(pattern);
     if (match) {
-      amount = parseFloat(match[1].replace(/,/g, ""));
-      break;
+      const parsedAmount = parseFloat(match[1].replace(/,/g, ""));
+      if (parsedAmount > 0 && parsedAmount < 1000000) {
+        amount = parsedAmount;
+        console.log(`✅ Found amount: $${amount}`);
+        break;
+      }
     }
   }
+  if (amount === 0) {
+    console.log(`⚠️ Amount not found`);
+  }
 
-  // Extract account number
+  // Extract account number (improved patterns)
   let accountNumber = "";
   const accountPatterns = [
-    /account\s*(?:number|#|no\.?)[:\s]*(\d{6,20})/i,
-    /acct\s*(?:#|no\.?)[:\s]*(\d{6,20})/i,
-    /customer\s*(?:number|#|no\.?)[:\s]*(\d{6,20})/i,
-    /(?:service|meter)\s*(?:number|#|no\.?)[:\s]*(\d{6,20})/i,
+    // Specific labels first
+    /customer\s*account[:\s#]*(\d[\d\-\s]{6,24})/i,
+    /service\s*account[:\s#]*(\d[\d\-\s]{6,24})/i,
+    /account\s*number[:\s#]*(\d[\d\-\s]{6,24})/i,
+    /account\s*#[:\s]*(\d[\d\-\s]{6,24})/i,
+    /acct\.?\s*(?:no\.?|#)[:\s]*(\d[\d\-\s]{6,24})/i,
+    // Generic patterns
+    /account[:\s]+(\d[\d\-]{5,20})/i,
   ];
 
+  console.log(`🔎 Searching for account number...`);
   for (const pattern of accountPatterns) {
-    const match = text.match(pattern);
+    const match = normalizedText.match(pattern);
     if (match) {
-      accountNumber = match[1];
-      break;
+      accountNumber = match[1].replace(/\s+/g, '').trim();
+      // Validate it looks like an account number (has digits)
+      if (/\d{6,}/.test(accountNumber)) {
+        console.log(`✅ Found account number: ${accountNumber}`);
+        break;
+      }
     }
   }
+  if (!accountNumber) {
+    console.log(`⚠️ Account number not found`);
+  }
 
-  // Extract service address
+  // Extract service address (improved patterns)
   let serviceAddress = "";
   const addressPatterns = [
-    /(?:service|billing)\s+address[:\s]*([^\n]{10,100})/i,
-    /(?:address|location)[:\s]*(\d+\s+[a-z0-9\s,\.]+(?:street|st|avenue|ave|road|rd|drive|dr|blvd|lane|ln|way|court|ct)[^\n]{0,50})/i,
+    // Labeled addresses first
+    /service\s+(?:address|account)[:\s]*([^\n]{15,120})/i,
+    /billing\s+address[:\s]*([^\n]{15,120})/i,
+    // Street addresses with numbers (more flexible)
+    /(\d{3,6}\s+[A-Z][A-Z\s]{2,60}?(?:STREET|ST|AVENUE|AVE|ROAD|RD|DRIVE|DR|BOULEVARD|BLVD|LANE|LN|WAY|COURT|CT|PLACE|PL|CIRCLE|CIR)(?:\.|,|\s|$)[^\n]{0,40})/i,
+    /(\d{3,6}\s+[A-Za-z\s]{3,60}?(?:street|st|avenue|ave|road|rd|drive|dr|blvd|lane|ln|way|court|ct)(?:\.|,|\s|$)[^\n]{0,40})/i,
   ];
 
+  console.log(`🔎 Searching for service address...`);
   for (const pattern of addressPatterns) {
-    const match = text.match(pattern);
+    const match = normalizedText.match(pattern);
     if (match) {
       serviceAddress = match[1].trim().replace(/\s+/g, ' ');
-      // Clean up - stop at ZIP code if present
-      const zipMatch = serviceAddress.match(/(.+?)\s+\d{5}(?:-\d{4})?/);
-      if (zipMatch) {
-        serviceAddress = zipMatch[1];
+      // Clean up - stop at ZIP code, state, or newline
+      serviceAddress = serviceAddress
+        .replace(/\s*\d{5}(?:-\d{4})?.*$/,'') // Remove ZIP
+        .replace(/\s*,?\s*[A-Z]{2}\s+\d{5}.*$/,'') // Remove state + ZIP
+        .replace(/\n.*$/,'') // Remove everything after newline
+        .replace(/\s*,\s*$/,'') // Remove trailing comma
+        .trim();
+      // Validate it has a street number
+      if (/^\d{3,6}\s/.test(serviceAddress) && serviceAddress.length >= 10) {
+        console.log(`✅ Found service address: ${serviceAddress}`);
+        break;
       }
-      break;
     }
+  }
+  if (!serviceAddress) {
+    console.log(`⚠️ Service address not found`);
   }
 
   // Extract phone number
@@ -462,6 +474,81 @@ function parseUtilityBillText(text: string): any {
     }
   }
 
+  // Extract F-gases (industrial greenhouse gases)
+  let hfcsKg = 0;
+  let pfcsKg = 0;
+  let sf6Kg = 0;
+  let otherKg = 0;
+
+  // HFCs - refrigerant reports (R-134a, R-410A, R-404A, etc.)
+  const hfcPatterns = [
+    /(?:hfc|r-134a|r-410a|r-404a|r-407c|refrigerant)[^\d]*(\d+(?:\.\d+)?)\s*(?:kg|kilogram)/i,
+    /(?:hfc|r-134a|r-410a|r-404a|r-407c|refrigerant)[^\d]*(\d+(?:\.\d+)?)\s*(?:lb|pound)/i, // will convert
+  ];
+
+  for (const pattern of hfcPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      let value = parseFloat(match[1]);
+      // Convert pounds to kg if needed
+      if (match[0].toLowerCase().includes('lb') || match[0].toLowerCase().includes('pound')) {
+        value = value * 0.453592; // lbs to kg
+      }
+      hfcsKg += value;
+    }
+  }
+
+  // PFCs - semiconductor/aluminum production
+  const pfcPatterns = [
+    /(?:pfc|perfluorocarbon|cf4|c2f6)[^\d]*(\d+(?:\.\d+)?)\s*(?:kg|kilogram)/i,
+    /(?:pfc|perfluorocarbon|cf4|c2f6)[^\d]*(\d+(?:\.\d+)?)\s*(?:lb|pound)/i,
+  ];
+
+  for (const pattern of pfcPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      let value = parseFloat(match[1]);
+      if (match[0].toLowerCase().includes('lb') || match[0].toLowerCase().includes('pound')) {
+        value = value * 0.453592;
+      }
+      pfcsKg += value;
+    }
+  }
+
+  // SF6 - electrical equipment
+  const sf6Patterns = [
+    /(?:sf6|sf-6|sulfur hexafluoride|sulphur hexafluoride)[^\d]*(\d+(?:\.\d+)?)\s*(?:kg|kilogram)/i,
+    /(?:sf6|sf-6|sulfur hexafluoride|sulphur hexafluoride)[^\d]*(\d+(?:\.\d+)?)\s*(?:lb|pound)/i,
+  ];
+
+  for (const pattern of sf6Patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      let value = parseFloat(match[1]);
+      if (match[0].toLowerCase().includes('lb') || match[0].toLowerCase().includes('pound')) {
+        value = value * 0.453592;
+      }
+      sf6Kg += value;
+    }
+  }
+
+  // Other F-gases (NF3, etc.)
+  const otherPatterns = [
+    /(?:nf3|nitrogen trifluoride)[^\d]*(\d+(?:\.\d+)?)\s*(?:kg|kilogram)/i,
+    /(?:nf3|nitrogen trifluoride)[^\d]*(\d+(?:\.\d+)?)\s*(?:lb|pound)/i,
+  ];
+
+  for (const pattern of otherPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      let value = parseFloat(match[1]);
+      if (match[0].toLowerCase().includes('lb') || match[0].toLowerCase().includes('pound')) {
+        value = value * 0.453592;
+      }
+      otherKg += value;
+    }
+  }
+
   return {
     type,
     provider,
@@ -473,11 +560,30 @@ function parseUtilityBillText(text: string): any {
       unit,
     },
     period: {
-      start: date,
-      end: date,
+      start: periodStart,
+      end: periodEnd,
     },
     accountNumber, // Account number from bill
     serviceAddress, // Service address
     phoneNumber, // Customer service phone
+    // F-gases (industrial emissions)
+    hfcsKg: hfcsKg > 0 ? hfcsKg : undefined,
+    pfcsKg: pfcsKg > 0 ? pfcsKg : undefined,
+    sf6Kg: sf6Kg > 0 ? sf6Kg : undefined,
+    otherKg: otherKg > 0 ? otherKg : undefined,
   };
+  
+  // Final summary log
+  console.log(`📊 PARSING SUMMARY:`);
+  console.log(`   Type: ${result.type}`);
+  console.log(`   Provider: ${result.provider}`);
+  console.log(`   State: ${result.state || 'N/A'}`);
+  console.log(`   Account: ${result.accountNumber || 'NOT FOUND'}`);
+  console.log(`   Address: ${result.serviceAddress || 'NOT FOUND'}`);
+  console.log(`   Phone: ${result.phoneNumber || 'NOT FOUND'}`);
+  console.log(`   Amount: $${result.amount || 0}`);
+  console.log(`   Consumption: ${result.consumption.value} ${result.consumption.unit}`);
+  console.log(`   Period: ${result.period.start} → ${result.period.end}`);
+  
+  return result;
 }

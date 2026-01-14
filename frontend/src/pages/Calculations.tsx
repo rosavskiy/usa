@@ -620,6 +620,30 @@ export default function Calculations() {
                                   </p>
                                 </div>
                                 <div>
+                                  <p className="text-sm text-gray-600">HFCs</p>
+                                  <p className="font-bold text-gray-900">
+                                    {(Number(calc.hfcs_kg) || 0).toFixed(3)} kg
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">PFCs</p>
+                                  <p className="font-bold text-gray-900">
+                                    {(Number(calc.pfcs_kg) || 0).toFixed(3)} kg
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">SF₆</p>
+                                  <p className="font-bold text-gray-900">
+                                    {(Number(calc.sf6_kg) || 0).toFixed(3)} kg
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">Other</p>
+                                  <p className="font-bold text-gray-900">
+                                    {(Number(calc.other_kg) || 0).toFixed(3)} kg
+                                  </p>
+                                </div>
+                                <div>
                                   <p className="text-sm text-gray-600">
                                     Total CO₂e
                                   </p>

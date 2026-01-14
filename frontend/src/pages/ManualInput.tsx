@@ -14,6 +14,11 @@ export default function ManualInput() {
     provider: "",
     amount: "",
     state: "", // for electricity emission factor
+    // F-gases (industrial greenhouse gases)
+    hfcs_kg: "",
+    pfcs_kg: "",
+    sf6_kg: "",
+    other_kg: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +46,11 @@ export default function ManualInput() {
       // Calculate emissions
       await api.post("/carbon/calculate", {
         documentId: docResponse.data.data.id,
+        // Include F-gases if provided
+        hfcsKg: parseFloat(formData.hfcs_kg) || 0,
+        pfcsKg: parseFloat(formData.pfcs_kg) || 0,
+        sf6Kg: parseFloat(formData.sf6_kg) || 0,
+        otherKg: parseFloat(formData.other_kg) || 0,
       });
 
       alert("✅ Calculation completed! View results in Calculations page.");
@@ -257,6 +267,86 @@ export default function ManualInput() {
             className="input-field"
             placeholder="150.00"
           />
+        </div>
+
+        {/* F-gases (Industrial Greenhouse Gases) */}
+        <div className="border-t pt-4 mt-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            🏭 Industrial Greenhouse Gases
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            For refrigeration equipment, air conditioning systems, electrical equipment, or industrial processes
+          </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                HFCs (kg)
+              </label>
+              <input
+                type="number"
+                step="0.001"
+                value={formData.hfcs_kg}
+                onChange={(e) =>
+                  setFormData({ ...formData, hfcs_kg: e.target.value })
+                }
+                className="input-field"
+                placeholder="0.000"
+              />
+              <p className="text-xs text-gray-500 mt-1">Refrigerants, AC systems</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                PFCs (kg)
+              </label>
+              <input
+                type="number"
+                step="0.001"
+                value={formData.pfcs_kg}
+                onChange={(e) =>
+                  setFormData({ ...formData, pfcs_kg: e.target.value })
+                }
+                className="input-field"
+                placeholder="0.000"
+              />
+              <p className="text-xs text-gray-500 mt-1">Aluminum, semiconductors</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                SF₆ (kg)
+              </label>
+              <input
+                type="number"
+                step="0.001"
+                value={formData.sf6_kg}
+                onChange={(e) =>
+                  setFormData({ ...formData, sf6_kg: e.target.value })
+                }
+                className="input-field"
+                placeholder="0.000"
+              />
+              <p className="text-xs text-gray-500 mt-1">Electrical equipment</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Other F-gases (kg)
+              </label>
+              <input
+                type="number"
+                step="0.001"
+                value={formData.other_kg}
+                onChange={(e) =>
+                  setFormData({ ...formData, other_kg: e.target.value })
+                }
+                className="input-field"
+                placeholder="0.000"
+              />
+              <p className="text-xs text-gray-500 mt-1">NF₃, other gases</p>
+            </div>
+          </div>
         </div>
 
         {/* Submit */}

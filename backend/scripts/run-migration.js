@@ -31,6 +31,16 @@ async function runMigration() {
     `);
     console.log("✅ Added unit_system column");
 
+    // Add F-gas columns to carbon_calculations
+    await pool.query(`
+      ALTER TABLE carbon_calculations 
+      ADD COLUMN IF NOT EXISTS hfcs_kg DECIMAL(10, 3) DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS pfcs_kg DECIMAL(10, 3) DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS sf6_kg DECIMAL(10, 3) DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS other_kg DECIMAL(10, 3) DEFAULT 0;
+    `);
+    console.log("✅ Added F-gas columns (hfcs_kg, pfcs_kg, sf6_kg, other_kg)");
+
     console.log("✅ All migrations completed successfully!");
     process.exit(0);
   } catch (error) {
