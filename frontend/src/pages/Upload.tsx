@@ -206,7 +206,7 @@ export default function Upload() {
           setFiles((prev) =>
             prev.map((f) =>
               f.docId === docId
-                ? { ...f, status: "success", warning: combinedWarning }
+                ? { ...f, status: "success", warning: ocrWarning }
                 : f
             )
           );
