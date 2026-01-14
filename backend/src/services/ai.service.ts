@@ -406,6 +406,62 @@ function parseUtilityBillText(text: string): any {
     }
   }
 
+  // Extract account number
+  let accountNumber = "";
+  const accountPatterns = [
+    /account\s*(?:number|#|no\.?)[:\s]*(\d{6,20})/i,
+    /acct\s*(?:#|no\.?)[:\s]*(\d{6,20})/i,
+    /customer\s*(?:number|#|no\.?)[:\s]*(\d{6,20})/i,
+    /(?:service|meter)\s*(?:number|#|no\.?)[:\s]*(\d{6,20})/i,
+  ];
+
+  for (const pattern of accountPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      accountNumber = match[1];
+      break;
+    }
+  }
+
+  // Extract service address
+  let serviceAddress = "";
+  const addressPatterns = [
+    /(?:service|billing)\s+address[:\s]*([^\n]{10,100})/i,
+    /(?:address|location)[:\s]*(\d+\s+[a-z0-9\s,\.]+(?:street|st|avenue|ave|road|rd|drive|dr|blvd|lane|ln|way|court|ct)[^\n]{0,50})/i,
+  ];
+
+  for (const pattern of addressPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      serviceAddress = match[1].trim().replace(/\s+/g, ' ');
+      // Clean up - stop at ZIP code if present
+      const zipMatch = serviceAddress.match(/(.+?)\s+\d{5}(?:-\d{4})?/);
+      if (zipMatch) {
+        serviceAddress = zipMatch[1];
+      }
+      break;
+    }
+  }
+
+  // Extract phone number
+  let phoneNumber = "";
+  const phonePatterns = [
+    /(?:customer\s+service|contact|phone|tel)[:\s]*\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/i,
+    /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,
+  ];
+
+  for (const pattern of phonePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      phoneNumber = match[0].replace(/[^\d]/g, '');
+      // Format as (XXX) XXX-XXXX
+      if (phoneNumber.length === 10) {
+        phoneNumber = `(${phoneNumber.slice(0,3)}) ${phoneNumber.slice(3,6)}-${phoneNumber.slice(6)}`;
+      }
+      break;
+    }
+  }
+
   return {
     type,
     provider,
@@ -420,5 +476,8 @@ function parseUtilityBillText(text: string): any {
       start: date,
       end: date,
     },
+    accountNumber, // Account number from bill
+    serviceAddress, // Service address
+    phoneNumber, // Customer service phone
   };
 }

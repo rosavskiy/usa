@@ -162,10 +162,10 @@ export async function generateCarbonReport(
   // Info rows
   const infoRows = [
     `Date of verification: ${formatDate(new Date())}`,
-    'Verifier:',
+    `Verifier: ${companyName}`,
     `Email: ${userEmail}`,
-    'Phone:',
-    'Address:',
+    `Phone: ${parsedData?.phoneNumber || 'N/A'}`,
+    `Address: ${parsedData?.serviceAddress || 'N/A'}`,
   ];
 
   infoRows.forEach((text) => {
@@ -685,6 +685,9 @@ export async function generateCarbonReport(
   y += 18;
 
   const provider = parsedData?.provider || 'Primary Facility';
+  const accountNum = parsedData?.accountNumber || '';
+  const serviceAddr = parsedData?.serviceAddress || '';
+  
   doc.rect(60, y, 150, 18).stroke();
   doc.rect(210, y, colWidth - 150, 18).stroke();
   
@@ -693,7 +696,14 @@ export async function generateCarbonReport(
     .fillColor('#000')
     .font('Helvetica')
     .text(provider, 65, y + 5);
-  doc.text(scope1Total + ' mtCO2e', 215, y + 5);
+  
+  const facilityInfo = [
+    scope1Total + ' mtCO2e',
+    accountNum ? `Acct: ${accountNum}` : '',
+    serviceAddr ? `Addr: ${serviceAddr.substring(0, 40)}` : ''
+  ].filter(x => x).join(' | ');
+  
+  doc.text(facilityInfo, 215, y + 5, { width: colWidth - 155 });
 
   y += 30;
 
