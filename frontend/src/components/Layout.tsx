@@ -82,10 +82,10 @@ export default function Layout() {
         {/* Page Content */}
         <Outlet />
       </div>
-      
+
       {/* Profile Complete Modal */}
       <ProfileCompleteModal />
-      
+
       {/* Cookie Consent - показывается только авторизованным */}
       <CookieConsent />
     </div>

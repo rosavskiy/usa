@@ -125,8 +125,10 @@ export async function parseDocumentWithAI(
 
     // Check for watermarks ONLY if parsing failed or suspicious values
     const hasWatermark = detectWatermark(ocrText);
-    const hasLowConfidence = parsedData.consumption && (parsedData.consumption.value === 0 || !parsedData.consumption.value);
-    
+    const hasLowConfidence =
+      parsedData.consumption &&
+      (parsedData.consumption.value === 0 || !parsedData.consumption.value);
+
     // Add watermark warning ONLY if it affects data quality
     if (hasWatermark && hasLowConfidence) {
       parsedData.warning =

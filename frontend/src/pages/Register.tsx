@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Leaf, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Leaf, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { register } = useAuth();
@@ -14,24 +14,24 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     // Custom validation messages (English)
     const form = e.target as HTMLFormElement;
-    const inputs = form.querySelectorAll('input[required]');
-    
+    const inputs = form.querySelectorAll("input[required]");
+
     inputs.forEach((input: any) => {
       if (input.validity.valueMissing) {
-        input.setCustomValidity('Please fill in this field');
+        input.setCustomValidity("Please fill in this field");
       } else if (input.validity.typeMismatch) {
-        input.setCustomValidity('Please enter a valid value');
+        input.setCustomValidity("Please enter a valid value");
       } else {
-        input.setCustomValidity('');
+        input.setCustomValidity("");
       }
     });
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError("Password must be at least 8 characters");
       return;
     }
 
@@ -39,10 +39,10 @@ export default function Register() {
 
     try {
       // Register with only email and password
-      await register(email, password, '', '');
-      navigate('/');
+      await register(email, password, "", "");
+      navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,9 @@ export default function Register() {
             <Leaf className="text-primary-600" size={48} />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Carbon Tracker</h1>
-          <p className="text-gray-600 mt-2">Start tracking your carbon footprint</p>
+          <p className="text-gray-600 mt-2">
+            Start tracking your carbon footprint
+          </p>
         </div>
 
         <div className="card">
@@ -74,13 +76,16 @@ export default function Register() {
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Mail
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    e.target.setCustomValidity('');
+                    e.target.setCustomValidity("");
                   }}
                   className="input-field pl-10"
                   placeholder="your@email.com"
@@ -94,13 +99,16 @@ export default function Register() {
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Lock
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    e.target.setCustomValidity('');
+                    e.target.setCustomValidity("");
                   }}
                   className="input-field pl-10 pr-10"
                   placeholder="••••••••"
@@ -123,7 +131,7 @@ export default function Register() {
               disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? "Creating account..." : "Create Account"}
             </button>
           </form>
 
@@ -133,7 +141,9 @@ export default function Register() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white text-gray-500">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -141,7 +151,7 @@ export default function Register() {
           <button
             type="button"
             onClick={() => {
-              window.location.href = 'http://localhost:5000/api/auth/google';
+              window.location.href = "http://localhost:5000/api/auth/google";
             }}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
@@ -163,12 +173,17 @@ export default function Register() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="font-medium text-gray-700">Sign up with Google</span>
+            <span className="font-medium text-gray-700">
+              Sign up with Google
+            </span>
           </button>
 
           <p className="text-center mt-6 text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-primary-600 hover:text-primary-700 font-medium"
+            >
               Sign in
             </Link>
           </p>

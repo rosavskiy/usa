@@ -8,8 +8,8 @@ import { z } from "zod";
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  companyName: z.string().optional().default(''),
-  state: z.string().length(2).optional().default(''),
+  companyName: z.string().optional().default(""),
+  state: z.string().length(2).optional().default(""),
 });
 
 const loginSchema = z.object({
@@ -20,16 +20,24 @@ const loginSchema = z.object({
 export const googleCallback = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user as any;
-    
+
     if (!user) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=auth_failed`);
+      return res.redirect(
+        `${
+          process.env.FRONTEND_URL || "http://localhost:3000"
+        }/login?error=auth_failed`
+      );
     }
 
     // Generate JWT token
     const token = generateToken({ userId: user.id, email: user.email });
 
     // Redirect to frontend with token
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}`);
+    res.redirect(
+      `${
+        process.env.FRONTEND_URL || "http://localhost:3000"
+      }/auth/callback?token=${token}`
+    );
   }
 );
 

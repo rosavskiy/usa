@@ -22,11 +22,10 @@ export async function generateCarbonReport(
   // Create PDF document
   const doc = new PDFDocument({
     size: "A4",
-    margins: { top: 50, bottom: 50, left: 50, right: 50 },
+    margins: { top: 40, bottom: 40, left: 60, right: 60 },
   });
 
-  const companyName = user?.company_name || "Company";
-  const userState = user?.state || "United States";
+  const companyName = user?.company_name || "[COMPANY NAME]";
   const userEmail = user?.email || "";
   const parsedData =
     typeof document?.parsed_data === "string"
@@ -37,22 +36,18 @@ export async function generateCarbonReport(
   const reportingYear = calculation.period_end
     ? new Date(calculation.period_end).getFullYear()
     : new Date().getFullYear();
-  const periodStart = calculation.period_start
-    ? new Date(calculation.period_start).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "-";
-  const periodEnd = calculation.period_end
-    ? new Date(calculation.period_end).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "-";
+  
+  const periodStartDate = calculation.period_start ? new Date(calculation.period_start) : new Date();
+  const periodEndDate = calculation.period_end ? new Date(calculation.period_end) : new Date();
+  
+  const formatDate = (date: Date) => {
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  };
 
-  // Calculate totals
+  // Calculate totals in metric tons
   const totalCO2e = Number(calculation.total_co2e_kg);
   const totalMetricTons = (totalCO2e / 1000).toFixed(3);
   const co2Tons = (Number(calculation.co2_kg) / 1000).toFixed(3);
@@ -62,424 +57,666 @@ export async function generateCarbonReport(
   const scope1Total = calculation.emission_type === 'scope1' ? totalMetricTons : '0.000';
   const scope2Total = calculation.emission_type === 'scope2' ? totalMetricTons : '0.000';
 
+  const tealColor = '#008B8B';
+  const grayColor = '#666666';
+
   // ==================== PAGE 1: TITLE PAGE ====================
-  doc
-    .fontSize(28)
-    .font("Helvetica-Bold")
-    .fillColor("#000")
-    .text("Greenhouse Gas Emissions", { align: "center" });
   
-  doc.moveDown(0.5);
+  // Disclaimer at top
   doc
-    .fontSize(24)
-    .text("Inventory Report", { align: "center" });
+    .fontSize(9)
+    .fillColor(grayColor)
+    .font('Helvetica')
+    .text(
+      'This is not the official reporting template of the WRI/WBCSD GHG Protocol. It is a sample template',
+      { align: 'center' }
+    );
+  doc.text('meant to help outline the reporting requirements of the GHG Protocol Corporate Standard.', {
+    align: 'center',
+  });
+
+  doc.moveDown(4);
+
+  // Main title
+  doc
+    .fontSize(20)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('Greenhouse Gas Emissions Inventory', { align: 'center' });
 
   doc.moveDown(2);
-  doc
-    .fontSize(16)
-    .font("Helvetica-Bold")
-    .fillColor("#333")
-    .text(`Reporting Year: ${reportingYear}`, { align: "center" });
 
-  doc.moveDown(2);
+  // Company name and year
   doc
-    .fontSize(14)
-    .font("Helvetica")
-    .fillColor("#000")
-    .text(`Company Name: ${companyName}`, { align: "center" });
-
+    .fontSize(12)
+    .font('Helvetica')
+    .text(`[${companyName.toUpperCase()}]`, { align: 'center' });
   doc.moveDown(0.5);
-  doc.text(`Contact Information: ${userEmail}`, { align: "center" });
-  doc.text(`State: ${userState}`, { align: "center" });
+  doc.text(`[${reportingYear}]`, { align: 'center' });
 
   doc.moveDown(3);
+
+  // Company logo box
+  const logoBoxWidth = 180;
+  const logoBoxHeight = 60;
+  const pageWidth = doc.page.width;
+  const logoX = (pageWidth - logoBoxWidth) / 2;
+  const logoY = doc.y;
+
+  doc
+    .rect(logoX, logoY, logoBoxWidth, logoBoxHeight)
+    .stroke();
+  
   doc
     .fontSize(10)
-    .fillColor("#666")
-    .text("Inventory Method:", { align: "center" });
-  
-  doc.moveDown(0.5);
+    .fillColor(grayColor)
+    .text('COMPANY', logoX, logoY + 20, { width: logoBoxWidth, align: 'center' });
+  doc.text('LOGO', logoX, logoY + 32, { width: logoBoxWidth, align: 'center' });
+
+  doc.y = logoY + logoBoxHeight + 40;
+
+  // Verification table
+  const tableX = 70;
+  const tableWidth = doc.page.width - 140;
+  const rowHeight = 20;
+  let currentY = doc.y;
+
+  // Header row
+  doc
+    .fillColor(tealColor)
+    .rect(tableX, currentY, tableWidth, rowHeight)
+    .fill();
+
   doc
     .fontSize(9)
-    .fillColor("#666")
+    .fillColor('#FFF')
+    .font('Helvetica')
     .text(
-      "Based on the World Resources Institute (WRI) and the World Business Council",
-      { align: "center" }
-    );
-  doc.text("for Sustainable Development (WBCSD) GHG Protocol Corporate Standard.", {
-    align: "center",
-  });
-
-  doc.moveDown(5);
-  doc
-    .fontSize(8)
-    .fillColor("#999")
-    .text(`Report Generated: ${new Date().toLocaleDateString("en-US")}`, {
-      align: "center",
-    });
-  doc.text("Powered by CarbonEasy.ai", { align: "center" });
-
-  // ==================== PAGE 2: ORGANIZATIONAL BOUNDARIES ====================
-  doc.addPage();
-  doc
-    .fontSize(18)
-    .font("Helvetica-Bold")
-    .fillColor("#000")
-    .text("2. Organizational Boundaries", { underline: true });
-
-  doc.moveDown(1);
-  doc
-    .fontSize(11)
-    .font("Helvetica")
-    .fillColor("#000")
-    .text(
-      "We confirm that this inventory covers the following organizational scope:",
-      { align: "justify" }
+      'Has this inventory been verified by an accredited third party?',
+      tableX + 5,
+      currentY + 6,
+      { width: tableWidth - 10 }
     );
 
-  doc.moveDown(0.5);
-  doc
-    .font("Helvetica-Bold")
-    .text("Approach:", { continued: true })
-    .font("Helvetica")
-    .text(" Operational Control");
+  currentY += rowHeight;
 
-  doc.moveDown(0.3);
+  // Checkbox row
+  doc
+    .rect(tableX, currentY, tableWidth, rowHeight)
+    .stroke();
+
+  doc
+    .fontSize(9)
+    .fillColor('#000')
+    .text('☐ No', tableX + 10, currentY + 5);
+  
   doc.text(
-    "The Company reports emissions from all operations under its operational control."
+    '☑ Yes (if yes, fill in verifier contact information below and attach verification',
+    tableX + 60,
+    currentY + 5,
+    { continued: false }
   );
 
-  doc.moveDown(1);
-  doc.font("Helvetica-Bold").text("Facilities Included:");
-  doc.moveDown(0.3);
-  doc.font("Helvetica").text(`- ${userState}-based facilities`, { indent: 20 });
-  doc.text(`- Reporting Period: ${periodStart} - ${periodEnd}`, { indent: 20 });
+  currentY += rowHeight;
 
-  doc.moveDown(0.5);
-  const provider = parsedData?.provider || "Utility Provider";
-  doc.text(`- Service Provider: ${provider}`, { indent: 20 });
+  // Info rows
+  const infoRows = [
+    `Date of verification: ${formatDate(new Date())}`,
+    'Verifier:',
+    `Email: ${userEmail}`,
+    'Phone:',
+    'Address:',
+  ];
 
-  // ==================== PAGE 3: SUMMARY OF EMISSIONS ====================
-  doc.addPage();
-  doc
-    .fontSize(18)
-    .font("Helvetica-Bold")
-    .fillColor("#000")
-    .text("3. Summary of Emissions", { underline: true });
-
-  doc.moveDown(0.5);
-  doc
-    .fontSize(10)
-    .fillColor("#666")
-    .text(
-      "The following table presents the greenhouse gas emissions inventory for the reporting period."
-    );
-
-  doc.moveDown(1);
-
-  // Table header
-  const tableTop = doc.y;
-  const col1 = 70;
-  const col2 = 220;
-  const col3 = 370;
-  const rowHeight = 25;
-
-  doc
-    .fontSize(10)
-    .font("Helvetica-Bold")
-    .fillColor("#000")
-    .text("Category", col1, tableTop)
-    .text("Source", col2, tableTop)
-    .text("Metric Tons CO₂e", col3, tableTop);
-
-  doc
-    .moveTo(col1 - 10, tableTop + 15)
-    .lineTo(500, tableTop + 15)
-    .stroke();
-
-  let currentY = tableTop + rowHeight;
-
-  // Scope 1 rows
-  doc.font("Helvetica");
-  if (calculation.emission_type === 'scope1') {
-    if (calculation.category === 'gas') {
-      doc
-        .text("Scope 1", col1, currentY)
-        .text("Stationary Combustion (Natural Gas)", col2, currentY)
-        .text(scope1Total, col3, currentY);
-    } else if (calculation.category === 'fuel') {
-      doc
-        .text("Scope 1", col1, currentY)
-        .text("Mobile Combustion (Gasoline/Diesel)", col2, currentY)
-        .text(scope1Total, col3, currentY);
-    }
-  } else {
+  infoRows.forEach((text) => {
     doc
-      .text("Scope 1", col1, currentY)
-      .text("Stationary Combustion (Natural Gas)", col2, currentY)
-      .text("0.000", col3, currentY);
+      .rect(tableX, currentY, tableWidth, rowHeight)
+      .stroke();
+    
+    doc
+      .fontSize(9)
+      .fillColor('#000')
+      .text(text, tableX + 5, currentY + 5);
+    
     currentY += rowHeight;
-    doc
-      .text("Scope 1", col1, currentY)
-      .text("Mobile Combustion (Gasoline/Diesel)", col2, currentY)
-      .text("0.000", col3, currentY);
-  }
-
-  currentY += rowHeight;
-
-  // Scope 2 row
-  if (calculation.emission_type === 'scope2') {
-    doc
-      .text("Scope 2", col1, currentY)
-      .text("Purchased Electricity (Location-based)", col2, currentY)
-      .text(scope2Total, col3, currentY);
-  } else {
-    doc
-      .text("Scope 2", col1, currentY)
-      .text("Purchased Electricity (Location-based)", col2, currentY)
-      .text("0.000", col3, currentY);
-  }
-
-  currentY += rowHeight;
-
-  // Total row
-  doc
-    .moveTo(col1 - 10, currentY - 5)
-    .lineTo(500, currentY - 5)
-    .stroke();
-
-  doc
-    .font("Helvetica-Bold")
-    .text("TOTAL", col1, currentY)
-    .text("Gross Emissions", col2, currentY)
-    .text(totalMetricTons, col3, currentY);
-
-  // ==================== PAGE 4: SCOPE 2 INDIRECT EMISSIONS ====================
-  if (calculation.emission_type === 'scope2' && calculation.category === 'electricity') {
-    doc.addPage();
-    doc
-      .fontSize(18)
-      .font("Helvetica-Bold")
-      .fillColor("#000")
-      .text("4. Scope 2: Indirect Emissions", { underline: true });
-
-    doc.moveDown(0.5);
-    doc
-      .fontSize(11)
-      .font("Helvetica")
-      .text("Detailed calculation for purchased electricity.");
-
-    doc.moveDown(1);
-    const consumption = parsedData?.consumption?.value || 0;
-    const region = parsedData?.state || userState;
-    const emissionFactor = (totalCO2e / consumption / 1000).toFixed(6);
-
-    doc.font("Helvetica-Bold").text("Data Source:", { continued: true });
-    doc.font("Helvetica").text(" Utility Bills (PNG/JPG Uploads)");
-
-    doc.moveDown(0.3);
-    doc.font("Helvetica-Bold").text("Total Usage:", { continued: true });
-    doc.font("Helvetica").text(` ${consumption.toLocaleString()} kWh`);
-
-    doc.moveDown(0.3);
-    doc
-      .font("Helvetica-Bold")
-      .text("Emission Factor Source:", { continued: true });
-    doc
-      .font("Helvetica")
-      .text(` EPA eGRID ${reportingYear} - Subregion ${region}`);
-
-    doc.moveDown(0.5);
-    doc.font("Helvetica-Bold").text("Calculation:");
-    doc.moveDown(0.3);
-    doc
-      .font("Helvetica")
-      .fillColor("#2C5F2D")
-      .text(
-        `${consumption.toLocaleString()} kWh × ${emissionFactor} = ${totalMetricTons} mtCO₂e`,
-        { indent: 20 }
-      );
-  }
-
-  // ==================== PAGE 5: SCOPE 1 DIRECT EMISSIONS ====================
-  if (calculation.emission_type === 'scope1') {
-    doc.addPage();
-    doc
-      .fontSize(18)
-      .font("Helvetica-Bold")
-      .fillColor("#000")
-      .text("5. Scope 1: Direct Emissions", { underline: true });
-
-    doc.moveDown(0.5);
-    doc
-      .fontSize(11)
-      .font("Helvetica")
-      .text("Detailed calculation for direct combustion emissions.");
-
-    doc.moveDown(1);
-    const consumption = parsedData?.consumption?.value || 0;
-    const unit = parsedData?.consumption?.unit || "units";
-    const emissionFactor = (totalCO2e / consumption / 1000).toFixed(6);
-
-    if (calculation.category === 'gas') {
-      doc.font("Helvetica-Bold").text("Natural Gas:");
-      doc.moveDown(0.3);
-      doc
-        .font("Helvetica")
-        .fillColor("#2C5F2D")
-        .text(
-          `${consumption.toLocaleString()} ${unit} × ${emissionFactor} = ${totalMetricTons} mtCO₂e`,
-          { indent: 20 }
-        );
-    } else if (calculation.category === 'fuel') {
-      doc.font("Helvetica-Bold").text("Fleet Fuel:");
-      doc.moveDown(0.3);
-      doc
-        .font("Helvetica")
-        .fillColor("#2C5F2D")
-        .text(
-          `${consumption.toLocaleString()} ${unit} × ${emissionFactor} = ${totalMetricTons} mtCO₂e`,
-          { indent: 20 }
-        );
-    }
-  }
-
-  // ==================== PAGE 6: METHODOLOGY & ASSURANCE ====================
-  doc.addPage();
-  doc
-    .fontSize(18)
-    .font("Helvetica-Bold")
-    .fillColor("#000")
-    .text("6. Methodology & Assurance", { underline: true });
-
-  doc.moveDown(0.5);
-  doc
-    .fontSize(10)
-    .fillColor("#666")
-    .text("This section provides legitimacy and shields from audits.");
-
-  doc.moveDown(1);
-  doc.fontSize(11).fillColor("#000").font("Helvetica-Bold").text("Emission Factors:");
-  doc.moveDown(0.3);
-  doc
-    .font("Helvetica")
-    .text(
-      "Used from the latest EPA Emission Factors Hub and eGRID database.",
-      { indent: 20 }
-    );
-
-  doc.moveDown(0.5);
-  doc
-    .font("Helvetica-Bold")
-    .text("Global Warming Potentials (GWP):");
-  doc.moveDown(0.3);
-  doc
-    .font("Helvetica")
-    .text(
-      "Based on the IPCC Fifth Assessment Report (AR5), 100-year time horizon.",
-      { indent: 20 }
-    );
-
-  doc.moveDown(0.5);
-  doc.font("Helvetica-Bold").text("De Minimis:");
-  doc.moveDown(0.3);
-  doc
-    .font("Helvetica")
-    .text(
-      "Any sources contributing less than 1% of total emissions are excluded.",
-      { indent: 20 }
-    );
-
-  // ==================== PAGE 7: AUDITOR-READY DISCLAIMER ====================
-  doc.addPage();
-  doc
-    .fontSize(18)
-    .font("Helvetica-Bold")
-    .fillColor("#000")
-    .text("7. Auditor-Ready Disclaimer", { underline: true });
-
-  doc.moveDown(1);
-  doc
-    .fontSize(10)
-    .font("Helvetica")
-    .fillColor("#333")
-    .text(
-      `This report was generated using automated AI-based OCR technology. While CarbonEasy.ai applies the highest standards of calculation accuracy based on federal guidelines (EPA), the final responsibility for data authenticity rests with the reporting entity. This document is intended to assist with compliance and corporate disclosure.`,
-      { align: "justify" }
-    );
-
-  doc.moveDown(1.5);
-  doc
-    .font("Helvetica-Bold")
-    .text("Calculation Standards:", { underline: true });
-  doc.moveDown(0.5);
-  doc
-    .font("Helvetica")
-    .text("- GHG Protocol Corporate Standard", { indent: 20 })
-    .text("- EPA eGRID Emission Factors", { indent: 20 })
-    .text("- IPCC AR5 Global Warming Potentials", { indent: 20 });
-
-  doc.moveDown(1);
-  doc
-    .fillColor("#999")
-    .fontSize(9)
-    .text(
-      "For regulatory submissions, independent verification by a certified carbon accounting specialist is recommended.",
-      { align: "center" }
-    );
-
-  // ==================== PAGE 8: APPENDIX - SOURCE LOG ====================
-  doc.addPage();
-  doc
-    .fontSize(18)
-    .font("Helvetica-Bold")
-    .fillColor("#000")
-    .text("8. Appendix: Source Log", { underline: true });
-
-  doc.moveDown(0.5);
-  doc
-    .fontSize(10)
-    .fillColor("#666")
-    .text("All processed data files for this inventory:");
-
-  doc.moveDown(1);
-  doc.fontSize(11).fillColor("#000").font("Helvetica-Bold").text("Bill #1:");
-  doc.moveDown(0.3);
-  doc.font("Helvetica");
-  doc.text(`Date: ${periodEnd}`, { indent: 20 });
-  doc.text(`Provider: ${parsedData?.provider || "Not specified"}`, {
-    indent: 20,
   });
-  
-  if (parsedData?.consumption) {
-    doc.text(
-      `Usage: ${parsedData.consumption.value.toLocaleString()} ${
-        parsedData.consumption.unit
-      }`,
-      { indent: 20 }
-    );
-  }
-  
-  doc.text(`Status: Verified`, { indent: 20 });
-  doc.fillColor("#16a34a").text("✓ Processed successfully", { indent: 20 });
+
+  // ==================== PAGE 2: REQUIRED INFORMATION ====================
+  doc.addPage();
+
+  doc
+    .fontSize(14)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('REQUIRED INFORMATION', { align: 'center' });
 
   doc.moveDown(1);
-  doc.fillColor("#000").font("Helvetica-Bold").text("Emission Breakdown:");
-  doc.moveDown(0.3);
-  doc.font("Helvetica");
-  doc.text(`CO₂: ${co2Tons} metric tons`, { indent: 20 });
-  doc.text(`CH₄ (CO₂ equivalent): ${ch4Tons} metric tons`, { indent: 20 });
-  doc.text(`N₂O (CO₂ equivalent): ${n2oTons} metric tons`, { indent: 20 });
-  doc.moveDown(0.3);
-  doc.font("Helvetica-Bold");
-  doc.text(`Total CO₂e: ${totalMetricTons} metric tons`, { indent: 20 });
 
-  doc.moveDown(2);
+  let y = doc.y;
+  const colWidth = doc.page.width - 120;
+
+  // Exclusions question
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 30)
+    .fill();
+
   doc
     .fontSize(9)
-    .fillColor("#999")
-    .font("Helvetica")
-    .text("End of Report", { align: "center" });
+    .fillColor('#FFF')
+    .font('Helvetica')
+    .text(
+      'Have any facilities, operations and/or emissions sources been excluded from this inventory? If yes,',
+      65,
+      y + 5,
+      { width: colWidth - 10 }
+    );
+  doc.text('please specify.', 65, y + 17, { width: colWidth - 10 });
+
+  y += 30;
+
+  doc
+    .rect(60, y, colWidth, 20)
+    .stroke();
+  doc
+    .fontSize(9)
+    .fillColor('#000')
+    .text('No exclusions', 65, y + 5);
+
+  y += 25;
+
+  // Reporting period
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 20)
+    .fill();
+
+  doc
+    .fontSize(9)
+    .fillColor('#FFF')
+    .text('Reporting period covered by this inventory:', 65, y + 5);
+
+  y += 20;
+
+  doc
+    .rect(60, y, colWidth, 20)
+    .stroke();
+  doc
+    .fontSize(9)
+    .fillColor('#000')
+    .text(`${formatDate(periodStartDate)} to ${formatDate(periodEndDate)}`, 65, y + 5);
+
+  y += 25;
+
+  // ORGANIZATIONAL BOUNDARIES
+  doc
+    .fontSize(11)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('ORGANIZATIONAL BOUNDARIES', 60, y);
+
+  y += 20;
+
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 30)
+    .fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .font('Helvetica')
+    .text(
+      'What approach is your company using? (Check each consolidation approach for which your company is',
+      65,
+      y + 5,
+      { width: colWidth - 10 }
+    );
+  doc.text(
+    'reporting emissions.) If your company is reporting according to more than one consolidation approach,',
+    65,
+    y + 15,
+    { width: colWidth - 10 }
+  );
+
+  y += 30;
+
+  const checkboxY = y;
+  const checkboxSpacing = (colWidth - 20) / 3;
+
+  doc.rect(60, checkboxY, colWidth, 25).stroke();
+
+  doc
+    .fontSize(9)
+    .fillColor('#000')
+    .text('☐ Equity Share', 70, checkboxY + 7);
+  doc.text('☐ Financial Control', 70 + checkboxSpacing, checkboxY + 7);
+  doc.text('☑ Operational Control', 70 + checkboxSpacing * 2, checkboxY + 7);
+
+  y = checkboxY + 30;
+
+  // OPERATIONAL BOUNDARIES
+  doc
+    .fontSize(11)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('OPERATIONAL BOUNDARIES', 60, y);
+
+  y += 20;
+
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 20)
+    .fill();
+
+  doc
+    .fontSize(9)
+    .fillColor('#FFF')
+    .font('Helvetica')
+    .text('Are Scope 3 emissions included in this inventory?', 65, y + 5);
+
+  y += 20;
+
+  doc.rect(60, y, colWidth, 20).stroke();
+  doc
+    .fontSize(9)
+    .fillColor('#000')
+    .text('☐ Yes     ☑ No', 65, y + 5);
+
+  y += 25;
+
+  // INFORMATION ON EMISSIONS
+  doc
+    .fontSize(11)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('INFORMATION ON EMISSIONS', 60, y);
+
+  y += 15;
+
+  doc
+    .fontSize(8)
+    .fillColor(grayColor)
+    .font('Helvetica')
+    .text(
+      'The table below refers to emissions independent of any GHG trades such as sales, purchases, transfers,',
+      60,
+      y,
+      { width: colWidth }
+    );
+  doc.text('or banking of allowances.', 60, y + 10, { width: colWidth });
+
+  y += 30;
+
+  // Emissions table
+  const tableStartY = y;
+  const col1X = 60;
+  const col1Width = 80;
+  const col2Width = 60;
+  const numCols = 8;
+  const dataColWidth = (colWidth - col1Width) / numCols;
+
+  // Header row
+  doc.fillColor(tealColor).rect(col1X, tableStartY, colWidth, 20).fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .font('Helvetica-Bold')
+    .text('EMISSIONS', col1X + 5, tableStartY + 5, { width: col1Width - 10 });
+
+  const headers = ['TOTAL\n(mtCO2e)', 'CO2\n(mt)', 'CH4\n(mt)', 'N2O\n(mt)', 'HFCs\n(mt)', 'PFCs\n(mt)', 'SF6\n(mt)', 'Other\n(mt)'];
+  
+  headers.forEach((header, i) => {
+    const x = col1X + col1Width + i * dataColWidth;
+    doc.text(header, x + 2, tableStartY + 2, { width: dataColWidth - 4, align: 'center' });
+  });
+
+  y = tableStartY + 20;
+
+  // Data rows
+  const emissionRows = [
+    { label: 'Scope 1', total: scope1Total, co2: calculation.emission_type === 'scope1' ? co2Tons : '0.000', ch4: calculation.emission_type === 'scope1' ? ch4Tons : '0.000', n2o: calculation.emission_type === 'scope1' ? n2oTons : '0.000' },
+    { label: 'Scope 2', total: scope2Total, co2: calculation.emission_type === 'scope2' ? co2Tons : '0.000', ch4: calculation.emission_type === 'scope2' ? ch4Tons : '0.000', n2o: calculation.emission_type === 'scope2' ? n2oTons : '0.000' },
+    { label: 'Scope 3\n(OPTIONAL)', total: '0.000', co2: '0.000', ch4: '0.000', n2o: '0.000' },
+  ];
+
+  emissionRows.forEach((row) => {
+    doc.rect(col1X, y, col1Width, 20).stroke();
+    doc
+      .fontSize(9)
+      .fillColor('#000')
+      .font('Helvetica')
+      .text(row.label, col1X + 5, y + 5, { width: col1Width - 10 });
+
+    // Total
+    doc.rect(col1X + col1Width, y, dataColWidth, 20).stroke();
+    doc.text(row.total, col1X + col1Width + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    // CO2
+    doc.rect(col1X + col1Width + dataColWidth, y, dataColWidth, 20).stroke();
+    doc.text(row.co2, col1X + col1Width + dataColWidth + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    // CH4
+    doc.rect(col1X + col1Width + dataColWidth * 2, y, dataColWidth, 20).stroke();
+    doc.text(row.ch4, col1X + col1Width + dataColWidth * 2 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    // N2O
+    doc.rect(col1X + col1Width + dataColWidth * 3, y, dataColWidth, 20).stroke();
+    doc.text(row.n2o, col1X + col1Width + dataColWidth * 3 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    // Empty columns (HFCs, PFCs, SF6, Other)
+    for (let i = 4; i < 8; i++) {
+      doc.rect(col1X + col1Width + dataColWidth * i, y, dataColWidth, 20).stroke();
+      doc.text('0.000', col1X + col1Width + dataColWidth * i + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+    }
+
+    y += 20;
+  });
+
+  y += 10;
+
+  // Biogenic emissions note
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 20)
+    .fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .font('Helvetica')
+    .text('Direct CO2 emissions from biogenic combustion (mtCO2)', 65, y + 5);
+
+  y += 20;
+
+  doc.rect(60, y, colWidth, 20).stroke();
+  doc
+    .fontSize(9)
+    .fillColor('#000')
+    .text('0.000', 65, y + 5);
+
+  y += 30;
+
+  // BASE YEAR section
+  doc
+    .fontSize(11)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('BASE YEAR', 60, y);
+
+  y += 20;
+
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 15)
+    .fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .font('Helvetica')
+    .text('Year chosen as base year', 65, y + 3);
+
+  y += 15;
+
+  doc.rect(60, y, colWidth, 15).stroke();
+  doc
+    .fontSize(9)
+    .fillColor('#000')
+    .text(reportingYear.toString(), 65, y + 3);
+
+  y += 20;
+
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 15)
+    .fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .text('Clarification of company-determined policy for making base year emissions recalculations', 65, y + 3);
+
+  y += 15;
+
+  doc.rect(60, y, colWidth, 15).stroke();
+  doc
+    .fontSize(8)
+    .fillColor('#000')
+    .text('First year of operation', 65, y + 3);
+
+  y += 20;
+
+  // Context for any significant emissions changes
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 20)
+    .fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .text('Context for any significant emissions changes that triggered base year emissions recalculations', 65, y + 5);
+
+  y += 20;
+
+  doc.rect(60, y, colWidth, 15).stroke();
+  doc
+    .fontSize(8)
+    .fillColor('#000')
+    .text('N/A', 65, y + 3);
+
+  // ==================== PAGE 3: BASE YEAR EMISSIONS TABLE ====================
+  doc.addPage();
+
+  y = 60;
+
+  doc
+    .fontSize(11)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('Base year emissions', 60, y);
+
+  y += 20;
+
+  // Base year emissions table (same structure as current year)
+  doc.fillColor(tealColor).rect(col1X, y, colWidth, 20).fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .font('Helvetica-Bold')
+    .text('EMISSIONS', col1X + 5, y + 5, { width: col1Width - 10 });
+
+  headers.forEach((header, i) => {
+    const x = col1X + col1Width + i * dataColWidth;
+    doc.text(header, x + 2, y + 2, { width: dataColWidth - 4, align: 'center' });
+  });
+
+  y += 20;
+
+  // Same data for base year (first reporting year)
+  emissionRows.forEach((row) => {
+    doc.rect(col1X, y, col1Width, 20).stroke();
+    doc
+      .fontSize(9)
+      .fillColor('#000')
+      .font('Helvetica')
+      .text(row.label, col1X + 5, y + 5, { width: col1Width - 10 });
+
+    doc.rect(col1X + col1Width, y, dataColWidth, 20).stroke();
+    doc.text(row.total, col1X + col1Width + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    doc.rect(col1X + col1Width + dataColWidth, y, dataColWidth, 20).stroke();
+    doc.text(row.co2, col1X + col1Width + dataColWidth + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    doc.rect(col1X + col1Width + dataColWidth * 2, y, dataColWidth, 20).stroke();
+    doc.text(row.ch4, col1X + col1Width + dataColWidth * 2 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    doc.rect(col1X + col1Width + dataColWidth * 3, y, dataColWidth, 20).stroke();
+    doc.text(row.n2o, col1X + col1Width + dataColWidth * 3 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    for (let i = 4; i < 8; i++) {
+      doc.rect(col1X + col1Width + dataColWidth * i, y, dataColWidth, 20).stroke();
+      doc.text('0.000', col1X + col1Width + dataColWidth * i + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+    }
+
+    y += 20;
+  });
+
+  y += 20;
+
+  // METHODOLOGIES AND EMISSION FACTORS
+  doc
+    .fontSize(11)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('METHODOLOGIES AND EMISSION FACTORS', 60, y);
+
+  y += 20;
+
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 30)
+    .fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .font('Helvetica')
+    .text(
+      'If you have used calculation tools or methodologies other than those provided by the GHG Protocol,',
+      65,
+      y + 5
+    );
+  doc.text('provide the name of and link to any other GHG Protocol calculation tools used.', 65, y + 17);
+
+  y += 30;
+
+  doc.rect(60, y, colWidth, 25).stroke();
+  doc
+    .fontSize(8)
+    .fillColor('#000')
+    .text('EPA eGRID 2023, EPA Emission Factors Hub, Climatiq API', 65, y + 5, { width: colWidth - 10 });
+
+  y += 35;
+
+  // Optional Information header
+  doc
+    .fontSize(14)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('Optional Information', { align: 'center' });
+
+  y = doc.y + 15;
+
+  // Information on emissions breakdown
+  doc
+    .fontSize(10)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('INFORMATION ON EMISSIONS', 60, y);
+
+  y += 20;
+
+  const detailRows = [
+    'Scope 1: Direct Emissions from Owned/Controlled Operations',
+    calculation.category === 'gas' ? 'a. Direct Emissions from Stationary Combustion' : '',
+    calculation.category === 'fuel' ? 'b. Direct Emissions from Mobile Combustion' : '',
+    '',
+    'Scope 2: Indirect Emissions from the Use of Purchased',
+    calculation.category === 'electricity' ? 'a. Indirect Emissions from Purchased/Acquired Electricity' : '',
+  ].filter(text => text !== '');
+
+  detailRows.forEach((text, index) => {
+    doc
+      .fillColor(tealColor)
+      .rect(60, y, colWidth, 18)
+      .fill();
+    
+    doc
+      .fontSize(8)
+      .fillColor('#FFF')
+      .font('Helvetica')
+      .text(text, 65, y + 5);
+    
+    y += 18;
+
+    doc.rect(60, y, colWidth, 18).stroke();
+    
+    const value = text.includes('Stationary') || text.includes('Mobile') || text.includes('Electricity') 
+      ? totalMetricTons + ' mtCO2e'
+      : '';
+    
+    doc
+      .fontSize(9)
+      .fillColor('#000')
+      .text(value, 65, y + 5);
+    
+    y += 20;
+  });
+
+  y += 10;
+
+  // Source information
+  doc
+    .fillColor(tealColor)
+    .rect(60, y, colWidth, 18)
+    .fill();
+
+  doc
+    .fontSize(8)
+    .fillColor('#FFF')
+    .text('Emissions disaggregated by facility (recommended for individual facilities with stationary combustion)', 65, y + 5);
+
+  y += 18;
+
+  doc.rect(60, y, 150, 18).stroke();
+  doc.rect(210, y, colWidth - 150, 18).stroke();
+
+  doc
+    .fontSize(8)
+    .fillColor('#000')
+    .font('Helvetica-Bold')
+    .text('Facility', 65, y + 5);
+  doc.text('Scope 1 emissions', 215, y + 5);
+
+  y += 18;
+
+  const provider = parsedData?.provider || 'Primary Facility';
+  doc.rect(60, y, 150, 18).stroke();
+  doc.rect(210, y, colWidth - 150, 18).stroke();
+  
+  doc
+    .fontSize(8)
+    .fillColor('#000')
+    .font('Helvetica')
+    .text(provider, 65, y + 5);
+  doc.text(scope1Total + ' mtCO2e', 215, y + 5);
+
+  y += 30;
+
+  // Final note
+  doc
+    .fontSize(8)
+    .fillColor(grayColor)
+    .font('Helvetica-Oblique')
+    .text(
+      'This report was generated by CarbonEasy.ai using automated AI-based OCR technology and EPA emission factors.',
+      60,
+      y,
+      { width: colWidth, align: 'center' }
+    );
+
+  y += 15;
+
+  doc.text(
+    'Calculations comply with GHG Protocol Corporate Standard. Independent verification is recommended for regulatory submissions.',
+    60,
+    y,
+    { width: colWidth, align: 'center' }
+  );
 
   return doc;
 }

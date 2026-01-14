@@ -117,7 +117,9 @@ export const replaceDocument = asyncHandler(
 
     // Update calculation with new document ID
     await CarbonModel.updateDocument(calculationId, newDocumentId);
-    console.log(`🔄 Replaced document for calculation ${calculationId} with doc ${newDocumentId}`);
+    console.log(
+      `🔄 Replaced document for calculation ${calculationId} with doc ${newDocumentId}`
+    );
 
     res.json({
       success: true,

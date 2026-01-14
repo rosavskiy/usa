@@ -81,12 +81,11 @@ export default function CookieConsent() {
                 <strong>Right to know:</strong> what data we collect
               </li>
               <li>
-                <strong>Right to delete:</strong> request deletion of your
-                data
+                <strong>Right to delete:</strong> request deletion of your data
               </li>
               <li>
-                <strong>Right to opt-out:</strong> of data sales (we do NOT
-                sell data)
+                <strong>Right to opt-out:</strong> of data sales (we do NOT sell
+                data)
               </li>
               <li>
                 <strong>Right to access:</strong> get a copy of your data
@@ -122,18 +121,18 @@ export default function CookieConsent() {
               <p className="text-sm text-green-900">
                 <strong>✓ PROFESSIONAL STANDARDS:</strong> Our calculations
                 comply with GHG Protocol, EPA Emission Factors, ISO 14064-1.
-                Suitable for official reporting to CDP, SEC Climate
-                Disclosure, GRI Standards. AI parsing with 95%+ accuracy on
-                quality documents.
+                Suitable for official reporting to CDP, SEC Climate Disclosure,
+                GRI Standards. AI parsing with 95%+ accuracy on quality
+                documents.
               </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded mt-4">
               <p className="text-xs text-gray-600">
-                By using our service, you agree to data processing as
-                described above. We implement encryption, secure storage, and
-                regular security audits. Data is not shared with third parties,
-                except OpenAI for AI processing (per their
+                By using our service, you agree to data processing as described
+                above. We implement encryption, secure storage, and regular
+                security audits. Data is not shared with third parties, except
+                OpenAI for AI processing (per their
                 <a
                   href="https://openai.com/privacy"
                   target="_blank"
@@ -145,8 +144,7 @@ export default function CookieConsent() {
                 ).
               </p>
               <p className="text-xs text-gray-600 mt-2">
-                For privacy questions:{" "}
-                <strong>privacy@carbontracker.ai</strong>
+                For privacy questions: <strong>privacy@carbontracker.ai</strong>
               </p>
             </div>
           </div>

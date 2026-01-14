@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { register, login, getProfile, googleCallback } from "../controllers/auth.controller";
+import {
+  register,
+  login,
+  getProfile,
+  googleCallback,
+} from "../controllers/auth.controller";
 import { authenticate } from "../middleware/auth.middleware";
 import passport from "../config/passport";
 
@@ -17,7 +22,12 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=auth_failed` }),
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: `${
+      process.env.FRONTEND_URL || "http://localhost:3000"
+    }/login?error=auth_failed`,
+  }),
   googleCallback
 );
 

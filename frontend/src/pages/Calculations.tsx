@@ -387,7 +387,8 @@ export default function Calculations() {
     } catch (error: any) {
       console.error("Failed to replace bill:", error);
       alert(
-        error.response?.data?.message || "Failed to replace bill. Please try again."
+        error.response?.data?.message ||
+          "Failed to replace bill. Please try again."
       );
     } finally {
       setReplacing(false);
@@ -480,7 +481,12 @@ export default function Calculations() {
             Download Individual Reports
           </h3>
           <p className="text-sm text-green-800">
-            To download an official GHG Protocol report for any calculation, click the <span className="font-semibold text-green-600">green download button</span> (📄) next to that calculation.
+            To download an official GHG Protocol report for any calculation,
+            click the{" "}
+            <span className="font-semibold text-green-600">
+              green download button
+            </span>{" "}
+            (📄) next to that calculation.
           </p>
         </div>
       )}
@@ -901,7 +907,9 @@ export default function Calculations() {
             {replacing && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm flex items-center gap-3">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                <span>⏳ Processing new bill... This may take 10-30 seconds.</span>
+                <span>
+                  ⏳ Processing new bill... This may take 10-30 seconds.
+                </span>
               </div>
             )}
             <div className="flex gap-3">

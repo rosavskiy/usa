@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { AlertCircle, Settings } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { AlertCircle, Settings } from "lucide-react";
 
 export default function ProfileCompleteModal() {
   const { user } = useAuth();
@@ -10,7 +10,7 @@ export default function ProfileCompleteModal() {
 
   useEffect(() => {
     // Show modal if user logged in but company name is empty
-    if (user && (!user.companyName || user.companyName.trim() === '')) {
+    if (user && (!user.companyName || user.companyName.trim() === "")) {
       setShow(true);
     } else {
       setShow(false);
@@ -32,12 +32,13 @@ export default function ProfileCompleteModal() {
             </h3>
             <p className="text-gray-700 mb-4">
               Please complete your company profile to get started. We need your
-              company name and state to provide accurate carbon emission calculations.
+              company name and state to provide accurate carbon emission
+              calculations.
             </p>
             <button
               onClick={() => {
                 setShow(false);
-                navigate('/settings');
+                navigate("/settings");
               }}
               className="w-full btn-primary flex items-center justify-center gap-2"
             >

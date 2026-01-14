@@ -124,7 +124,13 @@ export async function calculateEmissions(
     }
   }
 
-  console.log(`🎯 Category: ${category}, Scope: ${emissionType}${options.manualCategory || options.manualScope ? ' (manual override)' : ' (auto-detected)'}`);
+  console.log(
+    `🎯 Category: ${category}, Scope: ${emissionType}${
+      options.manualCategory || options.manualScope
+        ? " (manual override)"
+        : " (auto-detected)"
+    }`
+  );
 
   const consumption = parsedData.consumption?.value || 0;
   const unit = (parsedData.consumption?.unit || "kWh").toLowerCase();
@@ -167,7 +173,6 @@ export async function calculateEmissions(
   const ch4Kg = co2e_kg * 0.02; // ~2% equivalent from CH4
   const n2oKg = co2e_kg * 0.01; // ~1% equivalent from N2O
   const totalCo2eKg = co2e_kg;
-
 
   // Save calculation
   const calculation = await CarbonModel.create({

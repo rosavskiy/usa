@@ -64,7 +64,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    e.target.setCustomValidity('');
+                    e.target.setCustomValidity("");
                   }}
                   className="input-field pl-10"
                   placeholder="your@email.com"
@@ -87,7 +87,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    e.target.setCustomValidity('');
+                    e.target.setCustomValidity("");
                   }}
                   className="input-field pl-10 pr-10"
                   placeholder="••••••••"
@@ -118,7 +118,9 @@ export default function Login() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white text-gray-500">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -126,7 +128,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => {
-              window.location.href = 'http://localhost:5000/api/auth/google';
+              window.location.href = "http://localhost:5000/api/auth/google";
             }}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
@@ -148,7 +150,9 @@ export default function Login() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="font-medium text-gray-700">Sign in with Google</span>
+            <span className="font-medium text-gray-700">
+              Sign in with Google
+            </span>
           </button>
 
           <p className="text-center mt-6 text-sm text-gray-600">
