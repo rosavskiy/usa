@@ -352,7 +352,6 @@ export async function generateCarbonReport(
   const tableStartY = y;
   const col1X = 60;
   const col1Width = 80;
-  const col2Width = 60;
   const numCols = 8;
   const dataColWidth = (colWidth - col1Width) / numCols;
 
@@ -629,7 +628,7 @@ export async function generateCarbonReport(
     calculation.category === 'electricity' ? 'a. Indirect Emissions from Purchased/Acquired Electricity' : '',
   ].filter(text => text !== '');
 
-  detailRows.forEach((text, index) => {
+  detailRows.forEach((text) => {
     doc
       .fillColor(tealColor)
       .rect(60, y, colWidth, 18)
