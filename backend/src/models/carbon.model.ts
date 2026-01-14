@@ -9,6 +9,10 @@ export interface CarbonCalculation {
   co2_kg: number;
   ch4_kg: number;
   n2o_kg: number;
+  hfcs_kg: number;
+  pfcs_kg: number;
+  sf6_kg: number;
+  other_kg: number;
   total_co2e_kg: number;
   calculation_date: Date;
   period_start: Date;
@@ -23,6 +27,10 @@ export interface CreateCarbonCalculationDTO {
   co2Kg: number;
   ch4Kg: number;
   n2oKg: number;
+  hfcsKg?: number;
+  pfcsKg?: number;
+  sf6Kg?: number;
+  otherKg?: number;
   totalCo2eKg: number;
   periodStart: Date;
   periodEnd: Date;
@@ -34,8 +42,8 @@ export class CarbonModel {
   ): Promise<CarbonCalculation> {
     const result = await query(
       `INSERT INTO carbon_calculations 
-       (user_id, document_id, emission_type, category, co2_kg, ch4_kg, n2o_kg, total_co2e_kg, period_start, period_end) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+       (user_id, document_id, emission_type, category, co2_kg, ch4_kg, n2o_kg, hfcs_kg, pfcs_kg, sf6_kg, other_kg, total_co2e_kg, period_start, period_end) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
        RETURNING *`,
       [
         data.userId,
@@ -45,6 +53,10 @@ export class CarbonModel {
         data.co2Kg,
         data.ch4Kg,
         data.n2oKg,
+        data.hfcsKg || 0,
+        data.pfcsKg || 0,
+        data.sf6Kg || 0,
+        data.otherKg || 0,
         data.totalCo2eKg,
         data.periodStart,
         data.periodEnd,

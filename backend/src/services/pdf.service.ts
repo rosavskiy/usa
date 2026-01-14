@@ -47,12 +47,16 @@ export async function generateCarbonReport(
     return `${mm}/${dd}/${yyyy}`;
   };
 
-  // Calculate totals in metric tons
+  // Calculate totals in metric tons (mt)
   const totalCO2e = Number(calculation.total_co2e_kg);
   const totalMetricTons = (totalCO2e / 1000).toFixed(3);
-  const co2Tons = (Number(calculation.co2_kg) / 1000).toFixed(3);
-  const ch4Tons = (Number(calculation.ch4_kg) / 1000).toFixed(3);
-  const n2oTons = (Number(calculation.n2o_kg) / 1000).toFixed(3);
+  const co2Mt = (Number(calculation.co2_kg) / 1000).toFixed(3);
+  const ch4Mt = (Number(calculation.ch4_kg) / 1000).toFixed(3);
+  const n2oMt = (Number(calculation.n2o_kg) / 1000).toFixed(3);
+  const hfcsMt = (Number(calculation.hfcs_kg || 0) / 1000).toFixed(3);
+  const pfcsMt = (Number(calculation.pfcs_kg || 0) / 1000).toFixed(3);
+  const sf6Mt = (Number(calculation.sf6_kg || 0) / 1000).toFixed(3);
+  const otherMt = (Number(calculation.other_kg || 0) / 1000).toFixed(3);
 
   const scope1Total = calculation.emission_type === 'scope1' ? totalMetricTons : '0.000';
   const scope2Total = calculation.emission_type === 'scope2' ? totalMetricTons : '0.000';
@@ -375,9 +379,39 @@ export async function generateCarbonReport(
 
   // Data rows
   const emissionRows = [
-    { label: 'Scope 1', total: scope1Total, co2: calculation.emission_type === 'scope1' ? co2Tons : '0.000', ch4: calculation.emission_type === 'scope1' ? ch4Tons : '0.000', n2o: calculation.emission_type === 'scope1' ? n2oTons : '0.000' },
-    { label: 'Scope 2', total: scope2Total, co2: calculation.emission_type === 'scope2' ? co2Tons : '0.000', ch4: calculation.emission_type === 'scope2' ? ch4Tons : '0.000', n2o: calculation.emission_type === 'scope2' ? n2oTons : '0.000' },
-    { label: 'Scope 3\n(OPTIONAL)', total: '0.000', co2: '0.000', ch4: '0.000', n2o: '0.000' },
+    { 
+      label: 'Scope 1', 
+      total: scope1Total, 
+      co2: calculation.emission_type === 'scope1' ? co2Mt : '0.000', 
+      ch4: calculation.emission_type === 'scope1' ? ch4Mt : '0.000', 
+      n2o: calculation.emission_type === 'scope1' ? n2oMt : '0.000',
+      hfcs: calculation.emission_type === 'scope1' ? hfcsMt : '0.000',
+      pfcs: calculation.emission_type === 'scope1' ? pfcsMt : '0.000',
+      sf6: calculation.emission_type === 'scope1' ? sf6Mt : '0.000',
+      other: calculation.emission_type === 'scope1' ? otherMt : '0.000'
+    },
+    { 
+      label: 'Scope 2', 
+      total: scope2Total, 
+      co2: calculation.emission_type === 'scope2' ? co2Mt : '0.000', 
+      ch4: calculation.emission_type === 'scope2' ? ch4Mt : '0.000', 
+      n2o: calculation.emission_type === 'scope2' ? n2oMt : '0.000',
+      hfcs: calculation.emission_type === 'scope2' ? hfcsMt : '0.000',
+      pfcs: calculation.emission_type === 'scope2' ? pfcsMt : '0.000',
+      sf6: calculation.emission_type === 'scope2' ? sf6Mt : '0.000',
+      other: calculation.emission_type === 'scope2' ? otherMt : '0.000'
+    },
+    { 
+      label: 'Scope 3\n(OPTIONAL)', 
+      total: '0.000', 
+      co2: '0.000', 
+      ch4: '0.000', 
+      n2o: '0.000',
+      hfcs: '0.000',
+      pfcs: '0.000',
+      sf6: '0.000',
+      other: '0.000'
+    },
   ];
 
   emissionRows.forEach((row) => {
@@ -404,11 +438,21 @@ export async function generateCarbonReport(
     doc.rect(col1X + col1Width + dataColWidth * 3, y, dataColWidth, 20).stroke();
     doc.text(row.n2o, col1X + col1Width + dataColWidth * 3 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
 
-    // Empty columns (HFCs, PFCs, SF6, Other)
-    for (let i = 4; i < 8; i++) {
-      doc.rect(col1X + col1Width + dataColWidth * i, y, dataColWidth, 20).stroke();
-      doc.text('0.000', col1X + col1Width + dataColWidth * i + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
-    }
+    // HFCs
+    doc.rect(col1X + col1Width + dataColWidth * 4, y, dataColWidth, 20).stroke();
+    doc.text(row.hfcs, col1X + col1Width + dataColWidth * 4 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    // PFCs
+    doc.rect(col1X + col1Width + dataColWidth * 5, y, dataColWidth, 20).stroke();
+    doc.text(row.pfcs, col1X + col1Width + dataColWidth * 5 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    // SF6
+    doc.rect(col1X + col1Width + dataColWidth * 6, y, dataColWidth, 20).stroke();
+    doc.text(row.sf6, col1X + col1Width + dataColWidth * 6 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
+
+    // Other
+    doc.rect(col1X + col1Width + dataColWidth * 7, y, dataColWidth, 20).stroke();
+    doc.text(row.other, col1X + col1Width + dataColWidth * 7 + 2, y + 7, { width: dataColWidth - 4, align: 'center' });
 
     y += 20;
   });
@@ -705,6 +749,25 @@ export async function generateCarbonReport(
   doc.text(facilityInfo, 215, y + 5, { width: colWidth - 155 });
 
   y += 30;
+
+  // Detailed Emission Breakdown
+  doc.fillColor('#000').font('Helvetica-Bold').text('Emission Breakdown by Gas:', 60, y);
+  doc.moveDown(0.3);
+  y = doc.y;
+  
+  doc.font('Helvetica');
+  doc.text(`CO₂: ${co2Mt} metric tons`, { indent: 20 });
+  doc.text(`CH₄ (CO₂ equivalent): ${ch4Mt} metric tons`, { indent: 20 });
+  doc.text(`N₂O (CO₂ equivalent): ${n2oMt} metric tons`, { indent: 20 });
+  doc.text(`HFCs (CO₂ equivalent): ${hfcsMt} metric tons`, { indent: 20 });
+  doc.text(`PFCs (CO₂ equivalent): ${pfcsMt} metric tons`, { indent: 20 });
+  doc.text(`SF₆ (CO₂ equivalent): ${sf6Mt} metric tons`, { indent: 20 });
+  doc.text(`Other (CO₂ equivalent): ${otherMt} metric tons`, { indent: 20 });
+  doc.moveDown(0.3);
+  doc.font('Helvetica-Bold');
+  doc.text(`Total CO₂e: ${totalMetricTons} metric tons`, { indent: 20 });
+
+  y = doc.y + 20;
 
   // Final note
   doc
