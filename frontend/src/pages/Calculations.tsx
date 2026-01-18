@@ -89,13 +89,13 @@ export default function Calculations() {
   const getScopeColor = (scope: string) => {
     switch (scope) {
       case "scope1":
-        return "bg-red-100 text-red-700";
+        return "bg-orange-50 text-orange-700 border border-orange-200";
       case "scope2":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-primary-50 text-primary-700 border border-primary-200";
       case "scope3":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-50 text-blue-700 border border-blue-200";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "bg-gray-50 text-gray-700 border border-gray-200";
     }
   };
 
@@ -452,38 +452,36 @@ export default function Calculations() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl font-medium text-gray-900">
           Carbon Calculations
         </h1>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <BarChart3 size={20} />
-            <span>{calculations.length} calculations</span>
-            {selectedYear !== "all" && (
-              <span className="text-blue-600 font-medium">
-                (Year {selectedYear})
-              </span>
-            )}
-          </div>
+        <div className="flex items-center gap-3 text-sm text-gray-600">
+          <BarChart3 size={18} strokeWidth={2} />
+          <span className="font-medium">{calculations.length} calculations</span>
+          {selectedYear !== "all" && (
+            <span className="text-primary-600 font-medium">
+              (Year {selectedYear})
+            </span>
+          )}
         </div>
       </div>
 
       {/* Archive Filter */}
       {allCalculations.length > 0 && (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <h3 className="font-bold text-purple-900 mb-3 flex items-center gap-2">
-            <Calendar size={20} />
-            📂 Archive - Filter by Fiscal Year
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
+          <h3 className="font-medium text-primary-900 mb-4 flex items-center gap-2">
+            <Calendar size={18} strokeWidth={2} />
+            Archive - Filter by Fiscal Year
           </h3>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedYear("all")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedYear === "all"
-                  ? "bg-purple-600 text-white"
-                  : "bg-white text-purple-600 hover:bg-purple-100"
+                  ? "bg-primary-600 text-white"
+                  : "bg-white text-primary-700 border border-primary-200 hover:bg-primary-100"
               }`}
             >
               All Years ({allCalculations.length})
@@ -506,8 +504,8 @@ export default function Calculations() {
                     onClick={() => setSelectedYear(year)}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                       selectedYear === year
-                        ? "bg-purple-600 text-white"
-                        : "bg-white text-purple-600 hover:bg-purple-100"
+                        ? "bg-primary-600 text-white"
+                        : "bg-white text-primary-700 border border-primary-200 hover:bg-primary-100"
                     }`}
                   >
                     {year} ({count})
@@ -515,7 +513,7 @@ export default function Calculations() {
                 );
               })}
           </div>
-          <p className="text-xs text-purple-700 mt-3">
+          <p className="text-xs text-primary-700 mt-3">
             💡 Use this to review past fiscal years for compliance audits and
             historical trend analysis
           </p>
@@ -524,11 +522,11 @@ export default function Calculations() {
 
       {/* Selection Controls */}
       {calculations.length > 0 && (
-        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-primary-900 mb-1 flex items-center gap-2">
-                <FileDown size={20} />
+              <h3 className="font-medium text-primary-900 mb-1.5 flex items-center gap-2">
+                <FileDown size={18} strokeWidth={2} />
                 Generate Combined Report
               </h3>
               <p className="text-sm text-primary-800">
@@ -539,7 +537,7 @@ export default function Calculations() {
             <div className="flex gap-3">
               <button
                 onClick={toggleSelectAll}
-                className="px-4 py-2 bg-white text-primary-600 border-2 border-primary-300 rounded-lg hover:bg-primary-100 transition-colors font-medium"
+                className="px-4 py-2.5 bg-white text-primary-600 border border-primary-300 rounded-lg hover:bg-primary-50 transition-colors font-medium"
               >
                 {selectedCalcs.size === calculations.length
                   ? "Deselect All"
@@ -773,11 +771,11 @@ export default function Calculations() {
       )}
 
       {calculations.length > 0 && (
-        <div className="card bg-green-50 border-green-200">
-          <h3 className="font-bold text-green-900 mb-2">
-            📊 Understanding your emissions:
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
+          <h3 className="font-medium text-primary-900 mb-3">
+            Understanding your emissions:
           </h3>
-          <ul className="space-y-1 text-sm text-green-800">
+          <ul className="space-y-2 text-sm text-primary-800">
             <li>
               • <strong>Scope 1:</strong> Direct emissions (natural gas, company
               vehicles)
