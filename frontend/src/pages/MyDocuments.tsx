@@ -86,7 +86,7 @@ export default function MyDocuments() {
     switch (status) {
       case "completed":
         return (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-success-200 bg-success-50 text-success-700">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-primary-200 bg-primary-50 text-primary-700">
             <CheckCircle size={14} strokeWidth={2} />
             <span className="text-xs font-medium">Readable</span>
           </div>
