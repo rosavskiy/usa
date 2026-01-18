@@ -211,8 +211,8 @@ export default function Dashboard() {
               </p>
               <p className="text-sm text-gray-500 mt-1">kg CO₂e total</p>
             </div>
-            <div className="bg-success-50 p-3 rounded-lg">
-              <TrendingDown className="text-success-600" size={24} strokeWidth={2} />
+            <div className="bg-primary-50 p-3 rounded-lg">
+              <TrendingDown className="text-primary-600" size={24} strokeWidth={2} />
             </div>
           </div>
         </div>
@@ -241,8 +241,8 @@ export default function Dashboard() {
               </p>
               <p className="text-sm text-gray-500 mt-1">kg CO₂e per document</p>
             </div>
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <BarChart3 className="text-blue-600" size={24} strokeWidth={2} />
+            <div className="bg-primary-50 p-3 rounded-lg">
+              <BarChart3 className="text-primary-600" size={24} strokeWidth={2} />
             </div>
           </div>
         </div>
