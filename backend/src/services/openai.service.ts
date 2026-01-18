@@ -1,4 +1,5 @@
 import axios from "axios";
+import fs from "fs";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
@@ -49,11 +50,15 @@ Return ONLY JSON.`;
 }
 
 export async function parseUtilityBillImageWithOpenAI(
-  imageBase64: string
+  filePath: string
 ): Promise<any> {
   if (!OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY not configured");
   }
+
+  // Read file and convert to base64
+  const imageBuffer = fs.readFileSync(filePath);
+  const imageBase64 = imageBuffer.toString('base64');
 
   const payload = {
     model: OPENAI_VISION_MODEL,
