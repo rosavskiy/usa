@@ -1,5 +1,5 @@
 import { DocumentModel } from "../models/document.model";
-import { extractTextFromImage } from "./ocr.service";
+import { parseUtilityBillImageWithOpenAI } from "./openai.service";
 
 export async function parseDocumentWithAI(
   documentId: number,
@@ -12,23 +12,11 @@ export async function parseDocumentWithAI(
     await DocumentModel.updateParsedData(documentId, {}, "processing");
     console.log(`📝 Status updated to processing`);
 
-    // STRATEGY: Use OCR.space + regex parsing (AI vision disabled)
-    let parsedData;
+    // Use OpenAI Vision API for parsing
+    console.log(`🤖 Using OpenAI Vision API for parsing...`);
+    const parsedData = await parseUtilityBillImageWithOpenAI(filePath);
+    console.log(`🎯 OpenAI parsed data:`, parsedData);
 
-    // AI Vision parsing disabled - using OCR + regex
-    console.log(`📝 AI vision disabled, using OCR.space + regex parsing`);
-
-    // Extract text using OCR (OCR.space)
-    const ocrText = await extractTextFromImage(filePath);
-    console.log(`✨ OCR extracted text (${ocrText.length} chars):`);
-    console.log(ocrText);
-
-    // Parse the text using regex
-    console.log(`🔍 Parsing extracted text with regex...`);
-    parsedData = parseUtilityBillText(ocrText);
-    console.log(`🎯 Regex parsed data:`, parsedData);
-
-    // Skip watermark and consumption validation - allow parsing
     // Save parsed data
     await DocumentModel.updateParsedData(documentId, parsedData, "completed");
     console.log(`✅ Document ${documentId} parsing complete!`);
