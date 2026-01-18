@@ -298,6 +298,35 @@ export default function Upload() {
         <h1 className="text-3xl font-bold text-gray-900">Upload Bills</h1>
       </div>
 
+      {/* Reporting Period Info */}
+      <div className="card bg-blue-50 border-blue-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calendar className="text-blue-600" size={24} />
+            <div>
+              <h3 className="font-bold text-blue-900">Reporting Period</h3>
+              {activePeriod ? (
+                <p className="text-sm text-blue-700">
+                  {new Date(activePeriod.start_date).toLocaleDateString()} -{" "}
+                  {new Date(activePeriod.end_date).toLocaleDateString()} (
+                  {activePeriod.period_type})
+                </p>
+              ) : (
+                <p className="text-sm text-red-600 font-medium">
+                  ⚠️ No active period - please select one
+                </p>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => setShowPeriodModal(true)}
+            className="btn-secondary text-sm"
+          >
+            {activePeriod ? "Change Period" : "Select Period"}
+          </button>
+        </div>
+      </div>
+
       {/* Mobile Camera Button */}
       {isMobile && (
         <div className="card bg-gradient-to-r from-blue-500 to-purple-600 text-white">
@@ -593,6 +622,15 @@ export default function Upload() {
           <li>• AI will automatically extract and calculate emissions</li>
         </ul>
       </div>
+
+      {/* Reporting Period Modal */}
+      <ReportingPeriodModal
+        isOpen={showPeriodModal}
+        onClose={() => {
+          setShowPeriodModal(false);
+          loadActivePeriod();
+        }}
+      />
     </div>
   );
 }
