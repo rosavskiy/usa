@@ -121,9 +121,6 @@ export async function parseUtilityBillImageWithOpenAI(
 }
 
 export async function checkOpenAIHealth(): Promise<boolean> {
-  console.log("🔍 DEBUG - OPENAI_API_KEY length:", process.env.OPENAI_API_KEY?.length || 0);
-  console.log("🔍 DEBUG - OPENAI_API_KEY first 20 chars:", process.env.OPENAI_API_KEY?.substring(0, 20) || "EMPTY");
-  
   if (!OPENAI_ENABLED) {
     console.log("⚠️ OpenAI disabled (OPENAI_ENABLED=false)");
     return false;
