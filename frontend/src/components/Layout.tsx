@@ -4,7 +4,6 @@ import {
   Leaf,
   Upload,
   BarChart3,
-  Lightbulb,
   LogOut,
   Calculator,
   FolderOpen,
@@ -22,7 +21,6 @@ export default function Layout() {
     { path: "/upload", label: "Upload Bills", icon: Upload },
     { path: "/manual", label: "Manual Entry", icon: Calculator },
     { path: "/calculations", label: "Calculations", icon: BarChart3 },
-    { path: "/recommendations", label: "Recommendations", icon: Lightbulb },
     { path: "/my-documents", label: "My Documents", icon: FolderOpen },
     { path: "/settings", label: "Settings", icon: Settings },
   ];

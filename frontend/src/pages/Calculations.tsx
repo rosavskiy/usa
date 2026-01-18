@@ -3,7 +3,6 @@ import {
   BarChart3,
   Calendar,
   TrendingUp,
-  Download,
   Trash2,
   FileDown,
   Edit,
@@ -15,7 +14,6 @@ import { format } from "date-fns";
 export default function Calculations() {
   const [calculations, setCalculations] = useState<any[]>([]);
   const [allCalculations, setAllCalculations] = useState<any[]>([]); // Store all for filtering
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"month" | "quarter" | "year" | "all">(
     "all"
@@ -45,6 +43,18 @@ export default function Calculations() {
   const replaceFileInputRef = useRef<HTMLInputElement>(null);
   const [replacing, setReplacing] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | "all">("all"); // Archive filter
+  const [reportModal, setReportModal] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    verified: false,
+    exclusions: false,
+    exclusionsText: "",
+    reportingPeriodStart: "",
+    reportingPeriodEnd: "",
+    consolidationApproach: [] as string[],
+    baseYearPolicy: "first_year",
+    emissionsChangesContext: "",
+  });
+  const [selectedCalcs, setSelectedCalcs] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     loadCalculations();
@@ -56,7 +66,6 @@ export default function Calculations() {
       const data = response.data.data;
       setAllCalculations(data); // Store all
       setCalculations(data); // Initially show all
-      setSelectedIds(data.map((c: any) => c.id));
     } catch (error) {
       console.error("Failed to load calculations:", error);
     } finally {
@@ -68,14 +77,12 @@ export default function Calculations() {
   useEffect(() => {
     if (selectedYear === "all") {
       setCalculations(allCalculations);
-      setSelectedIds(allCalculations.map((c) => c.id));
     } else {
       const filtered = allCalculations.filter((c) => {
         const year = new Date(c.calculation_date).getFullYear();
         return year === selectedYear;
       });
       setCalculations(filtered);
-      setSelectedIds(filtered.map((c) => c.id));
     }
   }, [selectedYear, allCalculations]);
 
@@ -159,18 +166,6 @@ export default function Calculations() {
 
   const grouped = groupByDate(calculations);
 
-  const toggleSelection = (id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
-  };
-
-  const toggleAll = () => {
-    setSelectedIds((prev) =>
-      prev.length === calculations.length ? [] : calculations.map((c) => c.id)
-    );
-  };
-
   const handleDownloadReport = async () => {
     try {
       setDownloading(true);
@@ -205,11 +200,10 @@ export default function Calculations() {
       setDeleting(true);
       await api.delete(`/carbon/calculations/${deleteModal.calcId}`);
       setDeleteModal({ show: false, calcId: null });
-      // Remove from list and deselect
+      // Remove from list
       setCalculations((prev) =>
         prev.filter((c) => c.id !== deleteModal.calcId)
       );
-      setSelectedIds((prev) => prev.filter((id) => id !== deleteModal.calcId));
     } catch (error) {
       console.error("Failed to delete calculation:", error);
       alert("Failed to delete calculation. Please try again.");
@@ -218,23 +212,77 @@ export default function Calculations() {
     }
   };
 
-  const handleDownloadPDF = async (calcId: number) => {
+  const handleGenerateReport = async () => {
+    if (selectedCalcs.size === 0) {
+      alert("Please select at least one calculation for the report");
+      return;
+    }
+
+    if (!reportForm.reportingPeriodStart || !reportForm.reportingPeriodEnd) {
+      alert("Please select reporting period start and end dates");
+      return;
+    }
+
+    console.log('Sending report request with data:', {
+      calculationIds: Array.from(selectedCalcs),
+      ...reportForm,
+    });
+
     try {
-      const response = await api.get(`/carbon/calculations/${calcId}/report`, {
-        responseType: "blob",
-      });
+      setDownloading(true);
+      const response = await api.post(
+        `/carbon/calculations/report`,
+        {
+          calculationIds: Array.from(selectedCalcs),
+          ...reportForm,
+        },
+        {
+          responseType: "blob",
+        }
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `carbon-report-${calcId}.pdf`);
+      link.setAttribute("download", `carbon-report-${Date.now()}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      setReportModal(false);
+      setReportForm({
+        verified: false,
+        exclusions: false,
+        exclusionsText: "",
+        reportingPeriodStart: "",
+        reportingPeriodEnd: "",
+        consolidationApproach: [],
+        baseYearPolicy: "first_year",
+        emissionsChangesContext: "",
+      });
     } catch (error) {
       console.error("Failed to download PDF:", error);
       alert("Failed to download PDF. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const toggleCalcSelection = (calcId: number) => {
+    const newSelected = new Set(selectedCalcs);
+    if (newSelected.has(calcId)) {
+      newSelected.delete(calcId);
+    } else {
+      newSelected.add(calcId);
+    }
+    setSelectedCalcs(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCalcs.size === calculations.length) {
+      setSelectedCalcs(new Set());
+    } else {
+      setSelectedCalcs(new Set(calculations.map(c => c.id)));
     }
   };
 
@@ -473,21 +521,42 @@ export default function Calculations() {
         </div>
       )}
 
-      {/* Download Instructions */}
+      {/* Selection Controls */}
       {calculations.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h3 className="font-bold text-green-900 mb-2 flex items-center gap-2">
-            <Download size={20} />
-            Download Individual Reports
-          </h3>
-          <p className="text-sm text-green-800">
-            To download an official GHG Protocol report for any calculation,
-            click the{" "}
-            <span className="font-semibold text-green-600">
-              green download button
-            </span>{" "}
-            (📄) next to that calculation.
-          </p>
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-primary-900 mb-1 flex items-center gap-2">
+                <FileDown size={20} />
+                Generate Combined Report
+              </h3>
+              <p className="text-sm text-primary-800">
+                Select calculations below to include in your GHG Protocol report ({selectedCalcs.size} selected)
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={toggleSelectAll}
+                className="px-4 py-2 bg-white text-primary-600 border-2 border-primary-300 rounded-lg hover:bg-primary-100 transition-colors font-medium"
+              >
+                {selectedCalcs.size === calculations.length ? "Deselect All" : "Select All"}
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedCalcs.size === 0) {
+                    alert("Please select at least one calculation");
+                    return;
+                  }
+                  setReportModal(true);
+                }}
+                disabled={selectedCalcs.size === 0}
+                className="px-4 py-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FileDown size={20} className="inline mr-2" />
+                Generate Report ({selectedCalcs.size})
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -503,22 +572,6 @@ export default function Calculations() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Select All Checkbox */}
-          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-            <input
-              type="checkbox"
-              checked={selectedIds.length === calculations.length}
-              onChange={toggleAll}
-              className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-            />
-            <span className="font-medium text-gray-700">
-              {selectedIds.length === calculations.length
-                ? "Deselect All"
-                : "Select All"}{" "}
-              ({selectedIds.length} selected for report)
-            </span>
-          </div>
-
           {/* Render groups */}
           {Object.entries(grouped).map(([dateKey, batches]) => {
             if (batches.length === 0) return null;
@@ -557,21 +610,18 @@ export default function Calculations() {
                       {batch.map((calc) => (
                         <div
                           key={calc.id}
-                          className={`card hover:shadow-md transition-shadow ${
-                            selectedIds.includes(calc.id)
-                              ? "ring-2 ring-primary-500 bg-primary-50"
-                              : ""
-                          }`}
+                          className="card hover:shadow-md transition-shadow"
                         >
                           <div className="flex items-start gap-4">
                             {/* Checkbox */}
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.includes(calc.id)}
-                              onChange={() => toggleSelection(calc.id)}
-                              className="mt-1 w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                            />
-
+                            <div className="pt-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedCalcs.has(calc.id)}
+                                onChange={() => toggleCalcSelection(calc.id)}
+                                className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                              />
+                            </div>
                             <div className="flex-1">
                               {/* OCR Warnings */}
                               {calc.document?.parsed_data?.warning && (
@@ -690,15 +740,6 @@ export default function Calculations() {
                                 title="Edit calculation"
                               >
                                 <Edit size={20} />
-                              </button>
-
-                              {/* Download PDF Button */}
-                              <button
-                                onClick={() => handleDownloadPDF(calc.id)}
-                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                title="Download PDF Report"
-                              >
-                                <FileDown size={20} />
                               </button>
 
                               {/* Delete Button */}
@@ -945,6 +986,268 @@ export default function Calculations() {
                 className="flex-1 btn bg-gray-200 hover:bg-gray-300 text-gray-800 disabled:opacity-50"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Questions Modal */}
+      {reportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b">
+              <h2 className="text-2xl font-bold mb-2">GHG Report Information</h2>
+              <p className="text-gray-600">
+                Please answer these questions to complete your GHG Protocol report for {selectedCalcs.size} calculation{selectedCalcs.size > 1 ? 's' : ''}
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Verification Question */}
+              <div className="border-b pb-4">
+                <label className="block font-medium text-gray-900 mb-3">
+                  Has this inventory been verified by an accredited third party?
+                </label>
+                <p className="text-sm text-gray-500 mb-3">
+                  (Independent audit by a certified environmental organization)
+                </p>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={reportForm.verified === true}
+                      onChange={() =>
+                        setReportForm({ ...reportForm, verified: true })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>Yes</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={reportForm.verified === false}
+                      onChange={() =>
+                        setReportForm({ ...reportForm, verified: false })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>No</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Exclusions Question */}
+              <div className="border-b pb-4">
+                <label className="block font-medium text-gray-900 mb-3">
+                  Have any facilities, operations and/or emissions sources been
+                  excluded from this inventory?
+                </label>
+                <p className="text-sm text-gray-500 mb-3">
+                  (Did you exclude any buildings, departments, or emission sources from your calculations?)
+                </p>
+                <div className="flex gap-4 mb-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={reportForm.exclusions === true}
+                      onChange={() =>
+                        setReportForm({
+                          ...reportForm,
+                          exclusions: true,
+                        })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>Yes</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={reportForm.exclusions === false}
+                      onChange={() =>
+                        setReportForm({
+                          ...reportForm,
+                          exclusions: false,
+                          exclusionsText: "",
+                        })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <span>No</span>
+                  </label>
+                </div>
+                {reportForm.exclusions && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Please specify what was excluded:
+                    </label>
+                    <textarea
+                      value={reportForm.exclusionsText}
+                      onChange={(e) =>
+                        setReportForm({
+                          ...reportForm,
+                          exclusionsText: e.target.value,
+                        })
+                      }
+                      placeholder="Example: Remote warehouse facility in Texas, employee commuting"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      rows={3}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Reporting Period Selection */}
+              <div className="border-b pb-4">
+                <label className="block font-medium text-gray-900 mb-3">
+                  Reporting Period <span className="text-red-500">*</span>
+                </label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Select the start and end dates for this report (these dates will be used in the PDF regardless of bill dates)
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Start Date (dd/mm/yyyy):
+                    </label>
+                    <input
+                      type="date"
+                      value={reportForm.reportingPeriodStart}
+                      onChange={(e) =>
+                        setReportForm({
+                          ...reportForm,
+                          reportingPeriodStart: e.target.value,
+                        })
+                      }
+                      placeholder="dd/mm/yyyy"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      End Date (dd/mm/yyyy):
+                    </label>
+                    <input
+                      type="date"
+                      value={reportForm.reportingPeriodEnd}
+                      onChange={(e) =>
+                        setReportForm({
+                          ...reportForm,
+                          reportingPeriodEnd: e.target.value,
+                        })
+                      }
+                      placeholder="dd/mm/yyyy"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Consolidation Approach */}
+              <div className="border-b pb-4">
+                <label className="block font-medium text-gray-900 mb-3">
+                  What consolidation approach is your company using? <span className="text-red-500">*</span>
+                </label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Check each consolidation approach for which your company is reporting emissions
+                </p>
+                <div className="space-y-2">
+                  {["Equity Share", "Financial Control", "Operational Control"].map(approach => (
+                    <label key={approach} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={reportForm.consolidationApproach.includes(approach)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setReportForm({
+                              ...reportForm,
+                              consolidationApproach: [...reportForm.consolidationApproach, approach]
+                            });
+                          } else {
+                            setReportForm({
+                              ...reportForm,
+                              consolidationApproach: reportForm.consolidationApproach.filter(a => a !== approach)
+                            });
+                          }
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <span>{approach}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Base Year Policy */}
+              <div className="border-b pb-4">
+                <label className="block font-medium text-gray-900 mb-3">
+                  Company policy for base year emissions recalculations
+                </label>
+                <select
+                  value={reportForm.baseYearPolicy}
+                  onChange={(e) =>
+                    setReportForm({ ...reportForm, baseYearPolicy: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="first_year">First year of operation</option>
+                  <option value="threshold">Threshold-based recalculation</option>
+                  <option value="structural_changes">Structural changes only</option>
+                  <option value="no_recalculation">No recalculation policy</option>
+                </select>
+              </div>
+
+              {/* Emissions Changes Context */}
+              <div className="pb-4">
+                <label className="block font-medium text-gray-900 mb-3">
+                  Context for significant emissions changes
+                </label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Describe any significant changes that triggered base year recalculations (or enter N/A if none)
+                </p>
+                <textarea
+                  value={reportForm.emissionsChangesContext}
+                  onChange={(e) =>
+                    setReportForm({
+                      ...reportForm,
+                      emissionsChangesContext: e.target.value,
+                    })
+                  }
+                  placeholder="N/A"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t bg-gray-50 flex gap-3">
+              <button
+                onClick={() => {
+                  setReportModal(false);
+                  setReportForm({
+                    verified: false,
+                    exclusions: false,
+                    exclusionsText: "",
+                    reportingPeriodStart: "",
+                    reportingPeriodEnd: "",
+                    consolidationApproach: [],
+                    baseYearPolicy: "first_year",
+                    emissionsChangesContext: "",
+                  });
+                }}
+                disabled={downloading}
+                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGenerateReport}
+                disabled={downloading || !reportForm.reportingPeriodStart || !reportForm.reportingPeriodEnd || reportForm.consolidationApproach.length === 0}
+                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {downloading ? "Generating..." : "Continue"}
               </button>
             </div>
           </div>

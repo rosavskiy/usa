@@ -9,6 +9,7 @@ export interface Document {
   file_size: number;
   parsed_data?: any;
   status: "pending" | "processing" | "completed" | "failed";
+  reporting_period_id?: number | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -21,6 +22,7 @@ export interface CreateDocumentDTO {
   fileSize: number;
   parsedData?: any;
   status?: "pending" | "processing" | "completed" | "failed";
+  reportingPeriodId?: number | null;
 }
 
 export class DocumentModel {
@@ -29,8 +31,8 @@ export class DocumentModel {
     const parsedData = data.parsedData ? JSON.stringify(data.parsedData) : null;
 
     const result = await query(
-      `INSERT INTO documents (user_id, file_name, file_path, file_type, file_size, parsed_data, status) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      `INSERT INTO documents (user_id, file_name, file_path, file_type, file_size, parsed_data, status, reporting_period_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING *`,
       [
         data.userId,
@@ -40,6 +42,7 @@ export class DocumentModel {
         data.fileSize,
         parsedData,
         status,
+        data.reportingPeriodId || null,
       ]
     );
     return result.rows[0];

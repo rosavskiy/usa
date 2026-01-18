@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Calculator, TrendingDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calculator, TrendingDown, AlertCircle } from "lucide-react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
@@ -23,6 +23,7 @@ export default function ManualInput() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     setLoading(true);
 
     try {
@@ -62,11 +63,34 @@ export default function ManualInput() {
     }
   };
 
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const getPeriodLabel = (type: string) => {
+    switch (type) {
+      case "annual":
+        return "Annual";
+      case "quarterly":
+        return "Quarterly";
+      case "monthly":
+        return "Monthly";
+      default:
+        return type;
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Calculator size={32} className="text-primary-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Manual Data Entry</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Calculator size={32} className="text-primary-600" />
+          <h1 className="text-3xl font-bold text-gray-900">Manual Data Entry</h1>
+        </div>
       </div>
 
       <div className="card bg-blue-50 border-blue-200">

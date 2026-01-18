@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api/axios";
+import { Upload, X } from "lucide-react";
 
 interface UserProfile {
   id: number;
@@ -9,12 +10,16 @@ interface UserProfile {
   industry: string | null;
   currency: string | null;
   unit_system: string | null;
+  address: string | null;
+  phone: string | null;
+  logo_path: string | null;
 }
 
 export default function Settings() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -26,6 +31,9 @@ export default function Settings() {
     industry: "",
     currency: "USD",
     unitSystem: "Imperial",
+    address: "",
+    phone: "",
+    logoPath: "",
   });
 
   useEffect(() => {
@@ -42,6 +50,9 @@ export default function Settings() {
         industry: response.data.industry || "",
         currency: response.data.currency || "USD",
         unitSystem: response.data.unit_system || "Imperial",
+        address: response.data.address || "",
+        phone: response.data.phone || "",
+        logoPath: response.data.logo_path || "",
       });
     } catch (error) {
       console.error("Failed to fetch profile:", error);
@@ -79,7 +90,65 @@ export default function Settings() {
       [e.target.name]: e.target.value,
     });
   };
+const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    // Validate file type
+    if (!file.type.match(/image\/(png|jpg|jpeg|svg\+xml)/)) {
+      setMessage({ type: "error", text: "Please upload a PNG, JPG, JPEG, or SVG file" });
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ type: "error", text: "Logo file size must be less than 2MB" });
+      return;
+    }
+
+    setUploadingLogo(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+
+      const response = await api.post("/settings/logo", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setMessage({ type: "success", text: "Logo uploaded successfully" });
+      fetchProfile();
+    } catch (error: any) {
+      console.error("Failed to upload logo:", error);
+      setMessage({
+        type: "error",
+        text: error.response?.data?.error || "Failed to upload logo",
+      });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    if (!confirm("Are you sure you want to delete the company logo?")) return;
+
+    try {
+      await api.delete("/settings/logo");
+      setMessage({ type: "success", text: "Logo deleted successfully" });
+      fetchProfile();
+    } catch (error: any) {
+      console.error("Failed to delete logo:", error);
+      setMessage({
+        type: "error",
+        text: error.response?.data?.error || "Failed to delete logo",
+      });
+    }
+  };
+
+  
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -252,20 +321,103 @@ export default function Settings() {
             </select>
           </div>
 
-          {/* Unit System */}
+          {/* Logo Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Unit System
+              Company Logo
             </label>
-            <select
-              name="unitSystem"
-              value={formData.unitSystem}
+            
+            {profile?.logo_path ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                  <img
+                    src={`http://localhost:3000${profile.logo_path}`}
+                    alt="Company Logo"
+                    className="h-16 w-auto object-contain border border-gray-200 bg-white p-2 rounded"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">Current Logo</p>
+                    <p className="text-xs text-gray-500">
+                      Displayed on GHG Protocol reports
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogoDelete}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete logo"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Click to upload</span> company logo
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      PNG, JPG, JPEG, or SVG (max 2MB)
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                  />
+                </label>
+                {uploadingLogo && (
+                  <p className="text-sm text-gray-500 text-center">Uploading...</p>
+                )}
+              </div>
+            )}
+            
+            <p className="text-xs text-gray-500 mt-2">
+              Logo will be displayed on GHG Protocol reports. Recommended size: 180x60px
+            </p>
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Company Address
+              <span className="text-orange-600 ml-1">*</span>
+            </label>
+            <input
+              type="text"
+              name="address"
+              value={formData.address}
               onChange={handleChange}
+              placeholder="123 Main St, City, State, ZIP"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="Imperial">Imperial (kWh, therms, gallons)</option>
-              <option value="Metric">Metric (kWh, m³, liters)</option>
-            </select>
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Required for complete GHG Protocol reports
+            </p>
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number
+              <span className="text-orange-600 ml-1">*</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+1 (555) 123-4567"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Required for complete GHG Protocol reports
+            </p>
           </div>
 
           <div className="flex justify-end pt-4 border-t border-gray-200">

@@ -10,8 +10,10 @@ import {
   X,
   ArrowRight,
   Loader2,
+  Calendar,
 } from "lucide-react";
 import api from "../api/axios";
+import ReportingPeriodModal from "../components/ReportingPeriodModal";
 
 interface FileMetadata {
   name: string;
@@ -35,9 +37,13 @@ export default function Upload() {
   >([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [activePeriod, setActivePeriod] = useState<any>(null);
+  const [showPeriodModal, setShowPeriodModal] = useState(false);
 
   // Load metadata on mount
   useEffect(() => {
+    loadActivePeriod();
+    
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -60,6 +66,15 @@ export default function Upload() {
       }
     }
   }, []);
+
+  const loadActivePeriod = async () => {
+    try {
+      const response = await api.get("/reporting-periods/active");
+      setActivePeriod(response.data);
+    } catch (error) {
+      console.error("Failed to load active period:", error);
+    }
+  };
 
   // Save metadata whenever files change
   useEffect(() => {
@@ -279,7 +294,9 @@ export default function Upload() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Upload Bills</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Upload Bills</h1>
+      </div>
 
       {/* Mobile Camera Button */}
       {isMobile && (
@@ -436,33 +453,6 @@ export default function Upload() {
                 !files.every((f) => f.status === "success") &&
                 "Upload & Calculate"}
             </button>
-
-            {/* Reprocess Failed button - only show if there are failed files */}
-            {files.some((f) => f.status === "error") &&
-              !uploading &&
-              !processing && (
-                <button
-                  onClick={() => {
-                    // Remove failed files and re-upload them
-                    const failedFiles = files.filter(
-                      (f) => f.status === "error"
-                    );
-                    setFiles(
-                      failedFiles.map((f) => ({
-                        ...f,
-                        status: "pending",
-                        docId: undefined,
-                        errorMsg: undefined,
-                      }))
-                    );
-                    setUploadComplete(false);
-                    setProcessingErrors([]);
-                  }}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  🔄 Reprocess Failed Files Only
-                </button>
-              )}
           </div>
         )}
 

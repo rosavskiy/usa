@@ -8,7 +8,9 @@ import authRoutes from "./routes/auth.routes";
 import uploadRoutes from "./routes/upload.routes";
 import carbonRoutes from "./routes/carbon.routes";
 import settingsRoutes from "./routes/settings.routes";
+import reportingPeriodRoutes from "./routes/reporting-period.routes";
 import { errorHandler } from "./middleware/error.middleware";
+import { checkOpenAIHealth } from "./services/openai.service";
 import { query } from "./config/database";
 
 dotenv.config();
@@ -52,6 +54,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/carbon", carbonRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/reporting-periods", reportingPeriodRoutes);
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {
@@ -64,6 +67,9 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+  if (process.env.OPENAI_API_KEY) {
+    checkOpenAIHealth().catch(() => undefined);
+  }
 });
 
 export default app;

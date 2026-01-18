@@ -3,7 +3,9 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { DocumentModel } from "../models/document.model";
 import { AppError, asyncHandler } from "../middleware/error.middleware";
 import { parseDocumentWithAI } from "../services/ai.service";
+import { calculateEmissions } from "../services/carbon.service";
 import { query } from "../config/database";
+import ReportingPeriodModel from "../models/reporting-period.model";
 import fs from "fs";
 
 export const uploadDocument = asyncHandler(
@@ -20,6 +22,12 @@ export const uploadDocument = asyncHandler(
       `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`
     );
 
+    // Get active reporting period
+    const activePeriod = await ReportingPeriodModel.getActive(userId);
+    if (!activePeriod) {
+      throw new AppError("No active reporting period. Please select a period first.", 400);
+    }
+
     // Save document to database
     const document = await DocumentModel.create({
       userId,
@@ -27,6 +35,7 @@ export const uploadDocument = asyncHandler(
       filePath,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
+      reportingPeriodId: activePeriod.id,
     });
 
     console.log(`💾 Document saved: docId=${document.id}`);
@@ -35,6 +44,20 @@ export const uploadDocument = asyncHandler(
     try {
       await parseDocumentWithAI(document.id, filePath);
       console.log(`✅ AI parsed document ${document.id} successfully`);
+
+      // Automatically calculate emissions after successful parsing
+      try {
+        const doc = await DocumentModel.findById(document.id);
+        if (doc && doc.status === "completed") {
+          await calculateEmissions(userId, document.id);
+          console.log(
+            `📊 Auto-calculated emissions for document ${document.id}`
+          );
+        }
+      } catch (calcErr) {
+        console.error("❌ Auto-calculation error:", calcErr);
+        // Don't throw - user can calculate manually later
+      }
     } catch (err) {
       console.error("❌ AI parsing error:", err);
       // Continue anyway, user can calculate manually
@@ -236,6 +259,12 @@ export const createManualDocument = asyncHandler(
       throw new AppError("Consumption data is required", 400);
     }
 
+    // Get active reporting period
+    const activePeriod = await ReportingPeriodModel.getActive(userId);
+    if (!activePeriod) {
+      throw new AppError("No active reporting period. Please select a period first.", 400);
+    }
+
     // Create document with manual data
     const parsedData = {
       type,
@@ -255,6 +284,7 @@ export const createManualDocument = asyncHandler(
       fileSize: 0,
       parsedData: parsedData,
       status: "completed",
+      reportingPeriodId: activePeriod.id,
     });
 
     res.status(201).json({

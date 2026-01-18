@@ -185,6 +185,22 @@ export async function calculateEmissions(
   const otherKg = options.otherKg || parsedData.otherKg || 0;
 
   // Save calculation
+  // For GHG Protocol, set the reporting period to a full year
+  // If we have a single date, create a 12-month period ending on that date
+  let periodStart: Date;
+  let periodEnd: Date;
+
+  if (parsedData.period?.start && parsedData.period?.end) {
+    // Use the provided period
+    periodStart = new Date(parsedData.period.start);
+    periodEnd = new Date(parsedData.period.end);
+  } else {
+    // Create a 12-month reporting period (GHG Protocol standard)
+    const referenceDate = new Date(parsedData.date || new Date());
+    periodEnd = new Date(referenceDate.getFullYear(), 11, 31); // Dec 31 of the year
+    periodStart = new Date(referenceDate.getFullYear(), 0, 1); // Jan 1 of the year
+  }
+
   const calculation = await CarbonModel.create({
     userId,
     documentId,
@@ -198,8 +214,8 @@ export async function calculateEmissions(
     sf6Kg,
     otherKg,
     totalCo2eKg,
-    periodStart: new Date(parsedData.period?.start || parsedData.date),
-    periodEnd: new Date(parsedData.period?.end || parsedData.date),
+    periodStart,
+    periodEnd,
   });
 
   return {

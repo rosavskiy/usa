@@ -172,6 +172,9 @@ export const downloadIndividualReport = asyncHandler(
     const userId = req.userId!;
     const calculationId = parseInt(req.params.id);
 
+    // Get report options from request body
+    const { verified, exclusions, exclusionsText } = req.body;
+
     // Verify ownership
     const calculation = await CarbonModel.findById(calculationId);
     if (!calculation) {
@@ -182,8 +185,12 @@ export const downloadIndividualReport = asyncHandler(
       throw new AppError("Unauthorized", 403);
     }
 
-    // Generate PDF
-    const doc = await generateIndividualReport(calculationId, userId);
+    // Generate PDF with options
+    const doc = await generateIndividualReport(calculationId, userId, {
+      verified: verified === true,
+      exclusions: exclusions === true,
+      exclusionsText: exclusionsText || "",
+    });
 
     // Set response headers
     const filename = `carbon-report-${calculationId}-${
@@ -212,6 +219,69 @@ export const downloadAnnualReport = asyncHandler(
 
     // Set response headers
     const filename = `annual-carbon-report-${year}.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    // Pipe PDF to response
+    doc.pipe(res);
+    doc.end();
+  }
+);
+
+export const downloadCombinedReport = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.userId!;
+    const { 
+      calculationIds, 
+      verified, 
+      exclusions, 
+      exclusionsText, 
+      reportingPeriodStart, 
+      reportingPeriodEnd,
+      consolidationApproach,
+      baseYearPolicy,
+      emissionsChangesContext
+    } = req.body;
+
+    console.log('Report request received:', {
+      calculationIds,
+      verified,
+      exclusions,
+      exclusionsText,
+      reportingPeriodStart,
+      reportingPeriodEnd,
+      consolidationApproach,
+      baseYearPolicy,
+      emissionsChangesContext
+    });
+
+    if (!calculationIds || !Array.isArray(calculationIds) || calculationIds.length === 0) {
+      throw new AppError("calculationIds array is required", 400);
+    }
+
+    // Verify all calculations belong to user
+    const calculations = await Promise.all(
+      calculationIds.map((id: number) => CarbonModel.findById(id))
+    );
+
+    if (calculations.some(calc => !calc || calc.user_id !== userId)) {
+      throw new AppError("One or more calculations not found or unauthorized", 403);
+    }
+
+    // Generate combined PDF
+    const doc = await generateIndividualReport(calculationIds, userId, {
+      verified: verified === true,
+      exclusions: exclusions === true,
+      exclusionsText: exclusionsText || "",
+      reportingPeriodStart,
+      reportingPeriodEnd,
+      consolidationApproach: consolidationApproach || [],
+      baseYearPolicy: baseYearPolicy || "first_year",
+      emissionsChangesContext: emissionsChangesContext || "N/A",
+    });
+
+    // Set response headers
+    const filename = `carbon-report-combined-${new Date().toISOString().split("T")[0]}.pdf`;
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 

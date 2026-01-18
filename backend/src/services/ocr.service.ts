@@ -6,6 +6,11 @@ import {
   ComputerVisionModels,
 } from "@azure/cognitiveservices-computervision";
 import { ApiKeyCredentials } from "@azure/ms-rest-js";
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import path from 'path';
+
+const execAsync = promisify(exec);
 
 // Azure Computer Vision configuration with multiple keys for rotation
 const azureConfigs = [
@@ -48,15 +53,13 @@ async function ocrWithAzure(filePath: string): Promise<string> {
 
       // Poll for result
       let result: ComputerVisionModels.ReadOperationResult;
-      let status: string;
       do {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         result = await client.getReadResult(operationId);
-        status = result.status;
-      } while (status === "running" || status === "notStarted");
+      } while (result.status === "running" || result.status === "notStarted");
 
-      if (status !== "succeeded") {
-        throw new Error(`Azure OCR failed with status: ${status}`);
+      if (result.status !== "succeeded") {
+        throw new Error(`Azure OCR failed with status: ${result.status}`);
       }
 
       // Extract text
@@ -140,33 +143,76 @@ async function ocrWithOcrSpace(filePath: string): Promise<string> {
   return parsedResults.ParsedText;
 }
 
+/**
+ * Extract text using EasyOCR (local Python service)
+ */
+async function ocrWithEasyOCR(filePath: string): Promise<string> {
+  // Read file and convert to base64
+  const imageBuffer = fs.readFileSync(filePath);
+  const base64Image = imageBuffer.toString('base64');
+  
+  // Path to Python script
+  const scriptPath = path.join(__dirname, 'easyocr_service.py');
+  
+  // Call Python script with base64 image as argument
+  const { stdout, stderr } = await execAsync(
+    `py "${scriptPath}" "${base64Image}"`,
+    { maxBuffer: 10 * 1024 * 1024 } // 10MB buffer
+  );
+  
+  // Log Python stderr (for debugging)
+  if (stderr) {
+    console.log('🐍 EasyOCR:', stderr.trim());
+  }
+  
+  // Parse JSON response
+  const result = JSON.parse(stdout);
+  
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+  
+  console.log(`✅ EasyOCR extracted ${result.char_count} characters`);
+  return result.text;
+}
+
 // Main OCR function with fallback chain
 export async function extractTextFromImage(filePath: string): Promise<string> {
   let extractedText = "";
 
   try {
-    // Try Azure CV first (with key rotation)
-    if (azureConfigs.length > 0) {
-      extractedText = await ocrWithAzure(filePath);
-      console.log(`✅ Azure CV OCR successful`);
-    } else {
-      console.log("⚠️ No Azure CV keys configured, using OCR.space");
-      extractedText = await ocrWithOcrSpace(filePath);
-      console.log(`✅ OCR.space OCR successful`);
-    }
-  } catch (azureError: any) {
-    console.error(
-      "❌ Azure OCR failed, falling back to OCR.space:",
-      azureError.message
-    );
+    // 1. Try EasyOCR first (local, highest accuracy)
+    console.log('📸 Trying EasyOCR (local Python)...');
+    extractedText = await ocrWithEasyOCR(filePath);
+    console.log(`✅ EasyOCR successful`);
+  } catch (easyOcrError: any) {
+    console.log(`⚠️ EasyOCR failed: ${easyOcrError.message}`);
+    
     try {
-      extractedText = await ocrWithOcrSpace(filePath);
-      console.log(`✅ OCR.space fallback successful`);
-    } catch (ocrSpaceError: any) {
-      console.error("❌ OCR.space also failed:", ocrSpaceError.message);
-      throw new Error(
-        "All OCR services failed - please try a clearer, higher resolution photo"
+      // 2. Try Azure CV (with key rotation)
+      if (azureConfigs.length > 0) {
+        extractedText = await ocrWithAzure(filePath);
+        console.log(`✅ Azure CV OCR successful`);
+      } else {
+        console.log("⚠️ No Azure CV keys configured, using OCR.space");
+        extractedText = await ocrWithOcrSpace(filePath);
+        console.log(`✅ OCR.space OCR successful`);
+      }
+    } catch (azureError: any) {
+      console.error(
+        "❌ Azure OCR failed, falling back to OCR.space:",
+        azureError.message
       );
+      try {
+        // 3. Final fallback to OCR.space
+        extractedText = await ocrWithOcrSpace(filePath);
+        console.log(`✅ OCR.space fallback successful`);
+      } catch (ocrSpaceError: any) {
+        console.error("❌ OCR.space also failed:", ocrSpaceError.message);
+        throw new Error(
+          "All OCR services failed - please try a clearer, higher resolution photo"
+        );
+      }
     }
   }
 

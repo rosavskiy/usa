@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { UserModel } from "../models/user.model";
 import { AuthRequest } from "../middleware/auth.middleware";
+import path from "path";
+import fs from "fs";
 
 export class SettingsController {
   static async getProfile(req: AuthRequest, res: Response) {
@@ -32,7 +34,16 @@ export class SettingsController {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const { companyName, state, industry, currency, unitSystem } = req.body;
+      const {
+        companyName,
+        state,
+        industry,
+        currency,
+        unitSystem,
+        address,
+        phone,
+        logoPath,
+      } = req.body;
 
       // Validate currency
       const validCurrencies = ["USD", "EUR", "GBP", "CAD"];
@@ -52,6 +63,9 @@ export class SettingsController {
         industry,
         currency,
         unitSystem,
+        address,
+        phone,
+        logoPath,
       });
 
       // Remove sensitive data
@@ -64,6 +78,72 @@ export class SettingsController {
     } catch (error) {
       console.error("Update profile error:", error);
       return res.status(500).json({ error: "Failed to update profile" });
+    }
+  }
+
+  static async uploadLogo(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      // Get relative path
+      const logoPath = `/uploads/logos/${req.file.filename}`;
+
+      // Update user profile with logo path
+      const updatedUser = await UserModel.updateProfile(userId, {
+        logoPath,
+      });
+
+      // Remove sensitive data
+      const { password_hash, ...userProfile } = updatedUser;
+
+      return res.json({
+        message: "Logo uploaded successfully",
+        user: userProfile,
+        logoPath,
+      });
+    } catch (error) {
+      console.error("Upload logo error:", error);
+      return res.status(500).json({ error: "Failed to upload logo" });
+    }
+  }
+
+  static async deleteLogo(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const user = await UserModel.findById(userId);
+      if (user?.logo_path) {
+        // Delete file if exists
+        const filePath = path.join(__dirname, "../../", user.logo_path);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      // Remove logo path from user
+      const updatedUser = await UserModel.updateProfile(userId, {
+        logoPath: "",
+      });
+
+      const { password_hash, ...userProfile } = updatedUser;
+
+      return res.json({
+        message: "Logo deleted successfully",
+        user: userProfile,
+      });
+    } catch (error) {
+      console.error("Delete logo error:", error);
+      return res.status(500).json({ error: "Failed to delete logo" });
     }
   }
 }

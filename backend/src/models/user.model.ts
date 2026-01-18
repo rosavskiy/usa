@@ -10,6 +10,9 @@ export interface User {
   industry?: string | null;
   currency?: string | null;
   unit_system?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  logo_path?: string | null;
   google_id?: string | null;
   created_at: Date;
   updated_at: Date;
@@ -43,7 +46,7 @@ export class UserModel {
 
   static async findById(id: number): Promise<User | null> {
     const result = await query(
-      "SELECT id, email, company_name, state, industry, currency, unit_system, created_at, updated_at FROM users WHERE id = $1",
+      "SELECT id, email, company_name, state, industry, currency, unit_system, address, phone, logo_path, created_at, updated_at FROM users WHERE id = $1",
       [id]
     );
     return result.rows[0] || null;
@@ -57,6 +60,9 @@ export class UserModel {
       industry?: string;
       currency?: string;
       unitSystem?: string;
+      address?: string;
+      phone?: string;
+      logoPath?: string;
     }
   ): Promise<User> {
     const updates: string[] = [];
@@ -83,13 +89,25 @@ export class UserModel {
       updates.push(`unit_system = $${paramCount++}`);
       values.push(data.unitSystem);
     }
+    if (data.address !== undefined) {
+      updates.push(`address = $${paramCount++}`);
+      values.push(data.address);
+    }
+    if (data.phone !== undefined) {
+      updates.push(`phone = $${paramCount++}`);
+      values.push(data.phone);
+    }
+    if (data.logoPath !== undefined) {
+      updates.push(`logo_path = $${paramCount++}`);
+      values.push(data.logoPath);
+    }
 
     updates.push(`updated_at = NOW()`);
     values.push(userId);
 
     const result = await query(
       `UPDATE users SET ${updates.join(", ")} WHERE id = $${paramCount} 
-       RETURNING id, email, company_name, state, industry, currency, unit_system, created_at, updated_at`,
+       RETURNING id, email, company_name, state, industry, currency, unit_system, address, phone, logo_path, created_at, updated_at`,
       values
     );
 

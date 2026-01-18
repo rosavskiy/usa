@@ -12,7 +12,6 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import ManualInput from "./pages/ManualInput";
 import Calculations from "./pages/Calculations";
-import Recommendations from "./pages/Recommendations";
 import MyDocuments from "./pages/MyDocuments";
 import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -56,7 +55,6 @@ function App() {
             <Route path="upload" element={<Upload />} />
             <Route path="manual" element={<ManualInput />} />
             <Route path="calculations" element={<Calculations />} />
-            <Route path="recommendations" element={<Recommendations />} />
             <Route path="my-documents" element={<MyDocuments />} />
             <Route path="settings" element={<Settings />} />
           </Route>
