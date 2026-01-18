@@ -15,7 +15,7 @@ export default function Calculations() {
   const [calculations, setCalculations] = useState<any[]>([]);
   const [allCalculations, setAllCalculations] = useState<any[]>([]); // Store all for filtering
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<"month" | "quarter" | "year" | "all">(
+  const [period] = useState<"month" | "quarter" | "year" | "all">(
     "all",
   );
   const [downloading, setDownloading] = useState(false);
@@ -166,32 +166,30 @@ export default function Calculations() {
 
   const grouped = groupByDate(calculations);
 
-  const handleDownloadReport = async () => {
-    try {
-      setDownloading(true);
-      const params = period !== "all" ? `?period=${period}` : "";
-
-      const response = await api.get(`/carbon/export${params}`, {
-        responseType: "blob",
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `carbon-report-${new Date().toISOString().split("T")[0]}.pdf`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error("Failed to download report:", error);
-      alert("Failed to download report. Please try again.");
-    } finally {
-      setDownloading(false);
-    }
-  };
+  // const handleDownloadReport = async () => {
+  //   try {
+  //     setDownloading(true);
+  //     const params = period !== "all" ? `?period=${period}` : "";
+  //     const response = await api.get(`/carbon/export${params}`, {
+  //       responseType: "blob",
+  //     });
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute(
+  //       "download",
+  //       `carbon-report-${new Date().toISOString().split("T")[0]}.pdf`,
+  //     );
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //   } catch (error) {
+  //     console.error("Failed to download report:", error);
+  //     alert("Failed to download report. Please try again.");
+  //   } finally {
+  //     setDownloading(false);
+  //   }
+  // };
 
   const handleDelete = async () => {
     if (!deleteModal.calcId) return;
@@ -326,54 +324,52 @@ export default function Calculations() {
     }
   };
 
-  const handleDownloadAnnualReport = async (year: number) => {
-    try {
-      const response = await api.get(`/carbon/annual-report/${year}`, {
-        responseType: "blob",
-      });
+  // const handleDownloadAnnualReport = async (year: number) => {
+  //   try {
+  //     const response = await api.get(`/carbon/annual-report/${year}`, {
+  //       responseType: "blob",
+  //     });
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute("download", `annual-carbon-report-${year}.pdf`);
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (error: any) {
+  //     console.error("Failed to download annual report:", error);
+  //     alert(
+  //       error.response?.data?.error ||
+  //         "Failed to download annual report. Please try again.",
+  //     );
+  //   }
+  // };
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `annual-carbon-report-${year}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error: any) {
-      console.error("Failed to download annual report:", error);
-      alert(
-        error.response?.data?.error ||
-          "Failed to download annual report. Please try again.",
-      );
-    }
-  };
-
-  const handleExportCSV = async () => {
-    try {
-      const response = await api.get("/carbon/export-csv", {
-        responseType: "blob",
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `carbon-calculations-${new Date().toISOString().split("T")[0]}.csv`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error: any) {
-      console.error("Failed to export CSV:", error);
-      alert(
-        error.response?.data?.error ||
-          "Failed to export CSV. Please try again.",
-      );
-    }
-  };
+  // const handleExportCSV = async () => {
+  //   try {
+  //     const response = await api.get("/carbon/export-csv", {
+  //       responseType: "blob",
+  //     });
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute(
+  //       "download",
+  //       `carbon-calculations-${new Date().toISOString().split("T")[0]}.csv`,
+  //     );
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (error: any) {
+  //     console.error("Failed to export CSV:", error);
+  //     alert(
+  //       error.response?.data?.error ||
+  //         "Failed to export CSV. Please try again.",
+  //     );
+  //   }
+  // };
 
   const handleReplaceClick = (calc: any) => {
     setReplaceModal({
@@ -459,7 +455,9 @@ export default function Calculations() {
         </h1>
         <div className="flex items-center gap-3 text-sm text-gray-600">
           <BarChart3 size={18} strokeWidth={2} />
-          <span className="font-medium">{calculations.length} calculations</span>
+          <span className="font-medium">
+            {calculations.length} calculations
+          </span>
           {selectedYear !== "all" && (
             <span className="text-primary-600 font-medium">
               (Year {selectedYear})
@@ -1122,17 +1120,25 @@ export default function Calculations() {
                     </label>
                     <input
                       type="text"
-                      value={reportForm.reportingPeriodStart ? 
-                        new Date(reportForm.reportingPeriodStart).toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'}).replace(/\//g, '/') : 
-                        ''}
+                      value={
+                        reportForm.reportingPeriodStart
+                          ? new Date(reportForm.reportingPeriodStart)
+                              .toLocaleDateString("en-US", {
+                                month: "2-digit",
+                                day: "2-digit",
+                                year: "numeric",
+                              })
+                              .replace(/\//g, "/")
+                          : ""
+                      }
                       onChange={(e) => {
                         const val = e.target.value;
                         // Try to parse MM/DD/YYYY format
-                        const parts = val.split('/');
+                        const parts = val.split("/");
                         if (parts.length === 3) {
                           const [month, day, year] = parts;
                           if (month && day && year && year.length === 4) {
-                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
                             setReportForm({
                               ...reportForm,
                               reportingPeriodStart: isoDate,
@@ -1142,11 +1148,11 @@ export default function Calculations() {
                       }}
                       onBlur={(e) => {
                         const val = e.target.value;
-                        const parts = val.split('/');
+                        const parts = val.split("/");
                         if (parts.length === 3) {
                           const [month, day, year] = parts;
                           if (month && day && year && year.length === 4) {
-                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
                             setReportForm({
                               ...reportForm,
                               reportingPeriodStart: isoDate,
@@ -1165,17 +1171,25 @@ export default function Calculations() {
                     </label>
                     <input
                       type="text"
-                      value={reportForm.reportingPeriodEnd ? 
-                        new Date(reportForm.reportingPeriodEnd).toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'}).replace(/\//g, '/') : 
-                        ''}
+                      value={
+                        reportForm.reportingPeriodEnd
+                          ? new Date(reportForm.reportingPeriodEnd)
+                              .toLocaleDateString("en-US", {
+                                month: "2-digit",
+                                day: "2-digit",
+                                year: "numeric",
+                              })
+                              .replace(/\//g, "/")
+                          : ""
+                      }
                       onChange={(e) => {
                         const val = e.target.value;
                         // Try to parse MM/DD/YYYY format
-                        const parts = val.split('/');
+                        const parts = val.split("/");
                         if (parts.length === 3) {
                           const [month, day, year] = parts;
                           if (month && day && year && year.length === 4) {
-                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
                             setReportForm({
                               ...reportForm,
                               reportingPeriodEnd: isoDate,
@@ -1185,11 +1199,11 @@ export default function Calculations() {
                       }}
                       onBlur={(e) => {
                         const val = e.target.value;
-                        const parts = val.split('/');
+                        const parts = val.split("/");
                         if (parts.length === 3) {
                           const [month, day, year] = parts;
                           if (month && day && year && year.length === 4) {
-                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
                             setReportForm({
                               ...reportForm,
                               reportingPeriodEnd: isoDate,

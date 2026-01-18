@@ -323,7 +323,11 @@ export default function Upload() {
           }`}
         >
           <input {...getInputProps()} />
-          <UploadIcon className="mx-auto text-gray-400 mb-4" size={40} strokeWidth={2} />
+          <UploadIcon
+            className="mx-auto text-gray-400 mb-4"
+            size={40}
+            strokeWidth={2}
+          />
           <p className="text-base font-medium text-gray-700 mb-2">
             {isDragActive
               ? "Drop files here"
@@ -351,7 +355,10 @@ export default function Upload() {
             </div>
 
             {files.map((f, index) => (
-              <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <div
+                key={index}
+                className="p-4 bg-gray-50 rounded-lg border border-gray-100"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <File className="text-gray-400" size={20} strokeWidth={2} />
@@ -376,7 +383,11 @@ export default function Upload() {
                       />
                     )}
                     {f.status === "success" && !f.errorMsg && (
-                      <CheckCircle className="text-primary-600" size={20} strokeWidth={2} />
+                      <CheckCircle
+                        className="text-primary-600"
+                        size={20}
+                        strokeWidth={2}
+                      />
                     )}
                     {f.status === "error" && (
                       <div className="flex items-center gap-2">

@@ -2,17 +2,11 @@ import { useState, useEffect } from "react";
 import {
   BarChart3,
   TrendingDown,
-  Leaf,
   FileText,
   AlertCircle,
 } from "lucide-react";
 import api from "../api/axios";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   PieChart,
@@ -144,25 +138,6 @@ export default function Dashboard() {
 
   // Check if profile is incomplete
   const isProfileIncomplete = profile && (!profile.address || !profile.phone);
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const getPeriodLabel = (type: string) => {
-    switch (type) {
-      case "annual":
-        return "Annual";
-      case "quarterly":
-        return "Quarterly";
-      case "monthly":
-        return "Monthly";
-      default:
-        return type;
     }
   };
 
@@ -205,14 +180,20 @@ export default function Dashboard() {
         <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Emissions</p>
+              <p className="text-sm font-medium text-gray-500">
+                Total Emissions
+              </p>
               <p className="text-3xl font-medium text-gray-900 mt-2">
                 {(Number(stats?.totalEmissions) || 0).toFixed(1)}
               </p>
               <p className="text-sm text-gray-500 mt-1">kg CO₂e total</p>
             </div>
             <div className="bg-primary-50 p-3 rounded-lg">
-              <TrendingDown className="text-primary-600" size={24} strokeWidth={2} />
+              <TrendingDown
+                className="text-primary-600"
+                size={24}
+                strokeWidth={2}
+              />
             </div>
           </div>
         </div>
@@ -220,14 +201,20 @@ export default function Dashboard() {
         <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">Documents Processed</p>
+              <p className="text-sm font-medium text-gray-500">
+                Documents Processed
+              </p>
               <p className="text-3xl font-medium text-gray-900 mt-2">
                 {stats?.totalDocuments || 0}
               </p>
               <p className="text-sm text-gray-500 mt-1">uploaded & parsed</p>
             </div>
             <div className="bg-primary-50 p-3 rounded-lg">
-              <FileText className="text-primary-600" size={24} strokeWidth={2} />
+              <FileText
+                className="text-primary-600"
+                size={24}
+                strokeWidth={2}
+              />
             </div>
           </div>
         </div>
@@ -235,14 +222,20 @@ export default function Dashboard() {
         <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">Average Emissions</p>
+              <p className="text-sm font-medium text-gray-500">
+                Average Emissions
+              </p>
               <p className="text-3xl font-medium text-gray-900 mt-2">
                 {(Number(stats?.avgEmissions) || 0).toFixed(1)}
               </p>
               <p className="text-sm text-gray-500 mt-1">kg CO₂e per document</p>
             </div>
             <div className="bg-primary-50 p-3 rounded-lg">
-              <BarChart3 className="text-primary-600" size={24} strokeWidth={2} />
+              <BarChart3
+                className="text-primary-600"
+                size={24}
+                strokeWidth={2}
+              />
             </div>
           </div>
         </div>
@@ -271,7 +264,7 @@ export default function Dashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {stats.byCategory.map((entry: any, index: number) => (
+                  {stats.byCategory.map((_entry: any, index: number) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}

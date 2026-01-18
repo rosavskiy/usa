@@ -97,7 +97,11 @@ export default function ManualInput() {
 
       <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
         <div className="flex items-start gap-3">
-          <TrendingDown className="text-primary-600 mt-0.5" size={18} strokeWidth={2} />
+          <TrendingDown
+            className="text-primary-600 mt-0.5"
+            size={18}
+            strokeWidth={2}
+          />
           <div>
             <h3 className="font-medium text-primary-900 mb-1">
               Don't have a bill? Enter data manually
@@ -110,7 +114,10 @@ export default function ManualInput() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm space-y-6"
+      >
         {/* Type Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

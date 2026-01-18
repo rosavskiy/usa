@@ -14,7 +14,7 @@ export default function MyDocuments() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "readable" | "unreadable">(
-    "all"
+    "all",
   );
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -33,7 +33,7 @@ export default function MyDocuments() {
       setLoading(true);
       const statusParam = filter === "all" ? "" : `&status=${filter}`;
       const response = await api.get(
-        `/upload?page=${page}&limit=20${statusParam}`
+        `/upload?page=${page}&limit=20${statusParam}`,
       );
       setDocuments(response.data.data);
       setTotalPages(response.data.pagination.totalPages);
@@ -51,7 +51,7 @@ export default function MyDocuments() {
       setDeleting(true);
       // Delete all documents with this filename
       await api.delete(
-        `/upload/by-filename/${encodeURIComponent(deleteModal.fileName)}`
+        `/upload/by-filename/${encodeURIComponent(deleteModal.fileName)}`,
       );
       setDeleteModal({ show: false, fileName: null });
       loadDocuments(); // Reload list
@@ -99,7 +99,11 @@ export default function MyDocuments() {
           </div>
         );
       default:
-        return <span className="text-xs text-gray-500 font-medium">Processing...</span>;
+        return (
+          <span className="text-xs text-gray-500 font-medium">
+            Processing...
+          </span>
+        );
     }
   };
 
