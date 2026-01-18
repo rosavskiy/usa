@@ -138,8 +138,6 @@ export default function Dashboard() {
 
   // Check if profile is incomplete
   const isProfileIncomplete = profile && (!profile.address || !profile.phone);
-    }
-  };
 
   return (
     <div className="space-y-8">

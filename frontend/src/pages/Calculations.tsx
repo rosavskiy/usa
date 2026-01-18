@@ -16,9 +16,7 @@ export default function Calculations() {
   const [calculations, setCalculations] = useState<any[]>([]);
   const [allCalculations, setAllCalculations] = useState<any[]>([]); // Store all for filtering
   const [loading, setLoading] = useState(true);
-  const [period] = useState<"month" | "quarter" | "year" | "all">(
-    "all",
-  );
+  const [period] = useState<"month" | "quarter" | "year" | "all">("all");
   const [downloading, setDownloading] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{
     show: boolean;

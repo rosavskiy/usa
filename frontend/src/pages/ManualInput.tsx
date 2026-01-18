@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { Calculator, TrendingDown, AlertCircle, Zap, Factory } from "lucide-react";
+import {
+  Calculator,
+  TrendingDown,
+  AlertCircle,
+  Zap,
+  Factory,
+} from "lucide-react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
@@ -247,8 +253,8 @@ export default function ManualInput() {
             </datalist>
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
               <Zap size={14} className="text-primary-600" />
-              Each state has different electricity emission factors
-              (0.01-0.72 kg CO₂e/kWh). Gas & Fuel are universal.
+              Each state has different electricity emission factors (0.01-0.72
+              kg CO₂e/kWh). Gas & Fuel are universal.
             </p>
           </div>
         )}
