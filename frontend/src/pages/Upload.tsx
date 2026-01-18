@@ -539,28 +539,29 @@ export default function Upload() {
             {processingErrors.length === 0 && (
               <div
                 data-success-message
-                className="mt-6 p-8 bg-gradient-to-r from-green-50 to-blue-50 border-4 border-green-400 rounded-xl text-center shadow-xl animate-pulse"
+                className="mt-6 p-8 bg-success-50 border border-success-200 rounded-lg text-center shadow-sm"
               >
                 <CheckCircle
-                  className="mx-auto text-green-600 mb-4"
-                  size={80}
+                  className="mx-auto text-success-600 mb-4"
+                  size={64}
+                  strokeWidth={2}
                 />
-                <h3 className="text-3xl font-bold text-green-900 mb-3">
-                  ✅ All Documents Recognized!
+                <h3 className="text-2xl font-medium text-success-900 mb-3">
+                  All Documents Recognized
                 </h3>
-                <p className="text-xl text-gray-700 mb-3">
+                <p className="text-base text-gray-700 mb-3">
                   All bills successfully analyzed and emissions calculated
                 </p>
-                <p className="text-lg text-gray-600 mb-8">
+                <p className="text-sm text-gray-600 mb-8">
                   View detailed carbon footprint breakdown on the{" "}
                   <strong>Calculations</strong> page
                 </p>
                 <button
                   onClick={() => navigate("/calculations")}
-                  className="inline-flex items-center gap-3 bg-green-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-green-700 transition-all text-xl shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="inline-flex items-center gap-2 bg-primary-500 text-white font-medium py-3 px-8 rounded-lg hover:bg-primary-600 transition-colors"
                 >
                   View Results
-                  <ArrowRight size={28} />
+                  <ArrowRight size={20} strokeWidth={2} />
                 </button>
               </div>
             )}
