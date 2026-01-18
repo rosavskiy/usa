@@ -3,7 +3,7 @@ import { extractTextFromImage } from "./ocr.service";
 
 export async function parseDocumentWithAI(
   documentId: number,
-  filePath: string
+  filePath: string,
 ) {
   console.log(`🤖 Starting AI parsing for doc ${documentId}: ${filePath}`);
 
@@ -66,7 +66,7 @@ export async function parseDocumentWithAI(
     await DocumentModel.updateParsedData(
       documentId,
       { error: userFriendlyError, details: errorMessage },
-      "failed"
+      "failed",
     );
     throw new Error(userFriendlyError);
   }
@@ -102,7 +102,8 @@ function parseUtilityBillText(text: string): any {
     type = "fuel";
     if (lowerText.includes("shell")) provider = "Shell";
     else if (lowerText.includes("chevron")) provider = "Chevron";
-    else if (lowerText.includes("exxon") || lowerText.includes("mobil")) provider = "ExxonMobil";
+    else if (lowerText.includes("exxon") || lowerText.includes("mobil"))
+      provider = "ExxonMobil";
     else if (lowerText.includes("bp ")) provider = "BP";
     else provider = "Fuel Supplier";
   }
@@ -125,9 +126,11 @@ function parseUtilityBillText(text: string): any {
     type = "gas";
     if (lowerText.includes("socalgas")) provider = "SoCalGas";
     else if (lowerText.includes("north shore")) provider = "North Shore Gas";
-    else if (lowerText.includes("con edison") || lowerText.includes("coned")) provider = "Con Edison";
+    else if (lowerText.includes("con edison") || lowerText.includes("coned"))
+      provider = "Con Edison";
     else if (lowerText.includes("national grid")) provider = "National Grid";
-    else if (lowerText.includes("pg&e") || lowerText.includes("pacific gas")) provider = "Pacific Gas & Electric";
+    else if (lowerText.includes("pg&e") || lowerText.includes("pacific gas"))
+      provider = "Pacific Gas & Electric";
     else if (lowerText.includes("atmos")) provider = "Atmos Energy";
     else if (lowerText.includes("dominion")) provider = "Dominion Energy";
     else if (lowerText.includes("peoples gas")) provider = "Peoples Gas";
@@ -155,17 +158,33 @@ function parseUtilityBillText(text: string): any {
     lowerText.includes("pge")
   ) {
     type = "electricity";
-    if (lowerText.includes("southern california edison") || lowerText.includes("sce")) provider = "Southern California Edison";
-    else if (lowerText.includes("con edison") || lowerText.includes("coned")) provider = "Con Edison";
-    else if (lowerText.includes("pg&e") || lowerText.includes("pacific gas")) provider = "Pacific Gas & Electric";
+    if (
+      lowerText.includes("southern california edison") ||
+      lowerText.includes("sce")
+    )
+      provider = "Southern California Edison";
+    else if (lowerText.includes("con edison") || lowerText.includes("coned"))
+      provider = "Con Edison";
+    else if (lowerText.includes("pg&e") || lowerText.includes("pacific gas"))
+      provider = "Pacific Gas & Electric";
     else if (lowerText.includes("duke energy")) provider = "Duke Energy";
-    else if (lowerText.includes("fpl") || lowerText.includes("florida power")) provider = "Florida Power & Light";
-    else if (lowerText.includes("comed") || lowerText.includes("commonwealth edison")) provider = "ComEd";
+    else if (lowerText.includes("fpl") || lowerText.includes("florida power"))
+      provider = "Florida Power & Light";
+    else if (
+      lowerText.includes("comed") ||
+      lowerText.includes("commonwealth edison")
+    )
+      provider = "ComEd";
     else if (lowerText.includes("national grid")) provider = "National Grid";
     else if (lowerText.includes("dominion")) provider = "Dominion Energy";
-    else if (lowerText.includes("aps") || lowerText.includes("arizona public service")) provider = "Arizona Public Service";
+    else if (
+      lowerText.includes("aps") ||
+      lowerText.includes("arizona public service")
+    )
+      provider = "Arizona Public Service";
     else if (lowerText.includes("xcel")) provider = "Xcel Energy";
-    else if (lowerText.includes("pascoag")) provider = "Pascoag Utility District";
+    else if (lowerText.includes("pascoag"))
+      provider = "Pascoag Utility District";
     else provider = "Electric Company";
   }
 
@@ -175,7 +194,7 @@ function parseUtilityBillText(text: string): any {
 
   // Step 1: Try to find "Service Address" section with state
   const serviceAddressMatch = text.match(
-    /service\s+address:?[\s\S]{0,200}?(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY)\s+\d{5}/i
+    /service\s+address:?[\s\S]{0,200}?(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY)\s+\d{5}/i,
   );
   if (serviceAddressMatch) {
     state = serviceAddressMatch[1].toUpperCase();
@@ -185,7 +204,7 @@ function parseUtilityBillText(text: string): any {
   // Step 2: If not found, try ZIP code to state mapping
   if (!state) {
     const zipMatch = text.match(
-      /service\s+address:?[\s\S]{0,200}?(\d{5})(?:-\d{4})?/i
+      /service\s+address:?[\s\S]{0,200}?(\d{5})(?:-\d{4})?/i,
     );
     if (zipMatch) {
       const zip = zipMatch[1];
@@ -449,7 +468,7 @@ function parseUtilityBillText(text: string): any {
           context:
             normalizedText.substring(
               Math.max(0, match.index - 80),
-              match.index + 100
+              match.index + 100,
             ) + " [DIRECT AFTER kWh]",
         });
       }
@@ -468,7 +487,7 @@ function parseUtilityBillText(text: string): any {
           unit: "kWh",
           context: normalizedText.substring(
             Math.max(0, match1.index - 50),
-            match1.index + 100
+            match1.index + 100,
           ),
         });
       }
@@ -489,7 +508,7 @@ function parseUtilityBillText(text: string): any {
             unit: "kWh",
             context: normalizedText.substring(
               Math.max(0, match2.index - 50),
-              match2.index + 100
+              match2.index + 100,
             ),
           });
         }
@@ -581,7 +600,7 @@ function parseUtilityBillText(text: string): any {
           unit: unitType,
           context: normalizedText.substring(
             Math.max(0, matchGas.index - 50),
-            matchGas.index + 80
+            matchGas.index + 80,
           ),
         });
       }
@@ -603,7 +622,7 @@ function parseUtilityBillText(text: string): any {
           unit: "gallons",
           context: normalizedText.substring(
             Math.max(0, matchFuel.index - 50),
-            matchFuel.index + 80
+            matchFuel.index + 80,
           ),
         });
       }
@@ -625,7 +644,7 @@ function parseUtilityBillText(text: string): any {
     const filteredMatches = allMatches.filter((m) => {
       if (m.value < 32) {
         console.log(
-          `⚠️  Filtered out ${m.value} kWh - likely days, not consumption`
+          `⚠️  Filtered out ${m.value} kWh - likely days, not consumption`,
         );
         return false;
       }
@@ -634,7 +653,7 @@ function parseUtilityBillText(text: string): any {
 
     if (filteredMatches.length === 0) {
       console.log(
-        `❌ All matches were < 32 (days). No valid consumption found.`
+        `❌ All matches were < 32 (days). No valid consumption found.`,
       );
       console.log(`⚠️ Consumption not found`);
       return;
@@ -720,14 +739,14 @@ function parseUtilityBillText(text: string): any {
     scoredMatches.sort((a, b) => b.score - a.score);
 
     console.log(
-      `🧠 AI Reasoning - Scored matches (CURRENT PERIOD = приоритет!):`
+      `🧠 AI Reasoning - Scored matches (CURRENT PERIOD = приоритет!):`,
     );
     scoredMatches.forEach((m, i) => {
       const isPast = m.context.toLowerCase().includes("[past period]");
       const isCurrent = m.context.toLowerCase().includes("[current period]");
       const marker = isCurrent ? "✓ ТЕКУЩИЙ" : isPast ? "✗ ПРОШЛЫЙ ГОД" : "";
       console.log(
-        `   ${i + 1}. ${m.value} ${m.unit} [score: ${m.score}] ${marker}`
+        `   ${i + 1}. ${m.value} ${m.unit} [score: ${m.score}] ${marker}`,
       );
     });
 
@@ -737,24 +756,24 @@ function parseUtilityBillText(text: string): any {
 
     const digitCount = Math.floor(Math.log10(consumptionValue)) + 1;
     console.log(
-      `✅ Selected consumption: ${consumptionValue} ${unit} (${digitCount} digits, score: ${best.score})`
+      `✅ Selected consumption: ${consumptionValue} ${unit} (${digitCount} digits, score: ${best.score})`,
     );
 
     if (scoredMatches.length > 1) {
       const hasPastAndCurrent =
         scoredMatches.some((m) =>
-          m.context.toLowerCase().includes("[current period]")
+          m.context.toLowerCase().includes("[current period]"),
         ) &&
         scoredMatches.some((m) =>
-          m.context.toLowerCase().includes("[past period]")
+          m.context.toLowerCase().includes("[past period]"),
         );
       if (hasPastAndCurrent) {
         console.log(
-          `ℹ️  Detected both CURRENT and PAST periods → Auto-selected CURRENT period`
+          `ℹ️  Detected both CURRENT and PAST periods → Auto-selected CURRENT period`,
         );
       } else {
         console.log(
-          `ℹ️  Total matches: ${scoredMatches.length}, selected highest-scored`
+          `ℹ️  Total matches: ${scoredMatches.length}, selected highest-scored`,
         );
       }
     }
@@ -870,7 +889,7 @@ function parseUtilityBillText(text: string): any {
       if (phoneNumber.length === 10) {
         phoneNumber = `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(
           3,
-          6
+          6,
         )}-${phoneNumber.slice(6)}`;
       }
       break;

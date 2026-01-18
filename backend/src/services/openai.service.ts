@@ -3,6 +3,7 @@ import axios from "axios";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const OPENAI_VISION_MODEL = process.env.OPENAI_VISION_MODEL || "gpt-4o-mini";
+const OPENAI_ENABLED = process.env.OPENAI_ENABLED !== "false";
 
 function stripMarkdownJson(text: string) {
   return text
@@ -115,6 +116,11 @@ export async function parseUtilityBillImageWithOpenAI(
 }
 
 export async function checkOpenAIHealth(): Promise<boolean> {
+  if (!OPENAI_ENABLED) {
+    console.log("⚠️ OpenAI disabled (OPENAI_ENABLED=false)");
+    return false;
+  }
+  
   if (!OPENAI_API_KEY) {
     console.log("⚠️ OPENAI_API_KEY not configured");
     return false;
