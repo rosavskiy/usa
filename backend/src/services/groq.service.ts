@@ -1,4 +1,5 @@
 import axios from "axios";
+import fs from "fs";
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -58,11 +59,15 @@ Return ONLY JSON.`;
 }
 
 export async function parseUtilityBillImageWithGroq(
-  imageBase64: string
+  filePath: string
 ): Promise<any> {
   if (!GROQ_API_KEY) {
     throw new Error("GROQ_API_KEY not configured");
   }
+
+  // Read file and convert to base64
+  const imageBuffer = fs.readFileSync(filePath);
+  const imageBase64 = imageBuffer.toString('base64');
 
   // First, get list of available models
   let availableModels: string[] = [];
