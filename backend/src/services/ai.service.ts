@@ -60,7 +60,8 @@ export async function parseDocumentWithAI(
   }
 }
 
-function parseUtilityBillText(text: string): any {
+// parseUtilityBillText function removed - now using OpenAI Vision API directly
+
   console.log(`🔍 Parsing extracted text...`);
 
   // Normalize text for better regex matching
