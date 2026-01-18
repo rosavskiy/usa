@@ -278,23 +278,23 @@ export default function Upload() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Upload Bills</h1>
+        <h1 className="text-2xl font-medium text-gray-900">Upload Bills</h1>
       </div>
 
       {/* Mobile Camera Button */}
       {isMobile && (
-        <div className="card bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-          <div className="flex flex-col items-center text-center py-4">
-            <Camera size={48} className="mb-3" />
-            <h3 className="text-xl font-bold mb-2">📸 Take Photo Now</h3>
+        <div className="bg-primary-500 text-white rounded-lg p-6">
+          <div className="flex flex-col items-center text-center">
+            <Camera size={40} className="mb-3" strokeWidth={2} />
+            <h3 className="text-lg font-medium mb-2">📸 Take Photo Now</h3>
             <p className="text-sm opacity-90 mb-4">
               Use your phone's camera to capture bills instantly
             </p>
             <button
               onClick={openCamera}
-              className="bg-white text-blue-600 font-bold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors"
+              className="bg-white text-primary-600 font-medium py-2.5 px-6 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Open Camera
             </button>
@@ -313,18 +313,18 @@ export default function Upload() {
         multiple
       />
 
-      <div className="card">
+      <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-all ${
             isDragActive
               ? "border-primary-500 bg-primary-50"
-              : "border-gray-300 hover:border-primary-400"
+              : "border-gray-200 hover:border-primary-400 hover:bg-gray-50"
           }`}
         >
           <input {...getInputProps()} />
-          <UploadIcon className="mx-auto text-gray-400 mb-4" size={48} />
-          <p className="text-lg font-medium text-gray-700 mb-2">
+          <UploadIcon className="mx-auto text-gray-400 mb-4" size={40} strokeWidth={2} />
+          <p className="text-base font-medium text-gray-700 mb-2">
             {isDragActive
               ? "Drop files here"
               : isMobile
@@ -339,27 +339,27 @@ export default function Upload() {
         </div>
 
         {files.length > 0 && (
-          <div className="mt-6 space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="mt-8 space-y-3">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium text-gray-900">Selected Files:</h3>
               <button
                 onClick={clearAll}
-                className="text-sm text-red-600 hover:text-red-700 font-medium"
+                className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
               >
                 Clear All
               </button>
             </div>
 
             {files.map((f, index) => (
-              <div key={index} className="p-3 bg-gray-50 rounded-lg">
+              <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <File className="text-gray-400" size={24} />
+                    <File className="text-gray-400" size={20} strokeWidth={2} />
                     <div>
-                      <p className="font-medium">
+                      <p className="font-medium text-sm">
                         {f.file?.name || "Unknown file"}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs text-gray-500 mt-0.5">
                         {f.file?.size
                           ? (f.file.size / 1024 / 1024).toFixed(2)
                           : "0.00"}{" "}
@@ -370,12 +370,13 @@ export default function Upload() {
                   <div className="flex items-center gap-2">
                     {f.status === "processing" && (
                       <Loader2
-                        className="animate-spin text-blue-500"
-                        size={24}
+                        className="animate-spin text-primary-500"
+                        size={20}
+                        strokeWidth={2}
                       />
                     )}
                     {f.status === "success" && !f.errorMsg && (
-                      <CheckCircle className="text-green-500" size={24} />
+                      <CheckCircle className="text-success-600" size={20} strokeWidth={2} />
                     )}
                     {f.status === "error" && (
                       <div className="flex items-center gap-2">
@@ -567,11 +568,12 @@ export default function Upload() {
         )}
       </div>
 
-      <div className="card bg-blue-50 border-blue-200">
-        <h3 className="font-bold text-blue-900 mb-2">
-          💡 Tips for best results:
+      <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
+        <h3 className="font-medium text-primary-900 mb-3 flex items-center gap-2">
+          <AlertCircle size={18} strokeWidth={2} className="text-primary-600" />
+          Tips for best results
         </h3>
-        <ul className="space-y-1 text-sm text-blue-800">
+        <ul className="space-y-2 text-sm text-primary-800">
           <li>• Upload clear, well-lit photos of your bills</li>
           <li>• Ensure all text is readable and not cut off</li>
           <li>• Supported: electricity, gas, fuel, and supply bills</li>

@@ -85,24 +85,24 @@ export default function ManualInput() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Calculator size={32} className="text-primary-600" />
-          <h1 className="text-3xl font-bold text-gray-900">
+          <Calculator size={24} className="text-primary-600" strokeWidth={2} />
+          <h1 className="text-2xl font-medium text-gray-900">
             Manual Data Entry
           </h1>
         </div>
       </div>
 
-      <div className="card bg-blue-50 border-blue-200">
+      <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
         <div className="flex items-start gap-3">
-          <TrendingDown className="text-blue-600 mt-1" size={24} />
+          <TrendingDown className="text-primary-600 mt-0.5" size={18} strokeWidth={2} />
           <div>
-            <h3 className="font-bold text-blue-900 mb-1">
+            <h3 className="font-medium text-primary-900 mb-1">
               Don't have a bill? Enter data manually
             </h3>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-primary-700">
               Input your energy consumption directly to calculate carbon
               emissions
             </p>
@@ -110,7 +110,7 @@ export default function ManualInput() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="card space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm space-y-6">
         {/* Type Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -296,11 +296,11 @@ export default function ManualInput() {
         </div>
 
         {/* F-gases (Industrial Greenhouse Gases) */}
-        <div className="border-t pt-4 mt-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <div className="border-t border-gray-200 pt-6 mt-6">
+          <h3 className="text-base font-medium text-primary-600 mb-2">
             🏭 Industrial Greenhouse Gases
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 mb-5">
             For refrigeration equipment, air conditioning systems, electrical
             equipment, or industrial processes
           </p>
@@ -384,16 +384,19 @@ export default function ManualInput() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full btn-primary disabled:opacity-50 flex items-center justify-center gap-2 mt-8"
         >
-          <Calculator size={20} />
+          <Calculator size={18} strokeWidth={2} />
           {loading ? "Calculating..." : "Calculate Emissions"}
         </button>
       </form>
 
-      <div className="card bg-gray-50">
-        <h3 className="font-bold text-gray-900 mb-2">📌 Common Conversions</h3>
-        <ul className="text-sm text-gray-700 space-y-1">
+      <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
+        <h3 className="font-medium text-primary-900 mb-3 flex items-center gap-2">
+          <AlertCircle size={18} strokeWidth={2} className="text-primary-600" />
+          Common Conversions
+        </h3>
+        <ul className="text-sm text-primary-800 space-y-2">
           <li>• 1 therm = 29.3 kWh (for natural gas)</li>
           <li>• 1 gallon = 3.785 liters</li>
           <li>• 1 MWh = 1,000 kWh</li>
