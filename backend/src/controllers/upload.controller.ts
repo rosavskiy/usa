@@ -24,7 +24,15 @@ export const uploadDocument = asyncHandler(
 
     // Get active reporting period
     console.log(`🔍 Fetching active reporting period for user ${userId}...`);
-    const activePeriod = await ReportingPeriodModel.getActive(userId);
+    let activePeriod;
+    try {
+      activePeriod = await ReportingPeriodModel.getActive(userId);
+      console.log(`📊 getActive returned:`, activePeriod);
+    } catch (error) {
+      console.error(`❌ Error fetching active period:`, error);
+      throw error;
+    }
+    
     if (!activePeriod) {
       throw new AppError(
         "No active reporting period. Please select a period first.",
