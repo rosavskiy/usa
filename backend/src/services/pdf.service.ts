@@ -19,57 +19,93 @@ interface ReportOptions {
 export async function generateCarbonReport(
   calculationIdOrIds: number | number[],
   userId: number,
-  options: ReportOptions = {}
+  options: ReportOptions = {},
 ): Promise<typeof PDFDocument> {
-  console.log('PDF Service - Received options:', JSON.stringify(options, null, 2));
-  
+  console.log(
+    "PDF Service - Received options:",
+    JSON.stringify(options, null, 2),
+  );
+
   // Set default values for missing options
-  const consolidationApproach = options.consolidationApproach && options.consolidationApproach.length > 0
-    ? options.consolidationApproach
-    : [];
-  
-  console.log('consolidationApproach after processing:', consolidationApproach);
-  
+  const consolidationApproach =
+    options.consolidationApproach && options.consolidationApproach.length > 0
+      ? options.consolidationApproach
+      : [];
+
+  console.log("consolidationApproach after processing:", consolidationApproach);
+
   const baseYearPolicy = options.baseYearPolicy || "first_year";
   const emissionsChangesContext = options.emissionsChangesContext || "N/A";
-  
+
   // Handle both single ID and array of IDs
-  const calculationIds = Array.isArray(calculationIdOrIds) 
-    ? calculationIdOrIds 
+  const calculationIds = Array.isArray(calculationIdOrIds)
+    ? calculationIdOrIds
     : [calculationIdOrIds];
 
   // Get all calculations
   const calculations = await Promise.all(
-    calculationIds.map(id => CarbonModel.findById(id))
+    calculationIds.map((id) => CarbonModel.findById(id)),
   );
 
   // Verify all calculations exist and belong to user
-  if (calculations.some(calc => !calc || calc.user_id !== userId)) {
+  if (calculations.some((calc) => !calc || calc.user_id !== userId)) {
     throw new Error("One or more calculations not found or unauthorized");
   }
 
   // Aggregate emissions data
   const aggregated = {
-    co2_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.co2_kg) || 0), 0),
-    ch4_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.ch4_kg) || 0), 0),
-    n2o_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.n2o_kg) || 0), 0),
-    hfcs_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.hfcs_kg) || 0), 0),
-    pfcs_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.pfcs_kg) || 0), 0),
-    sf6_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.sf6_kg) || 0), 0),
-    other_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.other_kg) || 0), 0),
-    total_co2e_kg: calculations.reduce((sum, calc) => sum + (Number(calc!.total_co2e_kg) || 0), 0),
+    co2_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.co2_kg) || 0),
+      0,
+    ),
+    ch4_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.ch4_kg) || 0),
+      0,
+    ),
+    n2o_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.n2o_kg) || 0),
+      0,
+    ),
+    hfcs_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.hfcs_kg) || 0),
+      0,
+    ),
+    pfcs_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.pfcs_kg) || 0),
+      0,
+    ),
+    sf6_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.sf6_kg) || 0),
+      0,
+    ),
+    other_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.other_kg) || 0),
+      0,
+    ),
+    total_co2e_kg: calculations.reduce(
+      (sum, calc) => sum + (Number(calc!.total_co2e_kg) || 0),
+      0,
+    ),
   };
 
   // Get period dates - use provided dates from options, or fall back to calculation dates
   const periodStartDate = options.reportingPeriodStart
     ? new Date(options.reportingPeriodStart)
     : new Date(
-        Math.min(...calculations.map(c => new Date(c!.period_start || Date.now()).getTime()))
+        Math.min(
+          ...calculations.map((c) =>
+            new Date(c!.period_start || Date.now()).getTime(),
+          ),
+        ),
       );
   const periodEndDate = options.reportingPeriodEnd
     ? new Date(options.reportingPeriodEnd)
     : new Date(
-        Math.max(...calculations.map(c => new Date(c!.period_end || Date.now()).getTime()))
+        Math.max(
+          ...calculations.map((c) =>
+            new Date(c!.period_end || Date.now()).getTime(),
+          ),
+        ),
       );
 
   const reportingYear = periodEndDate.getFullYear();
@@ -115,15 +151,18 @@ export async function generateCarbonReport(
   const otherMt = (aggregated.other_kg / 1000).toFixed(3);
 
   // For combined reports, calculate scope totals from all calculations
-  const scope1Total = calculations
-    .filter(c => c!.emission_type === "scope1")
-    .reduce((sum, c) => sum + (Number(c!.total_co2e_kg) || 0), 0) / 1000;
-  const scope2Total = calculations
-    .filter(c => c!.emission_type === "scope2")
-    .reduce((sum, c) => sum + (Number(c!.total_co2e_kg) || 0), 0) / 1000;
-  const scope3Total = calculations
-    .filter(c => c!.emission_type === "scope3")
-    .reduce((sum, c) => sum + (Number(c!.total_co2e_kg) || 0), 0) / 1000;
+  const scope1Total =
+    calculations
+      .filter((c) => c!.emission_type === "scope1")
+      .reduce((sum, c) => sum + (Number(c!.total_co2e_kg) || 0), 0) / 1000;
+  const scope2Total =
+    calculations
+      .filter((c) => c!.emission_type === "scope2")
+      .reduce((sum, c) => sum + (Number(c!.total_co2e_kg) || 0), 0) / 1000;
+  const scope3Total =
+    calculations
+      .filter((c) => c!.emission_type === "scope3")
+      .reduce((sum, c) => sum + (Number(c!.total_co2e_kg) || 0), 0) / 1000;
 
   const tealColor = "#008B8B";
   const grayColor = "#666666";
@@ -137,13 +176,13 @@ export async function generateCarbonReport(
     .font("Helvetica")
     .text(
       "This is not the official reporting template of the WRI/WBCSD GHG Protocol. It is a sample template",
-      { align: "center" }
+      { align: "center" },
     );
   doc.text(
     "meant to help outline the reporting requirements of the GHG Protocol Corporate Standard.",
     {
       align: "center",
-    }
+    },
   );
 
   doc.moveDown(4);
@@ -247,7 +286,7 @@ export async function generateCarbonReport(
       "Has this inventory been verified by an accredited third party?",
       tableX + 5,
       currentY + 6,
-      { width: tableWidth - 10 }
+      { width: tableWidth - 10 },
     );
 
   currentY += rowHeight;
@@ -263,11 +302,7 @@ export async function generateCarbonReport(
     .fillColor("#000")
     .text(verifiedNo ? "[X] No" : "[ ] No", tableX + 10, currentY + 5);
 
-  doc.text(
-    verifiedYes ? "[X] Yes" : "[ ] Yes",
-    tableX + 60,
-    currentY + 5
-  );
+  doc.text(verifiedYes ? "[X] Yes" : "[ ] Yes", tableX + 60, currentY + 5);
 
   currentY += rowHeight;
 
@@ -316,7 +351,7 @@ export async function generateCarbonReport(
       "Have any facilities, operations and/or emissions sources been excluded from this inventory? If yes,",
       65,
       y + 5,
-      { width: colWidth - 10 }
+      { width: colWidth - 10 },
     );
   doc.text("please specify.", 65, y + 17, { width: colWidth - 10 });
 
@@ -332,7 +367,7 @@ export async function generateCarbonReport(
         : "No",
       65,
       y + 5,
-      { width: colWidth - 10 }
+      { width: colWidth - 10 },
     );
 
   y += 25;
@@ -354,7 +389,7 @@ export async function generateCarbonReport(
     .text(
       `${formatDate(periodStartDate)} to ${formatDate(periodEndDate)}`,
       65,
-      y + 5
+      y + 5,
     );
 
   y += 25;
@@ -379,20 +414,17 @@ export async function generateCarbonReport(
       "What approach is your company using? (Check each consolidation approach for which your company is",
       65,
       y + 5,
-      { width: colWidth - 10 }
+      { width: colWidth - 10 },
     );
   doc.text(
     "reporting emissions.) If your company is reporting according to more than one consolidation approach,",
     65,
     y + 15,
-    { width: colWidth - 10 }
+    { width: colWidth - 10 },
   );
-  doc.text(
-    "complete a separate table for each approach.",
-    65,
-    y + 25,
-    { width: colWidth - 10 }
-  );
+  doc.text("complete a separate table for each approach.", 65, y + 25, {
+    width: colWidth - 10,
+  });
 
   y += 40;
 
@@ -402,17 +434,35 @@ export async function generateCarbonReport(
   doc.rect(60, checkboxY, colWidth, 25).stroke();
 
   // Use consolidation approaches from options with default
-  console.log('Rendering checkboxes with approaches:', consolidationApproach);
-  const equityShareChecked = consolidationApproach.includes("Equity Share") ? "[X]" : "[ ]";
-  const financialControlChecked = consolidationApproach.includes("Financial Control") ? "[X]" : "[ ]";
-  const operationalControlChecked = consolidationApproach.includes("Operational Control") ? "[X]" : "[ ]";
+  console.log("Rendering checkboxes with approaches:", consolidationApproach);
+  const equityShareChecked = consolidationApproach.includes("Equity Share")
+    ? "[X]"
+    : "[ ]";
+  const financialControlChecked = consolidationApproach.includes(
+    "Financial Control",
+  )
+    ? "[X]"
+    : "[ ]";
+  const operationalControlChecked = consolidationApproach.includes(
+    "Operational Control",
+  )
+    ? "[X]"
+    : "[ ]";
 
   doc
     .fontSize(9)
     .fillColor("#000")
     .text(`${equityShareChecked} Equity Share`, 70, checkboxY + 7);
-  doc.text(`${financialControlChecked} Financial Control`, 70 + checkboxSpacing, checkboxY + 7);
-  doc.text(`${operationalControlChecked} Operational Control`, 70 + checkboxSpacing * 2, checkboxY + 7);
+  doc.text(
+    `${financialControlChecked} Financial Control`,
+    70 + checkboxSpacing,
+    checkboxY + 7,
+  );
+  doc.text(
+    `${operationalControlChecked} Operational Control`,
+    70 + checkboxSpacing * 2,
+    checkboxY + 7,
+  );
 
   y = checkboxY + 30;
 
@@ -436,10 +486,12 @@ export async function generateCarbonReport(
   y += 20;
 
   doc.rect(60, y, colWidth, 20).stroke();
-  
+
   // Automatically determine if scope3 emissions are included based on calculations
-  const hasScope3 = calculations.some(calc => calc!.emission_type === "scope3");
-  
+  const hasScope3 = calculations.some(
+    (calc) => calc!.emission_type === "scope3",
+  );
+
   doc
     .fontSize(9)
     .fillColor("#000")
@@ -464,7 +516,7 @@ export async function generateCarbonReport(
       "The table below refers to emissions independent of any GHG trades such as sales, purchases, transfers,",
       60,
       y,
-      { width: colWidth }
+      { width: colWidth },
     );
   doc.text("or banking of allowances.", 60, y + 10, { width: colWidth });
 
@@ -508,13 +560,14 @@ export async function generateCarbonReport(
   y = tableStartY + 20;
 
   // Data rows - for combined reports, aggregate by scope
-  const scope1Calcs = calculations.filter(c => c!.emission_type === "scope1");
-  const scope2Calcs = calculations.filter(c => c!.emission_type === "scope2");
-  const scope3Calcs = calculations.filter(c => c!.emission_type === "scope3");
+  const scope1Calcs = calculations.filter((c) => c!.emission_type === "scope1");
+  const scope2Calcs = calculations.filter((c) => c!.emission_type === "scope2");
+  const scope3Calcs = calculations.filter((c) => c!.emission_type === "scope3");
 
   const getGasTotal = (calcs: any[], gasField: string) => {
     if (calcs.length === 0) return "0.000";
-    const total = calcs.reduce((sum, c) => sum + (Number(c[gasField]) || 0), 0) / 1000;
+    const total =
+      calcs.reduce((sum, c) => sum + (Number(c[gasField]) || 0), 0) / 1000;
     return total.toFixed(3);
   };
 
@@ -559,7 +612,8 @@ export async function generateCarbonReport(
     const fontSize = 9;
     const lineHeight = Math.round(fontSize * 1.2);
     const lineCount = row.label.split("\n").length;
-    const labelY = y + Math.max(4, Math.floor((rowHeight - lineCount * lineHeight) / 2) + 1);
+    const labelY =
+      y + Math.max(4, Math.floor((rowHeight - lineCount * lineHeight) / 2) + 1);
     const dataY = y + Math.max(6, Math.floor((rowHeight - fontSize) / 2) + 1);
 
     doc.rect(col1X, y, col1Width, rowHeight).stroke();
@@ -577,7 +631,9 @@ export async function generateCarbonReport(
     });
 
     // CO2
-    doc.rect(col1X + col1Width + dataColWidth, y, dataColWidth, rowHeight).stroke();
+    doc
+      .rect(col1X + col1Width + dataColWidth, y, dataColWidth, rowHeight)
+      .stroke();
     doc.text(row.co2, col1X + col1Width + dataColWidth + 2, dataY, {
       width: dataColWidth - 4,
       align: "center",
@@ -696,21 +752,22 @@ export async function generateCarbonReport(
     .text(
       "Clarification of company-determined policy for making base year emissions recalculations",
       65,
-      y + 3
+      y + 3,
     );
 
   y += 15;
 
   doc.rect(60, y, colWidth, 15).stroke();
-  
+
   // Use baseYearPolicy with default
-  const baseYearPolicyText = {
-    "first_year": "First year of operation",
-    "threshold": "Threshold-based recalculation",
-    "structural_changes": "Structural changes only",
-    "no_recalculation": "No recalculation policy"
-  }[baseYearPolicy] || "First year of operation";
-  
+  const baseYearPolicyText =
+    {
+      first_year: "First year of operation",
+      threshold: "Threshold-based recalculation",
+      structural_changes: "Structural changes only",
+      no_recalculation: "No recalculation policy",
+    }[baseYearPolicy] || "First year of operation";
+
   doc
     .fontSize(8)
     .fillColor("#000")
@@ -727,7 +784,7 @@ export async function generateCarbonReport(
     .text(
       "Context for any significant emissions changes that triggered base year emissions recalculations",
       65,
-      y + 5
+      y + 5,
     );
 
   y += 20;
@@ -791,14 +848,21 @@ export async function generateCarbonReport(
       align: "center",
     });
 
-    doc.rect(col1X + baseCol1Width + baseDataColWidth, y, baseDataColWidth, rowH).stroke();
+    doc
+      .rect(col1X + baseCol1Width + baseDataColWidth, y, baseDataColWidth, rowH)
+      .stroke();
     doc.text(row.co2, col1X + baseCol1Width + baseDataColWidth + 2, y + 7, {
       width: baseDataColWidth - 4,
       align: "center",
     });
 
     doc
-      .rect(col1X + baseCol1Width + baseDataColWidth * 2, y, baseDataColWidth, rowH)
+      .rect(
+        col1X + baseCol1Width + baseDataColWidth * 2,
+        y,
+        baseDataColWidth,
+        rowH,
+      )
       .stroke();
     doc.text(row.ch4, col1X + baseCol1Width + baseDataColWidth * 2 + 2, y + 7, {
       width: baseDataColWidth - 4,
@@ -806,7 +870,12 @@ export async function generateCarbonReport(
     });
 
     doc
-      .rect(col1X + baseCol1Width + baseDataColWidth * 3, y, baseDataColWidth, rowH)
+      .rect(
+        col1X + baseCol1Width + baseDataColWidth * 3,
+        y,
+        baseDataColWidth,
+        rowH,
+      )
       .stroke();
     doc.text(row.n2o, col1X + baseCol1Width + baseDataColWidth * 3 + 2, y + 7, {
       width: baseDataColWidth - 4,
@@ -815,12 +884,22 @@ export async function generateCarbonReport(
 
     for (let i = 4; i < 8; i++) {
       doc
-        .rect(col1X + baseCol1Width + baseDataColWidth * i, y, baseDataColWidth, rowH)
+        .rect(
+          col1X + baseCol1Width + baseDataColWidth * i,
+          y,
+          baseDataColWidth,
+          rowH,
+        )
         .stroke();
-      doc.text("0.000", col1X + baseCol1Width + baseDataColWidth * i + 2, y + 7, {
-        width: baseDataColWidth - 4,
-        align: "center",
-      });
+      doc.text(
+        "0.000",
+        col1X + baseCol1Width + baseDataColWidth * i + 2,
+        y + 7,
+        {
+          width: baseDataColWidth - 4,
+          align: "center",
+        },
+      );
     }
 
     y += rowH;
@@ -846,12 +925,12 @@ export async function generateCarbonReport(
     .text(
       "If you have used calculation tools or methodologies other than those provided by the GHG Protocol,",
       65,
-      y + 5
+      y + 5,
     );
   doc.text(
     "provide the name of and link to any other GHG Protocol calculation tools used.",
     65,
-    y + 17
+    y + 17,
   );
 
   y += 30;
@@ -860,20 +939,21 @@ export async function generateCarbonReport(
   doc
     .fontSize(8)
     .fillColor("#000")
-    .text("EPA eGRID 2023, EPA Emission Factors Hub, Climatiq API", 65, y + 5, {
+    .text("OpenAI (used for AI services), EPA eGRID 2023", 65, y + 5, {
       width: colWidth - 10,
     });
 
   y += 35;
 
-  // Optional Information header
+  // Optional Information header - add extra spacing and position explicitly
+  y += 8;
   doc
     .fontSize(14)
     .fillColor("#000")
     .font("Helvetica-Bold")
-    .text("Optional Information", { align: "center" });
+    .text("Optional Information", 60, y, { width: colWidth, align: "center" });
 
-  y = doc.y + 15;
+  y += 28;
 
   // Information on emissions breakdown
   doc
@@ -938,7 +1018,7 @@ export async function generateCarbonReport(
     .text(
       "Emissions disaggregated by facility (recommended for individual facilities with stationary combustion)",
       65,
-      y + 5
+      y + 5,
     );
 
   y += 18;
@@ -1011,7 +1091,7 @@ export async function generateCarbonReport(
       "This report was generated by CarbonEasy.ai using automated AI-based OCR technology and EPA emission factors.",
       60,
       y,
-      { width: colWidth, align: "center" }
+      { width: colWidth, align: "center" },
     );
 
   y += 15;
@@ -1020,7 +1100,7 @@ export async function generateCarbonReport(
     "Calculations comply with GHG Protocol Corporate Standard. Independent verification is recommended for regulatory submissions.",
     60,
     y,
-    { width: colWidth, align: "center" }
+    { width: colWidth, align: "center" },
   );
 
   return doc;
