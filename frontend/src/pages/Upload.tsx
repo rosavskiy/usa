@@ -376,7 +376,7 @@ export default function Upload() {
                       />
                     )}
                     {f.status === "success" && !f.errorMsg && (
-                      <CheckCircle className="text-success-600" size={20} strokeWidth={2} />
+                      <CheckCircle className="text-primary-600" size={20} strokeWidth={2} />
                     )}
                     {f.status === "error" && (
                       <div className="flex items-center gap-2">
