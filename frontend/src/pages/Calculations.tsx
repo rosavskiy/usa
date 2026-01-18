@@ -1118,7 +1118,7 @@ export default function Calculations() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Date (dd/mm/yyyy):
+                      Start Date (mm/dd/yyyy):
                     </label>
                     <input
                       type="date"
@@ -1129,13 +1129,13 @@ export default function Calculations() {
                           reportingPeriodStart: e.target.value,
                         })
                       }
-                      placeholder="dd/mm/yyyy"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      placeholder="mm/dd/yyyy"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date (dd/mm/yyyy):
+                      End Date (mm/dd/yyyy):
                     </label>
                     <input
                       type="date"
@@ -1146,8 +1146,8 @@ export default function Calculations() {
                           reportingPeriodEnd: e.target.value,
                         })
                       }
-                      placeholder="dd/mm/yyyy"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      placeholder="mm/dd/yyyy"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                 </div>
@@ -1285,7 +1285,7 @@ export default function Calculations() {
                   !reportForm.reportingPeriodEnd ||
                   reportForm.consolidationApproach.length === 0
                 }
-                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {downloading ? "Generating..." : "Continue"}
               </button>
