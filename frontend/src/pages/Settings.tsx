@@ -435,7 +435,7 @@ export default function Settings() {
             <button
               type="submit"
               disabled={saving}
-              className="px-8 py-3 bg-green-600 text-white font-semibold text-lg rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-md"
+              className="px-8 py-3 bg-primary-600 text-white font-semibold text-lg rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-md"
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>
