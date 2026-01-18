@@ -35,7 +35,8 @@ export async function generateCarbonReport(
   console.log("consolidationApproach after processing:", consolidationApproach);
 
   const baseYearPolicy = options.baseYearPolicy || "first_year";
-  const emissionsChangesContext = options.emissionsChangesContext || "Not provided";
+  const emissionsChangesContext =
+    options.emissionsChangesContext || "Not provided";
 
   // Handle both single ID and array of IDs
   const calculationIds = Array.isArray(calculationIdOrIds)
@@ -1023,16 +1024,19 @@ export async function generateCarbonReport(
       } else {
         value = "Not provided";
       }
-    } else if (
-      text.includes("Stationary") ||
-      text.includes("Mobile") ||
-      text.includes("Electricity")
-    ) {
-      // Sub-rows: prefer specific scope numbers if available, otherwise use combined total
+    } else if (text.includes("Electricity")) {
+      // Electricity is Scope 2
+      if (scope2Calcs.length > 0) {
+        value = scope2Total.toFixed(3) + " mtCO2e";
+      } else {
+        value = "Not provided";
+      }
+    } else if (text.includes("Stationary") || text.includes("Mobile")) {
+      // Stationary and Mobile are Scope 1
       if (scope1Calcs.length > 0) {
         value = scope1Total.toFixed(3) + " mtCO2e";
       } else {
-        value = totalMetricTons + " mtCO2e";
+        value = "Not provided";
       }
     } else {
       value = "Not provided";
@@ -1109,7 +1113,8 @@ export async function generateCarbonReport(
     .join(" | ");
 
   // Ensure the facility info cell is never empty — use English fallback
-  const facilityInfoFinal = facilityInfo && facilityInfo.length > 0 ? facilityInfo : "Not provided";
+  const facilityInfoFinal =
+    facilityInfo && facilityInfo.length > 0 ? facilityInfo : "Not provided";
 
   doc.text(facilityInfoFinal, 215, y + 5, { width: colWidth - 155 });
 
