@@ -23,6 +23,7 @@ export const uploadDocument = asyncHandler(
     );
 
     // Get active reporting period
+    console.log(`🔍 Fetching active reporting period for user ${userId}...`);
     const activePeriod = await ReportingPeriodModel.getActive(userId);
     if (!activePeriod) {
       throw new AppError(
@@ -30,8 +31,10 @@ export const uploadDocument = asyncHandler(
         400,
       );
     }
+    console.log(`✅ Active period found: ${activePeriod.id}`);
 
     // Save document to database
+    console.log(`💾 Saving document to database...`);
     const document = await DocumentModel.create({
       userId,
       fileName,
