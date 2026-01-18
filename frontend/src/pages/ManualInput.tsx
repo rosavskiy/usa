@@ -23,7 +23,7 @@ export default function ManualInput() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setLoading(true);
 
     try {
@@ -89,7 +89,9 @@ export default function ManualInput() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Calculator size={32} className="text-primary-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Manual Data Entry</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Manual Data Entry
+          </h1>
         </div>
       </div>
 
@@ -299,7 +301,8 @@ export default function ManualInput() {
             🏭 Industrial Greenhouse Gases
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            For refrigeration equipment, air conditioning systems, electrical equipment, or industrial processes
+            For refrigeration equipment, air conditioning systems, electrical
+            equipment, or industrial processes
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -317,7 +320,9 @@ export default function ManualInput() {
                 className="input-field"
                 placeholder="0.000"
               />
-              <p className="text-xs text-gray-500 mt-1">Refrigerants, AC systems</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Refrigerants, AC systems
+              </p>
             </div>
 
             <div>
@@ -334,7 +339,9 @@ export default function ManualInput() {
                 className="input-field"
                 placeholder="0.000"
               />
-              <p className="text-xs text-gray-500 mt-1">Aluminum, semiconductors</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Aluminum, semiconductors
+              </p>
             </div>
 
             <div>

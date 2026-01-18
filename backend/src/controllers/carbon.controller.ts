@@ -11,7 +11,15 @@ import { asyncHandler, AppError } from "../middleware/error.middleware";
 export const calculateCarbon = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
-    const { documentId, manualScope, manualCategory, hfcsKg, pfcsKg, sf6Kg, otherKg } = req.body;
+    const {
+      documentId,
+      manualScope,
+      manualCategory,
+      hfcsKg,
+      pfcsKg,
+      sf6Kg,
+      otherKg,
+    } = req.body;
 
     const calculation = await calculateEmissions(userId, documentId, {
       manualScope,
@@ -26,7 +34,7 @@ export const calculateCarbon = asyncHandler(
       success: true,
       data: calculation,
     });
-  }
+  },
 );
 
 export const getCalculations = asyncHandler(
@@ -38,7 +46,7 @@ export const getCalculations = asyncHandler(
       success: true,
       data: calculations,
     });
-  }
+  },
 );
 
 export const getRecommendations = asyncHandler(
@@ -50,7 +58,7 @@ export const getRecommendations = asyncHandler(
       success: true,
       data: recommendations,
     });
-  }
+  },
 );
 
 export const exportReport = asyncHandler(
@@ -72,7 +80,7 @@ export const exportReport = asyncHandler(
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
-  }
+  },
 );
 
 export const deleteCalculation = asyncHandler(
@@ -99,7 +107,7 @@ export const deleteCalculation = asyncHandler(
       success: true,
       message: "Calculation deleted successfully",
     });
-  }
+  },
 );
 
 export const replaceDocument = asyncHandler(
@@ -122,14 +130,14 @@ export const replaceDocument = asyncHandler(
     // Update calculation with new document ID
     await CarbonModel.updateDocument(calculationId, newDocumentId);
     console.log(
-      `🔄 Replaced document for calculation ${calculationId} with doc ${newDocumentId}`
+      `🔄 Replaced document for calculation ${calculationId} with doc ${newDocumentId}`,
     );
 
     res.json({
       success: true,
       message: "Document replaced successfully",
     });
-  }
+  },
 );
 
 export const updateCalculation = asyncHandler(
@@ -164,7 +172,7 @@ export const updateCalculation = asyncHandler(
       data: updatedCalculation,
       message: "Calculation updated successfully",
     });
-  }
+  },
 );
 
 export const downloadIndividualReport = asyncHandler(
@@ -202,7 +210,7 @@ export const downloadIndividualReport = asyncHandler(
     // Pipe PDF to response
     doc.pipe(res);
     doc.end();
-  }
+  },
 );
 
 export const downloadAnnualReport = asyncHandler(
@@ -225,25 +233,13 @@ export const downloadAnnualReport = asyncHandler(
     // Pipe PDF to response
     doc.pipe(res);
     doc.end();
-  }
+  },
 );
 
 export const downloadCombinedReport = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
-    const { 
-      calculationIds, 
-      verified, 
-      exclusions, 
-      exclusionsText, 
-      reportingPeriodStart, 
-      reportingPeriodEnd,
-      consolidationApproach,
-      baseYearPolicy,
-      emissionsChangesContext
-    } = req.body;
-
-    console.log('Report request received:', {
+    const {
       calculationIds,
       verified,
       exclusions,
@@ -252,20 +248,39 @@ export const downloadCombinedReport = asyncHandler(
       reportingPeriodEnd,
       consolidationApproach,
       baseYearPolicy,
-      emissionsChangesContext
+      emissionsChangesContext,
+    } = req.body;
+
+    console.log("Report request received:", {
+      calculationIds,
+      verified,
+      exclusions,
+      exclusionsText,
+      reportingPeriodStart,
+      reportingPeriodEnd,
+      consolidationApproach,
+      baseYearPolicy,
+      emissionsChangesContext,
     });
 
-    if (!calculationIds || !Array.isArray(calculationIds) || calculationIds.length === 0) {
+    if (
+      !calculationIds ||
+      !Array.isArray(calculationIds) ||
+      calculationIds.length === 0
+    ) {
       throw new AppError("calculationIds array is required", 400);
     }
 
     // Verify all calculations belong to user
     const calculations = await Promise.all(
-      calculationIds.map((id: number) => CarbonModel.findById(id))
+      calculationIds.map((id: number) => CarbonModel.findById(id)),
     );
 
-    if (calculations.some(calc => !calc || calc.user_id !== userId)) {
-      throw new AppError("One or more calculations not found or unauthorized", 403);
+    if (calculations.some((calc) => !calc || calc.user_id !== userId)) {
+      throw new AppError(
+        "One or more calculations not found or unauthorized",
+        403,
+      );
     }
 
     // Generate combined PDF
@@ -288,5 +303,5 @@ export const downloadCombinedReport = asyncHandler(
     // Pipe PDF to response
     doc.pipe(res);
     doc.end();
-  }
+  },
 );

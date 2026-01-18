@@ -19,13 +19,16 @@ export const uploadDocument = asyncHandler(
     const fileName = req.file.originalname;
 
     console.log(
-      `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`
+      `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`,
     );
 
     // Get active reporting period
     const activePeriod = await ReportingPeriodModel.getActive(userId);
     if (!activePeriod) {
-      throw new AppError("No active reporting period. Please select a period first.", 400);
+      throw new AppError(
+        "No active reporting period. Please select a period first.",
+        400,
+      );
     }
 
     // Save document to database
@@ -51,7 +54,7 @@ export const uploadDocument = asyncHandler(
         if (doc && doc.status === "completed") {
           await calculateEmissions(userId, document.id);
           console.log(
-            `📊 Auto-calculated emissions for document ${document.id}`
+            `📊 Auto-calculated emissions for document ${document.id}`,
           );
         }
       } catch (calcErr) {
@@ -72,7 +75,7 @@ export const uploadDocument = asyncHandler(
         status: "processing",
       },
     });
-  }
+  },
 );
 
 export const getDocuments = asyncHandler(
@@ -107,7 +110,7 @@ export const getDocuments = asyncHandler(
         totalPages: Math.ceil(total / limit),
       },
     });
-  }
+  },
 );
 
 export const getDocumentById = asyncHandler(
@@ -129,7 +132,7 @@ export const getDocumentById = asyncHandler(
       success: true,
       data: document,
     });
-  }
+  },
 );
 
 export const deleteDocument = asyncHandler(
@@ -167,7 +170,7 @@ export const deleteDocument = asyncHandler(
       success: true,
       message: "Document deleted successfully",
     });
-  }
+  },
 );
 
 export const deleteDocumentsByFilename = asyncHandler(
@@ -176,7 +179,7 @@ export const deleteDocumentsByFilename = asyncHandler(
     const fileName = decodeURIComponent(req.params.filename);
 
     console.log(
-      `🗑️ Deleting all documents with filename: ${fileName} for user ${userId}`
+      `🗑️ Deleting all documents with filename: ${fileName} for user ${userId}`,
     );
 
     // Find all documents with this filename
@@ -211,7 +214,7 @@ export const deleteDocumentsByFilename = asyncHandler(
     }
 
     console.log(
-      `🗑️ Deleted ${deletedCount} documents with filename: ${fileName}`
+      `🗑️ Deleted ${deletedCount} documents with filename: ${fileName}`,
     );
 
     res.json({
@@ -219,7 +222,7 @@ export const deleteDocumentsByFilename = asyncHandler(
       message: `Deleted ${deletedCount} document(s) successfully`,
       count: deletedCount,
     });
-  }
+  },
 );
 
 export const downloadDocument = asyncHandler(
@@ -246,7 +249,7 @@ export const downloadDocument = asyncHandler(
     }
 
     res.download(document.file_path, document.file_name);
-  }
+  },
 );
 
 export const createManualDocument = asyncHandler(
@@ -262,7 +265,10 @@ export const createManualDocument = asyncHandler(
     // Get active reporting period
     const activePeriod = await ReportingPeriodModel.getActive(userId);
     if (!activePeriod) {
-      throw new AppError("No active reporting period. Please select a period first.", 400);
+      throw new AppError(
+        "No active reporting period. Please select a period first.",
+        400,
+      );
     }
 
     // Create document with manual data
@@ -296,5 +302,5 @@ export const createManualDocument = asyncHandler(
         status: "completed",
       },
     });
-  }
+  },
 );

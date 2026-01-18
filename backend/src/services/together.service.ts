@@ -2,9 +2,10 @@ import axios from "axios";
 
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || "";
 const TOGETHER_API_URL = "https://api.together.xyz/v1/chat/completions";
-const TOGETHER_VISION_MODEL =
-  process.env.TOGETHER_VISION_MODEL ||
-  "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo";
+// Vision model configuration (currently unused - OCR + regex parsing is active)
+// const TOGETHER_VISION_MODEL =
+//   process.env.TOGETHER_VISION_MODEL ||
+//   "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo";
 
 function stripMarkdownJson(text: string) {
   return text

@@ -83,26 +83,32 @@ export default function Settings() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
-const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Validate file type
     if (!file.type.match(/image\/(png|jpg|jpeg|svg\+xml)/)) {
-      setMessage({ type: "error", text: "Please upload a PNG, JPG, JPEG, or SVG file" });
+      setMessage({
+        type: "error",
+        text: "Please upload a PNG, JPG, JPEG, or SVG file",
+      });
       return;
     }
 
     // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
-      setMessage({ type: "error", text: "Logo file size must be less than 2MB" });
+      setMessage({
+        type: "error",
+        text: "Logo file size must be less than 2MB",
+      });
       return;
     }
 
@@ -148,7 +154,6 @@ const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     }
   };
 
-  
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -326,7 +331,7 @@ const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Company Logo
             </label>
-            
+
             {profile?.logo_path ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
@@ -336,7 +341,9 @@ const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     className="h-16 w-auto object-contain border border-gray-200 bg-white p-2 rounded"
                   />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">Current Logo</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      Current Logo
+                    </p>
                     <p className="text-xs text-gray-500">
                       Displayed on GHG Protocol reports
                     </p>
@@ -357,7 +364,8 @@ const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <Upload className="w-8 h-8 mb-2 text-gray-400" />
                     <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">Click to upload</span> company logo
+                      <span className="font-semibold">Click to upload</span>{" "}
+                      company logo
                     </p>
                     <p className="text-xs text-gray-400">
                       PNG, JPG, JPEG, or SVG (max 2MB)
@@ -372,13 +380,16 @@ const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   />
                 </label>
                 {uploadingLogo && (
-                  <p className="text-sm text-gray-500 text-center">Uploading...</p>
+                  <p className="text-sm text-gray-500 text-center">
+                    Uploading...
+                  </p>
                 )}
               </div>
             )}
-            
+
             <p className="text-xs text-gray-500 mt-2">
-              Logo will be displayed on GHG Protocol reports. Recommended size: 180x60px
+              Logo will be displayed on GHG Protocol reports. Recommended size:
+              180x60px
             </p>
           </div>
 

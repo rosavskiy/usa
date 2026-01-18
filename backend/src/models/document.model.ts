@@ -43,7 +43,7 @@ export class DocumentModel {
         parsedData,
         status,
         data.reportingPeriodId || null,
-      ]
+      ],
     );
     return result.rows[0];
   }
@@ -51,7 +51,7 @@ export class DocumentModel {
   static async findByUserId(userId: number): Promise<Document[]> {
     const result = await query(
       `SELECT * FROM documents WHERE user_id = $1 ORDER BY created_at DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }
@@ -65,7 +65,7 @@ export class DocumentModel {
         ORDER BY file_name, id DESC
       ) as unique_docs
       ORDER BY id DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }
@@ -78,28 +78,28 @@ export class DocumentModel {
   static async updateParsedData(
     id: number,
     parsedData: any,
-    status?: string
+    status?: string,
   ): Promise<void> {
     if (status) {
       await query(
         `UPDATE documents SET parsed_data = $1, status = $2, updated_at = NOW() WHERE id = $3`,
-        [JSON.stringify(parsedData), status, id]
+        [JSON.stringify(parsedData), status, id],
       );
     } else {
       await query(
         `UPDATE documents SET parsed_data = $1, updated_at = NOW() WHERE id = $2`,
-        [JSON.stringify(parsedData), id]
+        [JSON.stringify(parsedData), id],
       );
     }
   }
 
   static async findByFileName(
     userId: number,
-    fileName: string
+    fileName: string,
   ): Promise<Document[]> {
     const result = await query(
       `SELECT * FROM documents WHERE user_id = $1 AND file_name = $2`,
-      [userId, fileName]
+      [userId, fileName],
     );
     return result.rows;
   }

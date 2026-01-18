@@ -15,8 +15,13 @@ interface Props {
   onPeriodCreated: () => void;
 }
 
-export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props) {
-  const [periodType, setPeriodType] = useState<"monthly" | "quarterly" | "annual">("annual");
+export default function ReportingPeriodModal({
+  onClose,
+  onPeriodCreated,
+}: Props) {
+  const [periodType, setPeriodType] = useState<
+    "monthly" | "quarterly" | "annual"
+  >("annual");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,10 +43,10 @@ export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props
 
   const handlePeriodTypeChange = (type: "monthly" | "quarterly" | "annual") => {
     setPeriodType(type);
-    
+
     const today = new Date();
     const year = today.getFullYear();
-    
+
     if (type === "annual") {
       setStartDate(`${year}-01-01`);
       setEndDate(`${year}-12-31`);
@@ -51,7 +56,9 @@ export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props
       const qEndMonth = qStartMonth + 2;
       setStartDate(`${year}-${String(qStartMonth + 1).padStart(2, "0")}-01`);
       const lastDay = new Date(year, qEndMonth + 1, 0).getDate();
-      setEndDate(`${year}-${String(qEndMonth + 1).padStart(2, "0")}-${lastDay}`);
+      setEndDate(
+        `${year}-${String(qEndMonth + 1).padStart(2, "0")}-${lastDay}`,
+      );
     } else {
       const month = today.getMonth();
       const lastDay = new Date(year, month + 1, 0).getDate();
@@ -85,7 +92,9 @@ export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props
       onPeriodCreated();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to create reporting period");
+      setError(
+        err.response?.data?.error || "Failed to create reporting period",
+      );
     } finally {
       setLoading(false);
     }
@@ -126,7 +135,9 @@ export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Select Reporting Period</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Select Reporting Period
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -139,7 +150,9 @@ export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props
           {/* Existing Periods */}
           {existingPeriods.length > 0 && (
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Existing Periods</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">
+                Existing Periods
+              </h3>
               <div className="space-y-2">
                 {existingPeriods.map((period) => (
                   <button
@@ -157,7 +170,8 @@ export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props
                           {getPeriodLabel(period.period_type)}
                         </div>
                         <div className="text-sm text-gray-600 mt-1">
-                          {formatDate(period.start_date)} - {formatDate(period.end_date)}
+                          {formatDate(period.start_date)} -{" "}
+                          {formatDate(period.end_date)}
                         </div>
                       </div>
                       {period.is_active && (
@@ -178,7 +192,7 @@ export default function ReportingPeriodModal({ onClose, onPeriodCreated }: Props
               <Plus size={20} className="mr-2" />
               Create New Period
             </h3>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">

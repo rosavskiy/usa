@@ -43,7 +43,7 @@ export default function Upload() {
   // Load metadata on mount
   useEffect(() => {
     loadActivePeriod();
-    
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -59,7 +59,7 @@ export default function Upload() {
         setFiles(restoredFiles);
         setUploadComplete(
           restoredFiles.length > 0 &&
-            restoredFiles.every((f) => f.status === "success")
+            restoredFiles.every((f) => f.status === "success"),
         );
       } catch (err) {
         console.error("Failed to load metadata:", err);
@@ -97,7 +97,7 @@ export default function Upload() {
   useState(() => {
     const checkMobile =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
+        navigator.userAgent,
       );
     setIsMobile(checkMobile);
   });
@@ -145,14 +145,14 @@ export default function Upload() {
         // Mark as processing (show spinner, not checkmark yet)
         setFiles((prev) =>
           prev.map((f, idx) =>
-            idx === index ? { ...f, status: "processing", docId } : f
-          )
+            idx === index ? { ...f, status: "processing", docId } : f,
+          ),
         );
 
         return { success: true, docId, index };
       } catch (error) {
         setFiles((prev) =>
-          prev.map((f, idx) => (idx === index ? { ...f, status: "error" } : f))
+          prev.map((f, idx) => (idx === index ? { ...f, status: "error" } : f)),
         );
         return { success: false, docId: null, index };
       }
@@ -182,13 +182,13 @@ export default function Upload() {
         // Check if all documents are processed
         try {
           const responses = await Promise.all(
-            uploadedDocIds.map((id) => api.get(`/upload/${id}`))
+            uploadedDocIds.map((id) => api.get(`/upload/${id}`)),
           );
 
           const allProcessed = responses.every(
             (r) =>
               r.data.data.status === "completed" ||
-              r.data.data.status === "failed"
+              r.data.data.status === "failed",
           );
 
           if (allProcessed) {
@@ -222,8 +222,8 @@ export default function Upload() {
             prev.map((f) =>
               f.docId === docId
                 ? { ...f, status: "success", warning: ocrWarning }
-                : f
-            )
+                : f,
+            ),
           );
         } catch (error: any) {
           const errorMsg =
@@ -234,8 +234,8 @@ export default function Upload() {
           // Mark file as ERROR (red X)
           setFiles((prev) =>
             prev.map((f) =>
-              f.docId === docId ? { ...f, status: "error", errorMsg } : f
-            )
+              f.docId === docId ? { ...f, status: "error", errorMsg } : f,
+            ),
           );
         }
       }
@@ -343,8 +343,8 @@ export default function Upload() {
             {isDragActive
               ? "Drop files here"
               : isMobile
-              ? "Tap to select files"
-              : "Drag & drop files here"}
+                ? "Tap to select files"
+                : "Drag & drop files here"}
           </p>
           <p className="text-sm text-gray-500">
             {isMobile

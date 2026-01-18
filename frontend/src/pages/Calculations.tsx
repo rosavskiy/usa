@@ -16,7 +16,7 @@ export default function Calculations() {
   const [allCalculations, setAllCalculations] = useState<any[]>([]); // Store all for filtering
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"month" | "quarter" | "year" | "all">(
-    "all"
+    "all",
   );
   const [downloading, setDownloading] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{
@@ -134,7 +134,7 @@ export default function Calculations() {
       items.sort(
         (a, b) =>
           new Date(b.created_at || b.calculation_date).getTime() -
-          new Date(a.created_at || a.calculation_date).getTime()
+          new Date(a.created_at || a.calculation_date).getTime(),
       );
 
       const batches: any[][] = [];
@@ -142,10 +142,10 @@ export default function Calculations() {
 
       for (let i = 1; i < items.length; i++) {
         const prevTime = new Date(
-          items[i - 1].created_at || items[i - 1].calculation_date
+          items[i - 1].created_at || items[i - 1].calculation_date,
         ).getTime();
         const currTime = new Date(
-          items[i].created_at || items[i].calculation_date
+          items[i].created_at || items[i].calculation_date,
         ).getTime();
 
         // If less than 30 seconds apart, same batch
@@ -180,7 +180,7 @@ export default function Calculations() {
       link.href = url;
       link.setAttribute(
         "download",
-        `carbon-report-${new Date().toISOString().split("T")[0]}.pdf`
+        `carbon-report-${new Date().toISOString().split("T")[0]}.pdf`,
       );
       document.body.appendChild(link);
       link.click();
@@ -202,7 +202,7 @@ export default function Calculations() {
       setDeleteModal({ show: false, calcId: null });
       // Remove from list
       setCalculations((prev) =>
-        prev.filter((c) => c.id !== deleteModal.calcId)
+        prev.filter((c) => c.id !== deleteModal.calcId),
       );
     } catch (error) {
       console.error("Failed to delete calculation:", error);
@@ -223,7 +223,7 @@ export default function Calculations() {
       return;
     }
 
-    console.log('Sending report request with data:', {
+    console.log("Sending report request with data:", {
       calculationIds: Array.from(selectedCalcs),
       ...reportForm,
     });
@@ -238,7 +238,7 @@ export default function Calculations() {
         },
         {
           responseType: "blob",
-        }
+        },
       );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -282,7 +282,7 @@ export default function Calculations() {
     if (selectedCalcs.size === calculations.length) {
       setSelectedCalcs(new Set());
     } else {
-      setSelectedCalcs(new Set(calculations.map(c => c.id)));
+      setSelectedCalcs(new Set(calculations.map((c) => c.id)));
     }
   };
 
@@ -319,7 +319,7 @@ export default function Calculations() {
     } catch (error: any) {
       console.error("Failed to update calculation:", error);
       alert(
-        error.response?.data?.error || "Failed to update. Please try again."
+        error.response?.data?.error || "Failed to update. Please try again.",
       );
     } finally {
       setSaving(false);
@@ -344,7 +344,7 @@ export default function Calculations() {
       console.error("Failed to download annual report:", error);
       alert(
         error.response?.data?.error ||
-          "Failed to download annual report. Please try again."
+          "Failed to download annual report. Please try again.",
       );
     }
   };
@@ -360,7 +360,7 @@ export default function Calculations() {
       link.href = url;
       link.setAttribute(
         "download",
-        `carbon-calculations-${new Date().toISOString().split("T")[0]}.csv`
+        `carbon-calculations-${new Date().toISOString().split("T")[0]}.csv`,
       );
       document.body.appendChild(link);
       link.click();
@@ -369,7 +369,8 @@ export default function Calculations() {
     } catch (error: any) {
       console.error("Failed to export CSV:", error);
       alert(
-        error.response?.data?.error || "Failed to export CSV. Please try again."
+        error.response?.data?.error ||
+          "Failed to export CSV. Please try again.",
       );
     }
   };
@@ -436,7 +437,7 @@ export default function Calculations() {
       console.error("Failed to replace bill:", error);
       alert(
         error.response?.data?.message ||
-          "Failed to replace bill. Please try again."
+          "Failed to replace bill. Please try again.",
       );
     } finally {
       setReplacing(false);
@@ -490,14 +491,14 @@ export default function Calculations() {
             {Array.from(
               new Set(
                 allCalculations.map((c) =>
-                  new Date(c.calculation_date).getFullYear()
-                )
-              )
+                  new Date(c.calculation_date).getFullYear(),
+                ),
+              ),
             )
               .sort((a, b) => b - a)
               .map((year) => {
                 const count = allCalculations.filter(
-                  (c) => new Date(c.calculation_date).getFullYear() === year
+                  (c) => new Date(c.calculation_date).getFullYear() === year,
                 ).length;
                 return (
                   <button
@@ -531,7 +532,8 @@ export default function Calculations() {
                 Generate Combined Report
               </h3>
               <p className="text-sm text-primary-800">
-                Select calculations below to include in your GHG Protocol report ({selectedCalcs.size} selected)
+                Select calculations below to include in your GHG Protocol report
+                ({selectedCalcs.size} selected)
               </p>
             </div>
             <div className="flex gap-3">
@@ -539,7 +541,9 @@ export default function Calculations() {
                 onClick={toggleSelectAll}
                 className="px-4 py-2 bg-white text-primary-600 border-2 border-primary-300 rounded-lg hover:bg-primary-100 transition-colors font-medium"
               >
-                {selectedCalcs.size === calculations.length ? "Deselect All" : "Select All"}
+                {selectedCalcs.size === calculations.length
+                  ? "Deselect All"
+                  : "Select All"}
               </button>
               <button
                 onClick={() => {
@@ -580,8 +584,8 @@ export default function Calculations() {
               dateKey === "today"
                 ? "📅 Today"
                 : dateKey === "yesterday"
-                ? "📅 Yesterday"
-                : `📅 ${dateKey}`;
+                  ? "📅 Yesterday"
+                  : `📅 ${dateKey}`;
 
             return (
               <div key={dateKey} className="space-y-4">
@@ -643,7 +647,7 @@ export default function Calculations() {
                                 </h3>
                                 <span
                                   className={`px-2 py-1 rounded-full text-xs font-medium ${getScopeColor(
-                                    calc.emission_type
+                                    calc.emission_type,
                                   )}`}
                                 >
                                   {calc.emission_type.toUpperCase()}
@@ -699,7 +703,7 @@ export default function Calculations() {
                                   </p>
                                   <p className="font-bold text-primary-600 text-lg">
                                     {(Number(calc.total_co2e_kg) || 0).toFixed(
-                                      2
+                                      2,
                                     )}{" "}
                                     kg
                                   </p>
@@ -712,12 +716,12 @@ export default function Calculations() {
                                   {calc.period_start &&
                                     format(
                                       new Date(calc.period_start),
-                                      "MMM dd, yyyy"
+                                      "MMM dd, yyyy",
                                     )}
                                   {calc.period_end &&
                                     ` - ${format(
                                       new Date(calc.period_end),
-                                      "MMM dd, yyyy"
+                                      "MMM dd, yyyy",
                                     )}`}
                                 </span>
                               </div>
@@ -997,9 +1001,13 @@ export default function Calculations() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
             <div className="p-6 border-b">
-              <h2 className="text-2xl font-bold mb-2">GHG Report Information</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                GHG Report Information
+              </h2>
               <p className="text-gray-600">
-                Please answer these questions to complete your GHG Protocol report for {selectedCalcs.size} calculation{selectedCalcs.size > 1 ? 's' : ''}
+                Please answer these questions to complete your GHG Protocol
+                report for {selectedCalcs.size} calculation
+                {selectedCalcs.size > 1 ? "s" : ""}
               </p>
             </div>
 
@@ -1045,7 +1053,8 @@ export default function Calculations() {
                   excluded from this inventory?
                 </label>
                 <p className="text-sm text-gray-500 mb-3">
-                  (Did you exclude any buildings, departments, or emission sources from your calculations?)
+                  (Did you exclude any buildings, departments, or emission
+                  sources from your calculations?)
                 </p>
                 <div className="flex gap-4 mb-3">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1105,7 +1114,8 @@ export default function Calculations() {
                   Reporting Period <span className="text-red-500">*</span>
                 </label>
                 <p className="text-sm text-gray-500 mb-3">
-                  Select the start and end dates for this report (these dates will be used in the PDF regardless of bill dates)
+                  Select the start and end dates for this report (these dates
+                  will be used in the PDF regardless of bill dates)
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -1148,27 +1158,44 @@ export default function Calculations() {
               {/* Consolidation Approach */}
               <div className="border-b pb-4">
                 <label className="block font-medium text-gray-900 mb-3">
-                  What consolidation approach is your company using? <span className="text-red-500">*</span>
+                  What consolidation approach is your company using?{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <p className="text-sm text-gray-500 mb-3">
-                  Check each consolidation approach for which your company is reporting emissions
+                  Check each consolidation approach for which your company is
+                  reporting emissions
                 </p>
                 <div className="space-y-2">
-                  {["Equity Share", "Financial Control", "Operational Control"].map(approach => (
-                    <label key={approach} className="flex items-center gap-2 cursor-pointer">
+                  {[
+                    "Equity Share",
+                    "Financial Control",
+                    "Operational Control",
+                  ].map((approach) => (
+                    <label
+                      key={approach}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="checkbox"
-                        checked={reportForm.consolidationApproach.includes(approach)}
+                        checked={reportForm.consolidationApproach.includes(
+                          approach,
+                        )}
                         onChange={(e) => {
                           if (e.target.checked) {
                             setReportForm({
                               ...reportForm,
-                              consolidationApproach: [...reportForm.consolidationApproach, approach]
+                              consolidationApproach: [
+                                ...reportForm.consolidationApproach,
+                                approach,
+                              ],
                             });
                           } else {
                             setReportForm({
                               ...reportForm,
-                              consolidationApproach: reportForm.consolidationApproach.filter(a => a !== approach)
+                              consolidationApproach:
+                                reportForm.consolidationApproach.filter(
+                                  (a) => a !== approach,
+                                ),
                             });
                           }
                         }}
@@ -1188,14 +1215,23 @@ export default function Calculations() {
                 <select
                   value={reportForm.baseYearPolicy}
                   onChange={(e) =>
-                    setReportForm({ ...reportForm, baseYearPolicy: e.target.value })
+                    setReportForm({
+                      ...reportForm,
+                      baseYearPolicy: e.target.value,
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 >
                   <option value="first_year">First year of operation</option>
-                  <option value="threshold">Threshold-based recalculation</option>
-                  <option value="structural_changes">Structural changes only</option>
-                  <option value="no_recalculation">No recalculation policy</option>
+                  <option value="threshold">
+                    Threshold-based recalculation
+                  </option>
+                  <option value="structural_changes">
+                    Structural changes only
+                  </option>
+                  <option value="no_recalculation">
+                    No recalculation policy
+                  </option>
                 </select>
               </div>
 
@@ -1205,7 +1241,8 @@ export default function Calculations() {
                   Context for significant emissions changes
                 </label>
                 <p className="text-sm text-gray-500 mb-3">
-                  Describe any significant changes that triggered base year recalculations (or enter N/A if none)
+                  Describe any significant changes that triggered base year
+                  recalculations (or enter N/A if none)
                 </p>
                 <textarea
                   value={reportForm.emissionsChangesContext}
@@ -1244,7 +1281,12 @@ export default function Calculations() {
               </button>
               <button
                 onClick={handleGenerateReport}
-                disabled={downloading || !reportForm.reportingPeriodStart || !reportForm.reportingPeriodEnd || reportForm.consolidationApproach.length === 0}
+                disabled={
+                  downloading ||
+                  !reportForm.reportingPeriodStart ||
+                  !reportForm.reportingPeriodEnd ||
+                  reportForm.consolidationApproach.length === 0
+                }
                 className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {downloading ? "Generating..." : "Continue"}

@@ -86,7 +86,7 @@ export default function Dashboard() {
       // Calculate totals
       const totalEmissions = calculations.reduce((sum: number, c: any) => {
         const emission = Number(
-          c.total_co2e_kg || c.totalCo2eKg || c.total_co2_kg || 0
+          c.total_co2e_kg || c.totalCo2eKg || c.total_co2_kg || 0,
         );
         console.log("Adding emission:", emission, "from", c);
         return sum + emission;
@@ -101,7 +101,7 @@ export default function Dashboard() {
       const byCategory = calculations.reduce((acc: any, c: any) => {
         const category = c.category || "other";
         const emission = Number(
-          c.total_co2e_kg || c.totalCo2eKg || c.total_co2_kg || 0
+          c.total_co2e_kg || c.totalCo2eKg || c.total_co2_kg || 0,
         );
         acc[category] = (acc[category] || 0) + emission;
         return acc;
@@ -112,7 +112,7 @@ export default function Dashboard() {
         ([name, value]) => ({
           name,
           value,
-        })
+        }),
       );
       console.log("By Category Array:", byCategoryArray);
 
