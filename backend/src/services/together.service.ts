@@ -57,7 +57,7 @@ const VISION_MODELS = [
 ];
 
 export async function parseUtilityBillImageWithTogether(
-  imageBase64: string
+  imageBase64: string,
 ): Promise<any> {
   if (!TOGETHER_API_KEY) {
     throw new Error("TOGETHER_API_KEY not configured");
@@ -110,14 +110,14 @@ export async function parseUtilityBillImageWithTogether(
       const parsed = JSON.parse(cleaned);
 
       console.log(
-        `✅ Together.ai Vision parsed successfully with ${modelName}`
+        `✅ Together.ai Vision parsed successfully with ${modelName}`,
       );
       console.log("📊 Type:", parsed.type);
       console.log("💰 Amount:", parsed.amount);
       console.log(
         "⚡ Consumption:",
         parsed.consumption?.value,
-        parsed.consumption?.unit
+        parsed.consumption?.unit,
       );
 
       return parsed;
@@ -164,7 +164,7 @@ export async function checkTogetherHealth(): Promise<boolean> {
     const visionModels = models.filter(
       (m: any) =>
         m.id?.toLowerCase().includes("vision") ||
-        m.id?.toLowerCase().includes("llava")
+        m.id?.toLowerCase().includes("llava"),
     );
 
     console.log("🔮 Together.ai API online");
@@ -174,7 +174,7 @@ export async function checkTogetherHealth(): Promise<boolean> {
   } catch (error: any) {
     console.log(
       "⚠️ Together.ai API check failed:",
-      error?.message || String(error)
+      error?.message || String(error),
     );
     return false;
   }
