@@ -86,20 +86,20 @@ export default function MyDocuments() {
     switch (status) {
       case "completed":
         return (
-          <div className="flex items-center gap-1 text-green-600">
-            <CheckCircle size={16} />
-            <span className="text-sm font-medium">Readable</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-success-200 bg-success-50 text-success-700">
+            <CheckCircle size={14} strokeWidth={2} />
+            <span className="text-xs font-medium">Readable</span>
           </div>
         );
       case "failed":
         return (
-          <div className="flex items-center gap-1 text-red-600">
-            <AlertCircle size={16} />
-            <span className="text-sm font-medium">Unreadable</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-red-200 bg-red-50 text-red-700">
+            <AlertCircle size={14} strokeWidth={2} />
+            <span className="text-xs font-medium">Unreadable</span>
           </div>
         );
       default:
-        return <span className="text-sm text-gray-500">Processing...</span>;
+        return <span className="text-xs text-gray-500 font-medium">Processing...</span>;
     }
   };
 
@@ -108,19 +108,19 @@ export default function MyDocuments() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
+        <h1 className="text-2xl font-medium text-gray-900">My Documents</h1>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-4 border-b border-gray-200">
         <button
           onClick={() => {
             setFilter("all");
             setPage(1);
           }}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-5 py-3 font-medium border-b-2 transition-colors ${
             filter === "all"
               ? "border-primary-500 text-primary-600"
               : "border-transparent text-gray-500 hover:text-gray-700"
@@ -133,9 +133,9 @@ export default function MyDocuments() {
             setFilter("readable");
             setPage(1);
           }}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-5 py-3 font-medium border-b-2 transition-colors ${
             filter === "readable"
-              ? "border-green-500 text-green-600"
+              ? "border-success-500 text-success-600"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -146,7 +146,7 @@ export default function MyDocuments() {
             setFilter("unreadable");
             setPage(1);
           }}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-5 py-3 font-medium border-b-2 transition-colors ${
             filter === "unreadable"
               ? "border-red-500 text-red-600"
               : "border-transparent text-gray-500 hover:text-gray-700"

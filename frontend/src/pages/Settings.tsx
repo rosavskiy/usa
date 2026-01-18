@@ -164,22 +164,22 @@ export default function Settings() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+      <h1 className="text-2xl font-medium text-gray-900 mb-8">Settings</h1>
 
       {message && (
         <div
-          className={`mb-6 p-4 rounded-lg ${
+          className={`mb-6 p-4 rounded-lg border ${
             message.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              ? "bg-success-50 text-success-800 border-success-200"
+              : "bg-red-50 text-red-800 border-red-200"
           }`}
         >
           {message.text}
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+      <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-8">
+        <h2 className="text-lg font-medium text-gray-900 mb-8">
           Company Profile
         </h2>
 
@@ -334,11 +334,11 @@ export default function Settings() {
 
             {profile?.logo_path ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
                   <img
                     src={`http://localhost:3000${profile.logo_path}`}
                     alt="Company Logo"
-                    className="h-16 w-auto object-contain border border-gray-200 bg-white p-2 rounded"
+                    className="h-16 w-auto object-contain"
                   />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">
@@ -354,7 +354,7 @@ export default function Settings() {
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete logo"
                   >
-                    <X size={20} />
+                    <X size={18} strokeWidth={2} />
                   </button>
                 </div>
               </div>
