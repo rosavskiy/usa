@@ -1,18 +1,7 @@
 import { useState, useEffect } from "react";
-import {
-  BarChart3,
-  TrendingDown,
-  FileText,
-  AlertCircle,
-} from "lucide-react";
+import { BarChart3, TrendingDown, FileText, AlertCircle } from "lucide-react";
 import api from "../api/axios";
-import {
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
