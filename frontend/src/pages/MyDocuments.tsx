@@ -135,7 +135,7 @@ export default function MyDocuments() {
           }}
           className={`px-5 py-3 font-medium border-b-2 transition-colors ${
             filter === "readable"
-              ? "border-success-500 text-success-600"
+              ? "border-primary-500 text-primary-600"
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
