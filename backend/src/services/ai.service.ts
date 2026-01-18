@@ -92,33 +92,80 @@ function parseUtilityBillText(text: string): any {
   if (
     lowerText.includes("gallon") ||
     lowerText.includes("fuel sale") ||
-    lowerText.includes("gasoline")
+    lowerText.includes("gasoline") ||
+    lowerText.includes("shell") ||
+    lowerText.includes("chevron") ||
+    lowerText.includes("exxon") ||
+    lowerText.includes("mobil") ||
+    lowerText.includes("bp ")
   ) {
     type = "fuel";
-    provider = "Fuel Supplier";
+    if (lowerText.includes("shell")) provider = "Shell";
+    else if (lowerText.includes("chevron")) provider = "Chevron";
+    else if (lowerText.includes("exxon") || lowerText.includes("mobil")) provider = "ExxonMobil";
+    else if (lowerText.includes("bp ")) provider = "BP";
+    else provider = "Fuel Supplier";
   }
   // GAS - natural gas utility bills
   else if (
     lowerText.includes("socalgas") ||
     lowerText.includes("north shore gas") ||
+    lowerText.includes("con edison") ||
+    lowerText.includes("coned") ||
+    lowerText.includes("national grid") ||
+    lowerText.includes("pg&e") ||
+    lowerText.includes("pacific gas") ||
+    lowerText.includes("atmos energy") ||
+    lowerText.includes("dominion energy") ||
+    lowerText.includes("peoples gas") ||
+    lowerText.includes("nicor gas") ||
     (lowerText.includes("gas") &&
       (lowerText.includes("therm") || lowerText.includes("ccf")))
   ) {
     type = "gas";
     if (lowerText.includes("socalgas")) provider = "SoCalGas";
     else if (lowerText.includes("north shore")) provider = "North Shore Gas";
+    else if (lowerText.includes("con edison") || lowerText.includes("coned")) provider = "Con Edison";
+    else if (lowerText.includes("national grid")) provider = "National Grid";
+    else if (lowerText.includes("pg&e") || lowerText.includes("pacific gas")) provider = "Pacific Gas & Electric";
+    else if (lowerText.includes("atmos")) provider = "Atmos Energy";
+    else if (lowerText.includes("dominion")) provider = "Dominion Energy";
+    else if (lowerText.includes("peoples gas")) provider = "Peoples Gas";
+    else if (lowerText.includes("nicor")) provider = "Nicor Gas";
     else provider = "Gas Company";
   }
   // ELECTRICITY - electric utility bills
   else if (
     lowerText.includes("edison") ||
     lowerText.includes("electric") ||
-    lowerText.includes("kwh")
+    lowerText.includes("kwh") ||
+    lowerText.includes("pg&e") ||
+    lowerText.includes("duke energy") ||
+    lowerText.includes("fpl") ||
+    lowerText.includes("florida power") ||
+    lowerText.includes("comed") ||
+    lowerText.includes("commonwealth edison") ||
+    lowerText.includes("national grid") ||
+    lowerText.includes("dominion") ||
+    lowerText.includes("con edison") ||
+    lowerText.includes("coned") ||
+    lowerText.includes("aps") ||
+    lowerText.includes("arizona public service") ||
+    lowerText.includes("xcel energy") ||
+    lowerText.includes("pge")
   ) {
     type = "electricity";
-    if (lowerText.includes("edison")) provider = "Southern California Edison";
-    else if (lowerText.includes("pascoag"))
-      provider = "Pascoag Utility District";
+    if (lowerText.includes("southern california edison") || lowerText.includes("sce")) provider = "Southern California Edison";
+    else if (lowerText.includes("con edison") || lowerText.includes("coned")) provider = "Con Edison";
+    else if (lowerText.includes("pg&e") || lowerText.includes("pacific gas")) provider = "Pacific Gas & Electric";
+    else if (lowerText.includes("duke energy")) provider = "Duke Energy";
+    else if (lowerText.includes("fpl") || lowerText.includes("florida power")) provider = "Florida Power & Light";
+    else if (lowerText.includes("comed") || lowerText.includes("commonwealth edison")) provider = "ComEd";
+    else if (lowerText.includes("national grid")) provider = "National Grid";
+    else if (lowerText.includes("dominion")) provider = "Dominion Energy";
+    else if (lowerText.includes("aps") || lowerText.includes("arizona public service")) provider = "Arizona Public Service";
+    else if (lowerText.includes("xcel")) provider = "Xcel Energy";
+    else if (lowerText.includes("pascoag")) provider = "Pascoag Utility District";
     else provider = "Electric Company";
   }
 
