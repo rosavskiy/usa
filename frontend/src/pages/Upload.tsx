@@ -539,14 +539,14 @@ export default function Upload() {
             {processingErrors.length === 0 && (
               <div
                 data-success-message
-                className="mt-6 p-8 bg-success-50 border border-success-200 rounded-lg text-center shadow-sm"
+                className="mt-6 p-8 bg-primary-50 border border-primary-200 rounded-lg text-center shadow-sm"
               >
                 <CheckCircle
-                  className="mx-auto text-success-600 mb-4"
+                  className="mx-auto text-primary-600 mb-4"
                   size={64}
                   strokeWidth={2}
                 />
-                <h3 className="text-2xl font-medium text-success-900 mb-3">
+                <h3 className="text-2xl font-medium text-primary-900 mb-3">
                   All Documents Recognized
                 </h3>
                 <p className="text-base text-gray-700 mb-3">
