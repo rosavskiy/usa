@@ -35,7 +35,7 @@ export async function generateCarbonReport(
   console.log("consolidationApproach after processing:", consolidationApproach);
 
   const baseYearPolicy = options.baseYearPolicy || "first_year";
-  const emissionsChangesContext = options.emissionsChangesContext || "N/A";
+  const emissionsChangesContext = options.emissionsChangesContext || "Not provided";
 
   // Handle both single ID and array of IDs
   const calculationIds = Array.isArray(calculationIdOrIds)
@@ -363,7 +363,7 @@ export async function generateCarbonReport(
     .fillColor("#000")
     .text(
       options.exclusions === true
-        ? `Yes - ${options.exclusionsText || "exclusions specified"}`
+        ? `Yes - ${options.exclusionsText || "Not provided"}`
         : "No",
       65,
       y + 5,
@@ -1108,7 +1108,10 @@ export async function generateCarbonReport(
     .filter((x) => x)
     .join(" | ");
 
-  doc.text(facilityInfo, 215, y + 5, { width: colWidth - 155 });
+  // Ensure the facility info cell is never empty — use English fallback
+  const facilityInfoFinal = facilityInfo && facilityInfo.length > 0 ? facilityInfo : "Not provided";
+
+  doc.text(facilityInfoFinal, 215, y + 5, { width: colWidth - 155 });
 
   y += 30;
 
