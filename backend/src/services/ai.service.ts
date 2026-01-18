@@ -1,5 +1,5 @@
 import { DocumentModel } from "../models/document.model";
-import { parseUtilityBillImageWithGroq } from "./groq.service";
+import { parseUtilityBillImageWithOpenAI } from "./openai.service";
 
 export async function parseDocumentWithAI(
   documentId: number,
@@ -12,10 +12,10 @@ export async function parseDocumentWithAI(
     await DocumentModel.updateParsedData(documentId, {}, "processing");
     console.log(`📝 Status updated to processing`);
 
-    // Use Groq AI Vision API for parsing
-    console.log(`⚡ Using Groq AI Vision API for parsing...`);
-    const parsedData = await parseUtilityBillImageWithGroq(filePath);
-    console.log(`🎯 Groq parsed data:`, parsedData);
+    // Use OpenAI Vision API for parsing
+    console.log(`🤖 Using OpenAI Vision API for parsing...`);
+    const parsedData = await parseUtilityBillImageWithOpenAI(filePath);
+    console.log(`🎯 OpenAI parsed data:`, parsedData);
 
     // Save parsed data
     await DocumentModel.updateParsedData(documentId, parsedData, "completed");
