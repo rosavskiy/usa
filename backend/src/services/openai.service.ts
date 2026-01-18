@@ -50,7 +50,7 @@ Return ONLY JSON.`;
 }
 
 export async function parseUtilityBillImageWithOpenAI(
-  filePath: string
+  filePath: string,
 ): Promise<any> {
   if (!OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY not configured");
@@ -58,7 +58,7 @@ export async function parseUtilityBillImageWithOpenAI(
 
   // Read file and convert to base64
   const imageBuffer = fs.readFileSync(filePath);
-  const imageBase64 = imageBuffer.toString('base64');
+  const imageBase64 = imageBuffer.toString("base64");
 
   const payload = {
     model: OPENAI_VISION_MODEL,
@@ -108,7 +108,7 @@ export async function parseUtilityBillImageWithOpenAI(
     console.log(
       "⚡ Consumption:",
       parsed.consumption?.value,
-      parsed.consumption?.unit
+      parsed.consumption?.unit,
     );
 
     return parsed;
@@ -125,7 +125,7 @@ export async function checkOpenAIHealth(): Promise<boolean> {
     console.log("⚠️ OpenAI disabled (OPENAI_ENABLED=false)");
     return false;
   }
-  
+
   if (!OPENAI_API_KEY) {
     console.log("⚠️ OPENAI_API_KEY not configured");
     return false;
@@ -141,7 +141,7 @@ export async function checkOpenAIHealth(): Promise<boolean> {
 
     const models = res.data?.data || [];
     const hasVisionModel = models.some(
-      (m: any) => m.id === OPENAI_VISION_MODEL
+      (m: any) => m.id === OPENAI_VISION_MODEL,
     );
 
     console.log("🤖 OpenAI API online");

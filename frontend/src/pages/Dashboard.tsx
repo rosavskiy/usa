@@ -167,30 +167,31 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-medium text-gray-900">Dashboard</h1>
       </div>
 
       {/* Warning for incomplete profile */}
       {isProfileIncomplete && (
-        <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-lg">
-          <div className="flex items-start">
+        <div className="bg-orange-50 border border-orange-200 p-5 rounded-lg">
+          <div className="flex items-start gap-4">
             <AlertCircle
-              className="text-orange-400 mt-0.5 mr-3 flex-shrink-0"
-              size={24}
+              className="text-orange-500 flex-shrink-0 mt-0.5"
+              size={20}
+              strokeWidth={2}
             />
             <div>
-              <h3 className="text-orange-800 font-semibold mb-1">
+              <h3 className="text-orange-900 font-medium mb-1.5">
                 Complete Your Profile for Full GHG Reports
               </h3>
-              <p className="text-orange-700 text-sm mb-2">
+              <p className="text-orange-700 text-sm mb-3">
                 To generate complete GHG Protocol reports, please add your
                 company address and phone number in Settings.
               </p>
               <Link
                 to="/settings"
-                className="inline-block text-sm font-medium text-orange-800 hover:text-orange-900 underline"
+                className="inline-block text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
               >
                 Go to Settings →
               </Link>
@@ -201,47 +202,47 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card">
+        <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Average Emissions</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">
-                {(Number(stats?.avgEmissions) || 0).toFixed(1)}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">kg CO₂e per document</p>
-            </div>
-            <div className="bg-primary-100 p-3 rounded-lg">
-              <Leaf className="text-primary-600" size={32} />
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Documents Processed</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">
-                {stats?.totalDocuments || 0}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">uploaded & parsed</p>
-            </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <FileText className="text-blue-600" size={32} />
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Emissions</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">
+              <p className="text-sm font-medium text-gray-500">Total Emissions</p>
+              <p className="text-3xl font-medium text-success-600 mt-2">
                 {(Number(stats?.totalEmissions) || 0).toFixed(1)}
               </p>
               <p className="text-sm text-gray-500 mt-1">kg CO₂e total</p>
             </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <BarChart3 className="text-green-600" size={32} />
+            <div className="bg-success-50 p-3 rounded-lg">
+              <TrendingDown className="text-success-600" size={24} strokeWidth={2} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Documents Processed</p>
+              <p className="text-3xl font-medium text-gray-900 mt-2">
+                {stats?.totalDocuments || 0}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">uploaded & parsed</p>
+            </div>
+            <div className="bg-primary-50 p-3 rounded-lg">
+              <FileText className="text-primary-600" size={24} strokeWidth={2} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Average Emissions</p>
+              <p className="text-3xl font-medium text-gray-900 mt-2">
+                {(Number(stats?.avgEmissions) || 0).toFixed(1)}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">kg CO₂e per document</p>
+            </div>
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <BarChart3 className="text-blue-600" size={24} strokeWidth={2} />
             </div>
           </div>
         </div>
@@ -250,9 +251,9 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Emissions by Category */}
-        <div className="card">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <BarChart3 size={24} />
+        <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <h2 className="text-lg font-medium text-gray-900 mb-6 flex items-center gap-2">
+            <BarChart3 size={20} strokeWidth={2} className="text-primary-600" />
             Emissions by Category
           </h2>
           {stats?.byCategory?.length > 0 ? (

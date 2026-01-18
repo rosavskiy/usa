@@ -65,7 +65,7 @@ interface CalculationOptions {
 export async function calculateEmissions(
   userId: number,
   documentId: number,
-  options: CalculationOptions = {}
+  options: CalculationOptions = {},
 ) {
   console.log(`📊 Calculate emissions: userId=${userId}, docId=${documentId}`);
 
@@ -79,7 +79,7 @@ export async function calculateEmissions(
   console.log(
     `📄 Document status: ${
       document.status
-    }, has parsed_data: ${!!document.parsed_data}`
+    }, has parsed_data: ${!!document.parsed_data}`,
   );
 
   if (document.status === "failed") {
@@ -112,7 +112,7 @@ export async function calculateEmissions(
   console.log(
     `🌎 Using state: ${userState} (from ${
       parsedData.state ? "document" : "company profile"
-    })`
+    })`,
   );
 
   // Determine emission type and category
@@ -133,7 +133,7 @@ export async function calculateEmissions(
       options.manualCategory || options.manualScope
         ? " (manual override)"
         : " (auto-detected)"
-    }`
+    }`,
   );
 
   const consumption = parsedData.consumption?.value || 0;

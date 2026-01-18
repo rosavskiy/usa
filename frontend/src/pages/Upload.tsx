@@ -38,7 +38,6 @@ export default function Upload() {
 
   // Load metadata on mount
   useEffect(() => {
-
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {

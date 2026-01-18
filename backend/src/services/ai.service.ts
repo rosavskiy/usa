@@ -59,4 +59,3 @@ export async function parseDocumentWithAI(
     throw new Error(userFriendlyError);
   }
 }
-

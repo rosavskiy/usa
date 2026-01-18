@@ -59,7 +59,7 @@ Return ONLY JSON.`;
 }
 
 export async function parseUtilityBillImageWithGroq(
-  filePath: string
+  filePath: string,
 ): Promise<any> {
   if (!GROQ_API_KEY) {
     throw new Error("GROQ_API_KEY not configured");
@@ -67,7 +67,7 @@ export async function parseUtilityBillImageWithGroq(
 
   // Read file and convert to base64
   const imageBuffer = fs.readFileSync(filePath);
-  const imageBase64 = imageBuffer.toString('base64');
+  const imageBase64 = imageBuffer.toString("base64");
 
   // First, get list of available models
   let availableModels: string[] = [];
@@ -151,7 +151,7 @@ export async function parseUtilityBillImageWithGroq(
       console.log(
         "⚡ Consumption:",
         parsed.consumption?.value,
-        parsed.consumption?.unit
+        parsed.consumption?.unit,
       );
 
       return parsed;

@@ -49,36 +49,37 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <div className="flex justify-center mb-4">
-            <Leaf className="text-primary-600" size={48} />
+            <Leaf className="text-primary-500" size={40} strokeWidth={2} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Carbon Tracker</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-2xl font-medium text-gray-900">Carbon Tracker</h1>
+          <p className="text-gray-500 mt-2 text-sm">
             Start tracking your carbon footprint
           </p>
         </div>
 
-        <div className="card">
-          <h2 className="text-2xl font-bold mb-6">Create Account</h2>
+        <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+          <h2 className="text-xl font-medium mb-8">Create Account</h2>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm border border-red-100">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <div className="relative">
                 <Mail
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={20}
+                  size={18}
+                  strokeWidth={2}
                 />
                 <input
                   type="email"
@@ -95,7 +96,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">

@@ -38,13 +38,12 @@ export interface CreateCarbonCalculationDTO {
 
 export class CarbonModel {
   static async create(
-    data: CreateCarbonCalculationDTO
+    data: CreateCarbonCalculationDTO,
   ): Promise<CarbonCalculation> {
     // Delete existing calculations for this document to avoid duplicates
-    await query(
-      `DELETE FROM carbon_calculations WHERE document_id = $1`,
-      [data.documentId]
-    );
+    await query(`DELETE FROM carbon_calculations WHERE document_id = $1`, [
+      data.documentId,
+    ]);
 
     const result = await query(
       `INSERT INTO carbon_calculations 
@@ -66,7 +65,7 @@ export class CarbonModel {
         data.totalCo2eKg,
         data.periodStart,
         data.periodEnd,
-      ]
+      ],
     );
     return result.rows[0];
   }
@@ -84,7 +83,7 @@ export class CarbonModel {
        LEFT JOIN documents d ON c.document_id = d.id
        WHERE c.user_id = $1 
        ORDER BY c.calculation_date DESC`,
-      [userId]
+      [userId],
     );
     return result.rows;
   }
@@ -92,7 +91,7 @@ export class CarbonModel {
   static async getTotalByUser(userId: number): Promise<number> {
     const result = await query(
       `SELECT SUM(total_co2e_kg) as total FROM carbon_calculations WHERE user_id = $1`,
-      [userId]
+      [userId],
     );
     return parseFloat(result.rows[0]?.total || "0");
   }
@@ -100,7 +99,7 @@ export class CarbonModel {
   static async findByUserIdAndDateRange(
     userId: number,
     startDate?: string,
-    endDate?: string
+    endDate?: string,
   ): Promise<CarbonCalculation[]> {
     let queryText = `SELECT * FROM carbon_calculations WHERE user_id = $1`;
     const params: any[] = [userId];
@@ -119,7 +118,7 @@ export class CarbonModel {
   static async findById(id: number): Promise<CarbonCalculation | null> {
     const result = await query(
       `SELECT * FROM carbon_calculations WHERE id = $1`,
-      [id]
+      [id],
     );
     return result.rows[0] || null;
   }
@@ -131,7 +130,7 @@ export class CarbonModel {
   static async updateDocument(id: number, documentId: number): Promise<void> {
     await query(
       `UPDATE carbon_calculations SET document_id = $1 WHERE id = $2`,
-      [documentId, id]
+      [documentId, id],
     );
   }
 
@@ -142,7 +141,7 @@ export class CarbonModel {
       total_co2e_kg?: number;
       period_start?: string;
       period_end?: string;
-    }
+    },
   ): Promise<CarbonCalculation> {
     // Get current calculation
     const current = await CarbonModel.findById(id);
@@ -185,7 +184,7 @@ export class CarbonModel {
         data.period_start,
         data.period_end,
         id,
-      ]
+      ],
     );
 
     return result.rows[0];
@@ -194,14 +193,14 @@ export class CarbonModel {
   static async findPreviousByCategory(
     userId: number,
     category: string,
-    currentCalculationId: number
+    currentCalculationId: number,
   ): Promise<CarbonCalculation | null> {
     const result = await query(
       `SELECT * FROM carbon_calculations 
        WHERE user_id = $1 AND category = $2 AND id != $3 
        ORDER BY calculation_date DESC 
        LIMIT 1`,
-      [userId, category, currentCalculationId]
+      [userId, category, currentCalculationId],
     );
     return result.rows[0] || null;
   }

@@ -28,36 +28,37 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <div className="flex justify-center mb-4">
-            <Leaf className="text-primary-600" size={48} />
+            <Leaf className="text-primary-500" size={40} strokeWidth={2} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Carbon Tracker</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-2xl font-medium text-gray-900">Carbon Tracker</h1>
+          <p className="text-gray-500 mt-2 text-sm">
             AI-Powered Carbon Footprint Calculator
           </p>
         </div>
 
-        <div className="card">
-          <h2 className="text-2xl font-bold mb-6">Sign In</h2>
+        <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+          <h2 className="text-xl font-medium mb-8">Sign In</h2>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm border border-red-100">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <div className="relative">
                 <Mail
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={20}
+                  size={18}
+                  strokeWidth={2}
                 />
                 <input
                   type="email"
@@ -74,13 +75,14 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
                 <Lock
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={20}
+                  size={18}
+                  strokeWidth={2}
                 />
                 <input
                   type={showPassword ? "text" : "password"}
@@ -98,7 +100,7 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
                 </button>
               </div>
             </div>
@@ -106,19 +108,19 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed mt-6"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="relative my-6">
+          <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
+              <span className="px-3 bg-white text-gray-500">
                 Or continue with
               </span>
             </div>
@@ -130,7 +132,7 @@ export default function Login() {
             onClick={() => {
               window.location.href = "http://localhost:5000/api/auth/google";
             }}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path

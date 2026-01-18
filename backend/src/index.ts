@@ -67,7 +67,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  
+
   // Check OpenAI API health
   checkOpenAIHealth().catch(() => undefined);
 });
