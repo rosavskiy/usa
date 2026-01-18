@@ -206,7 +206,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Total Emissions</p>
-              <p className="text-3xl font-medium text-success-600 mt-2">
+              <p className="text-3xl font-medium text-gray-900 mt-2">
                 {(Number(stats?.totalEmissions) || 0).toFixed(1)}
               </p>
               <p className="text-sm text-gray-500 mt-1">kg CO₂e total</p>
