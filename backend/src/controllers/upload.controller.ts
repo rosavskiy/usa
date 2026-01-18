@@ -45,6 +45,7 @@ export const uploadDocument = asyncHandler(
 
     // Parse document with AI (WAIT for result)
     try {
+      console.log(`🚀 Starting AI parsing for document ${document.id}...`);
       await parseDocumentWithAI(document.id, filePath);
       console.log(`✅ AI parsed document ${document.id} successfully`);
 
@@ -62,7 +63,8 @@ export const uploadDocument = asyncHandler(
         // Don't throw - user can calculate manually later
       }
     } catch (err) {
-      console.error("❌ AI parsing error:", err);
+      console.error("❌ AI parsing FAILED:", err);
+      console.error("❌ Error stack:", (err as Error).stack);
       // Continue anyway, user can calculate manually
     }
 
