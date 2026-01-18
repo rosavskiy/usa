@@ -255,15 +255,6 @@ export const createManualDocument = asyncHandler(
       throw new AppError("Consumption data is required", 400);
     }
 
-    // Get active reporting period
-    const activePeriod = await ReportingPeriodModel.getActive(userId);
-    if (!activePeriod) {
-      throw new AppError(
-        "No active reporting period. Please select a period first.",
-        400,
-      );
-    }
-
     // Create document with manual data
     const parsedData = {
       type,
@@ -283,7 +274,7 @@ export const createManualDocument = asyncHandler(
       fileSize: 0,
       parsedData: parsedData,
       status: "completed",
-      reportingPeriodId: activePeriod.id,
+      reportingPeriodId: null, // Not required anymore
     });
 
     res.status(201).json({
