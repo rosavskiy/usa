@@ -67,9 +67,9 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  if (process.env.OPENAI_API_KEY) {
-    checkOpenAIHealth().catch(() => undefined);
-  }
+  
+  // Check OpenAI API health
+  checkOpenAIHealth().catch(() => undefined);
 });
 
 export default app;
