@@ -1122,6 +1122,7 @@ export default function Calculations() {
                     </label>
                     <input
                       type="date"
+                      lang="en-US"
                       value={reportForm.reportingPeriodStart}
                       onChange={(e) =>
                         setReportForm({
@@ -1139,6 +1140,7 @@ export default function Calculations() {
                     </label>
                     <input
                       type="date"
+                      lang="en-US"
                       value={reportForm.reportingPeriodEnd}
                       onChange={(e) =>
                         setReportForm({
