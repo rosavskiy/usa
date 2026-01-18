@@ -979,6 +979,18 @@ export async function generateCarbonReport(
       : "",
   ].filter((text) => text !== "");
 
+  // Helper: try to read parsed emissions values from parsedData.emissions
+  const getParsedEmission = (key: string): string | null => {
+    try {
+      if (parsedData && parsedData.emissions && parsedData.emissions[key]) {
+        return String(parsedData.emissions[key]);
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  };
+
   detailRows.forEach((text) => {
     doc.fillColor(tealColor).rect(60, y, colWidth, 18).fill();
 
@@ -992,12 +1004,39 @@ export async function generateCarbonReport(
 
     doc.rect(60, y, colWidth, 18).stroke();
 
-    const value =
+    // Determine value to display: prefer calculated scope totals, then parsedData, else mark Not provided
+    let value = "";
+
+    if (text.startsWith("Scope 1")) {
+      if (scope1Calcs.length > 0) {
+        value = scope1Total.toFixed(3) + " mtCO2e";
+      } else if (getParsedEmission("scope1")) {
+        value = getParsedEmission("scope1") + " mtCO2e";
+      } else {
+        value = "Not provided";
+      }
+    } else if (text.startsWith("Scope 2")) {
+      if (scope2Calcs.length > 0) {
+        value = scope2Total.toFixed(3) + " mtCO2e";
+      } else if (getParsedEmission("scope2")) {
+        value = getParsedEmission("scope2") + " mtCO2e";
+      } else {
+        value = "Not provided";
+      }
+    } else if (
       text.includes("Stationary") ||
       text.includes("Mobile") ||
       text.includes("Electricity")
-        ? totalMetricTons + " mtCO2e"
-        : "";
+    ) {
+      // Sub-rows: prefer specific scope numbers if available, otherwise use combined total
+      if (scope1Calcs.length > 0) {
+        value = scope1Total.toFixed(3) + " mtCO2e";
+      } else {
+        value = totalMetricTons + " mtCO2e";
+      }
+    } else {
+      value = "Not provided";
+    }
 
     doc
       .fontSize(9)
@@ -1048,10 +1087,23 @@ export async function generateCarbonReport(
     .font("Helvetica")
     .text(provider, 65, y + 5);
 
+  // Determine how to label the service/address field:
+  // - if there's no accountNum and serviceAddr is a short numeric string, treat it as an account number
+  // - otherwise show it as an address (truncate to 60 chars)
+  let addrLabel = "";
+  if (serviceAddr) {
+    const trimmed = serviceAddr.trim();
+    if (!accountNum && /^\d{1,6}$/.test(trimmed)) {
+      addrLabel = `Acct: ${trimmed}`;
+    } else {
+      addrLabel = `Addr: ${trimmed.substring(0, 60)}`;
+    }
+  }
+
   const facilityInfo = [
     scope1Total.toFixed(3) + " mtCO2e",
     accountNum ? `Acct: ${accountNum}` : "",
-    serviceAddr ? `Addr: ${serviceAddr.substring(0, 40)}` : "",
+    addrLabel,
   ]
     .filter((x) => x)
     .join(" | ");
