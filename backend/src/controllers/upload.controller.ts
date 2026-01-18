@@ -5,7 +5,6 @@ import { AppError, asyncHandler } from "../middleware/error.middleware";
 import { parseDocumentWithAI } from "../services/ai.service";
 import { calculateEmissions } from "../services/carbon.service";
 import { query } from "../config/database";
-import ReportingPeriodModel from "../models/reporting-period.model";
 import fs from "fs";
 
 export const uploadDocument = asyncHandler(
@@ -22,26 +21,7 @@ export const uploadDocument = asyncHandler(
       `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`,
     );
 
-    // Get active reporting period
-    console.log(`🔍 Fetching active reporting period for user ${userId}...`);
-    let activePeriod;
-    try {
-      activePeriod = await ReportingPeriodModel.getActive(userId);
-      console.log(`📊 getActive returned:`, activePeriod);
-    } catch (error) {
-      console.error(`❌ Error fetching active period:`, error);
-      throw error;
-    }
-    
-    if (!activePeriod) {
-      throw new AppError(
-        "No active reporting period. Please select a period first.",
-        400,
-      );
-    }
-    console.log(`✅ Active period found: ${activePeriod.id}`);
-
-    // Save document to database
+    // Save document to database (without reporting period requirement)
     console.log(`💾 Saving document to database...`);
     const document = await DocumentModel.create({
       userId,
@@ -49,7 +29,7 @@ export const uploadDocument = asyncHandler(
       filePath,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
-      reportingPeriodId: activePeriod.id,
+      reportingPeriodId: null, // Not required anymore
     });
 
     console.log(`💾 Document saved: docId=${document.id}`);

@@ -34,7 +34,6 @@ export default function Dashboard() {
     const interval = setInterval(() => {
       loadStats();
       loadProfile();
-      loadActivePeriod();
     }, 3000);
 
     // Refresh when window gets focus
@@ -56,15 +55,6 @@ export default function Dashboard() {
       setProfile(response.data);
     } catch (error) {
       console.error("Failed to load profile:", error);
-    }
-  };
-
-  const loadActivePeriod = async () => {
-    try {
-      const response = await api.get("/reporting-periods/active");
-      setActivePeriod(response.data);
-    } catch (error) {
-      console.error("Failed to load active period:", error);
     }
   };
 

@@ -10,10 +10,8 @@ import {
   X,
   ArrowRight,
   Loader2,
-  Calendar,
 } from "lucide-react";
 import api from "../api/axios";
-import ReportingPeriodModal from "../components/ReportingPeriodModal";
 
 interface FileMetadata {
   name: string;
@@ -37,12 +35,9 @@ export default function Upload() {
   >([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [activePeriod, setActivePeriod] = useState<any>(null);
-  const [showPeriodModal, setShowPeriodModal] = useState(false);
 
   // Load metadata on mount
   useEffect(() => {
-    loadActivePeriod();
 
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -66,15 +61,6 @@ export default function Upload() {
       }
     }
   }, []);
-
-  const loadActivePeriod = async () => {
-    try {
-      const response = await api.get("/reporting-periods/active");
-      setActivePeriod(response.data);
-    } catch (error) {
-      console.error("Failed to load active period:", error);
-    }
-  };
 
   // Save metadata whenever files change
   useEffect(() => {
@@ -296,35 +282,6 @@ export default function Upload() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Upload Bills</h1>
-      </div>
-
-      {/* Reporting Period Info */}
-      <div className="card bg-blue-50 border-blue-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Calendar className="text-blue-600" size={24} />
-            <div>
-              <h3 className="font-bold text-blue-900">Reporting Period</h3>
-              {activePeriod ? (
-                <p className="text-sm text-blue-700">
-                  {new Date(activePeriod.start_date).toLocaleDateString()} -{" "}
-                  {new Date(activePeriod.end_date).toLocaleDateString()} (
-                  {activePeriod.period_type})
-                </p>
-              ) : (
-                <p className="text-sm text-red-600 font-medium">
-                  ⚠️ No active period - please select one
-                </p>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={() => setShowPeriodModal(true)}
-            className="btn-secondary text-sm"
-          >
-            {activePeriod ? "Change Period" : "Select Period"}
-          </button>
-        </div>
       </div>
 
       {/* Mobile Camera Button */}
@@ -622,15 +579,6 @@ export default function Upload() {
           <li>• AI will automatically extract and calculate emissions</li>
         </ul>
       </div>
-
-      {/* Reporting Period Modal */}
-      <ReportingPeriodModal
-        isOpen={showPeriodModal}
-        onClose={() => {
-          setShowPeriodModal(false);
-          loadActivePeriod();
-        }}
-      />
     </div>
   );
 }
