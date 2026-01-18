@@ -105,13 +105,13 @@ export async function calculateEmissions(
 
   console.log(`📋 Parsed data:`, JSON.stringify(parsedData, null, 2));
 
-  // PRIORITY: Get state from user profile FIRST (company location)
+  // PRIORITY: Get state from DOCUMENT FIRST (service address), fallback to company profile
   const user = await UserModel.findById(userId);
-  let userState = user?.state || parsedData.state || null;
+  let userState = parsedData.state || user?.state || null;
 
   console.log(
     `🌎 Using state: ${userState} (from ${
-      user?.state ? "company profile" : "OCR"
+      parsedData.state ? "document" : "company profile"
     })`
   );
 

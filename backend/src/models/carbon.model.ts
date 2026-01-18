@@ -40,6 +40,12 @@ export class CarbonModel {
   static async create(
     data: CreateCarbonCalculationDTO
   ): Promise<CarbonCalculation> {
+    // Delete existing calculations for this document to avoid duplicates
+    await query(
+      `DELETE FROM carbon_calculations WHERE document_id = $1`,
+      [data.documentId]
+    );
+
     const result = await query(
       `INSERT INTO carbon_calculations 
        (user_id, document_id, emission_type, category, co2_kg, ch4_kg, n2o_kg, hfcs_kg, pfcs_kg, sf6_kg, other_kg, total_co2e_kg, period_start, period_end) 
