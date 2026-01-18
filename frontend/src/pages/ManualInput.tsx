@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calculator, TrendingDown, AlertCircle } from "lucide-react";
+import { Calculator, TrendingDown, AlertCircle, Zap, Factory } from "lucide-react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
@@ -245,8 +245,9 @@ export default function ManualInput() {
               <option value="NM">New Mexico</option>
               <option value="WV">West Virginia</option>
             </datalist>
-            <p className="text-xs text-gray-500 mt-1">
-              ⚡ Each state has different electricity emission factors
+            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+              <Zap size={14} className="text-primary-600" />
+              Each state has different electricity emission factors
               (0.01-0.72 kg CO₂e/kWh). Gas & Fuel are universal.
             </p>
           </div>
@@ -304,8 +305,9 @@ export default function ManualInput() {
 
         {/* F-gases (Industrial Greenhouse Gases) */}
         <div className="border-t border-gray-200 pt-6 mt-6">
-          <h3 className="text-base font-medium text-primary-600 mb-2">
-            🏭 Industrial Greenhouse Gases
+          <h3 className="text-base font-medium text-primary-600 mb-2 flex items-center gap-2">
+            <Factory size={20} className="text-primary-600" />
+            Industrial Greenhouse Gases
           </h3>
           <p className="text-sm text-gray-600 mb-5">
             For refrigeration equipment, air conditioning systems, electrical

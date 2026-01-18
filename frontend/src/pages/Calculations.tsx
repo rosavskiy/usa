@@ -7,6 +7,7 @@ import {
   FileDown,
   Edit,
   Upload,
+  Lightbulb,
 } from "lucide-react";
 import api from "../api/axios";
 import { format } from "date-fns";
@@ -511,8 +512,9 @@ export default function Calculations() {
                 );
               })}
           </div>
-          <p className="text-xs text-primary-700 mt-3">
-            💡 Use this to review past fiscal years for compliance audits and
+          <p className="text-xs text-primary-700 mt-3 flex items-center gap-1">
+            <Lightbulb size={14} className="text-primary-600" />
+            Use this to review past fiscal years for compliance audits and
             historical trend analysis
           </p>
         </div>
@@ -578,14 +580,15 @@ export default function Calculations() {
 
             const displayDate =
               dateKey === "today"
-                ? "📅 Today"
+                ? "Today"
                 : dateKey === "yesterday"
-                  ? "📅 Yesterday"
-                  : `📅 ${dateKey}`;
+                  ? "Yesterday"
+                  : dateKey;
 
             return (
               <div key={dateKey} className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2">
+                <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-200 pb-2 flex items-center gap-2">
+                  <Calendar size={20} className="text-primary-600" />
                   {displayDate}
                 </h2>
 
