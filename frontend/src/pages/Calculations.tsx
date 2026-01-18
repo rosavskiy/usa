@@ -1121,16 +1121,41 @@ export default function Calculations() {
                       Start Date (mm/dd/yyyy):
                     </label>
                     <input
-                      type="date"
-                      lang="en-US"
-                      value={reportForm.reportingPeriodStart}
-                      onChange={(e) =>
-                        setReportForm({
-                          ...reportForm,
-                          reportingPeriodStart: e.target.value,
-                        })
-                      }
+                      type="text"
+                      value={reportForm.reportingPeriodStart ? 
+                        new Date(reportForm.reportingPeriodStart).toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'}).replace(/\//g, '/') : 
+                        ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Try to parse MM/DD/YYYY format
+                        const parts = val.split('/');
+                        if (parts.length === 3) {
+                          const [month, day, year] = parts;
+                          if (month && day && year && year.length === 4) {
+                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            setReportForm({
+                              ...reportForm,
+                              reportingPeriodStart: isoDate,
+                            });
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const val = e.target.value;
+                        const parts = val.split('/');
+                        if (parts.length === 3) {
+                          const [month, day, year] = parts;
+                          if (month && day && year && year.length === 4) {
+                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            setReportForm({
+                              ...reportForm,
+                              reportingPeriodStart: isoDate,
+                            });
+                          }
+                        }
+                      }}
                       placeholder="mm/dd/yyyy"
+                      pattern="\d{2}/\d{2}/\d{4}"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
@@ -1139,16 +1164,41 @@ export default function Calculations() {
                       End Date (mm/dd/yyyy):
                     </label>
                     <input
-                      type="date"
-                      lang="en-US"
-                      value={reportForm.reportingPeriodEnd}
-                      onChange={(e) =>
-                        setReportForm({
-                          ...reportForm,
-                          reportingPeriodEnd: e.target.value,
-                        })
-                      }
+                      type="text"
+                      value={reportForm.reportingPeriodEnd ? 
+                        new Date(reportForm.reportingPeriodEnd).toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'}).replace(/\//g, '/') : 
+                        ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Try to parse MM/DD/YYYY format
+                        const parts = val.split('/');
+                        if (parts.length === 3) {
+                          const [month, day, year] = parts;
+                          if (month && day && year && year.length === 4) {
+                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            setReportForm({
+                              ...reportForm,
+                              reportingPeriodEnd: isoDate,
+                            });
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const val = e.target.value;
+                        const parts = val.split('/');
+                        if (parts.length === 3) {
+                          const [month, day, year] = parts;
+                          if (month && day && year && year.length === 4) {
+                            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            setReportForm({
+                              ...reportForm,
+                              reportingPeriodEnd: isoDate,
+                            });
+                          }
+                        }
+                      }}
                       placeholder="mm/dd/yyyy"
+                      pattern="\d{2}/\d{2}/\d{4}"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
