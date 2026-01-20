@@ -8,6 +8,7 @@ import {
   Calculator,
   FolderOpen,
   Settings,
+  CreditCard,
 } from "lucide-react";
 import CookieConsent from "./CookieConsent";
 import ProfileCompleteModal from "./ProfileCompleteModal";
@@ -22,6 +23,7 @@ export default function Layout() {
     { path: "/manual", label: "Manual Entry", icon: Calculator },
     { path: "/calculations", label: "Calculations", icon: BarChart3 },
     { path: "/my-documents", label: "My Documents", icon: FolderOpen },
+    { path: "/billing", label: "Billing", icon: CreditCard },
     { path: "/settings", label: "Settings", icon: Settings },
   ];
 

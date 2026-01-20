@@ -13,6 +13,7 @@ import Upload from "./pages/Upload";
 import ManualInput from "./pages/ManualInput";
 import Calculations from "./pages/Calculations";
 import MyDocuments from "./pages/MyDocuments";
+import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -56,6 +57,7 @@ function App() {
             <Route path="manual" element={<ManualInput />} />
             <Route path="calculations" element={<Calculations />} />
             <Route path="my-documents" element={<MyDocuments />} />
+            <Route path="billing" element={<Billing />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
