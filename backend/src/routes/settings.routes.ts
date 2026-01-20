@@ -50,6 +50,17 @@ const router = Router();
 // Get user profile
 router.get("/profile", authenticate, SettingsController.getProfile);
 
+// Get credits balance
+router.get("/credits", authenticate, async (req: any, res) => {
+  try {
+    const { CreditService } = await import("../services/credit.service");
+    const balance = await CreditService.getBalance(req.userId);
+    res.json({ credits: balance });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get credits balance" });
+  }
+});
+
 // Update user profile
 router.put("/profile", authenticate, SettingsController.updateProfile);
 

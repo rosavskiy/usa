@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import api from "../api/axios";
+import CreditConfirmModal from "../components/CreditConfirmModal";
 
 interface FileMetadata {
   name: string;
@@ -33,8 +34,24 @@ export default function Upload() {
   const [processingErrors, setProcessingErrors] = useState<
     { docId: number; error: string }[]
   >([]);
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [credits, setCredits] = useState(0);
+  const [pendingUpload, setPendingUpload] = useState<File[] | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Fetch credits on mount
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const response = await api.get("/settings/credits");
+        setCredits(response.data.credits || 0);
+      } catch (error) {
+        console.error("Failed to fetch credits:", error);
+      }
+    };
+    fetchCredits();
+  }, []);
 
   // Load metadata on mount
   useEffect(() => {
@@ -126,6 +143,24 @@ export default function Upload() {
         });
 
         const docId = response.data.data.id;
+        const creditRefunded = response.data.data.creditRefunded;
+
+        // If credit was refunded, show error immediately
+        if (creditRefunded) {
+          setFiles((prev) =>
+            prev.map((f, idx) =>
+              idx === index
+                ? {
+                    ...f,
+                    status: "error",
+                    errorMsg:
+                      "Sorry! Your document could not be recognized. Your credit has been returned to your balance.",
+                  }
+                : f,
+            ),
+          );
+          return { success: false, docId: null, index, refunded: true };
+        }
 
         // Mark as processing (show spinner, not checkmark yet)
         setFiles((prev) =>
@@ -134,7 +169,7 @@ export default function Upload() {
           ),
         );
 
-        return { success: true, docId, index };
+        return { success: true, docId, index, refunded: false };
       } catch (error) {
         setFiles((prev) =>
           prev.map((f, idx) => (idx === index ? { ...f, status: "error" } : f)),
@@ -145,7 +180,7 @@ export default function Upload() {
 
     const results = await Promise.all(uploadPromises);
     const uploadedDocIds = results
-      .filter((r) => r.success && r.docId)
+      .filter((r) => r.success && r.docId && !r.refunded)
       .map((r) => r.docId as number);
 
     setUploading(false);
@@ -421,7 +456,10 @@ export default function Upload() {
             ))}
 
             <button
-              onClick={uploadFiles}
+              onClick={() => {
+                setPendingUpload(files.map(f => f.file));
+                setShowCreditModal(true);
+              }}
               disabled={
                 uploading ||
                 processing ||
@@ -592,6 +630,27 @@ export default function Upload() {
           <li>• AI will automatically extract and calculate emissions</li>
         </ul>
       </div>
+
+      {/* Credit Confirmation Modal */}
+      <CreditConfirmModal
+        isOpen={showCreditModal}
+        onClose={() => {
+          setShowCreditModal(false);
+          setPendingUpload(null);
+        }}
+        onConfirm={async () => {
+          setShowCreditModal(false);
+          await uploadFiles();
+          // Refresh credits after upload
+          try {
+            const response = await api.get("/settings/credits");
+            setCredits(response.data.credits || 0);
+          } catch (error) {
+            console.error("Failed to refresh credits:", error);
+          }
+        }}
+        currentBalance={credits}
+      />
     </div>
   );
 }

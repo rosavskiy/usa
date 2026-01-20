@@ -4,6 +4,7 @@ import { DocumentModel } from "../models/document.model";
 import { AppError, asyncHandler } from "../middleware/error.middleware";
 import { parseDocumentWithAI } from "../services/ai.service";
 import { calculateEmissions } from "../services/carbon.service";
+import { CreditService } from "../services/credit.service";
 import { query } from "../config/database";
 import fs from "fs";
 
@@ -21,6 +22,20 @@ export const uploadDocument = asyncHandler(
       `📤 Upload: userId=${userId}, file=${fileName}, path=${filePath}`,
     );
 
+    // Check if user has enough credits
+    const hasCredits = await CreditService.hasEnoughCredits(userId, 1);
+    if (!hasCredits) {
+      // Delete uploaded file
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      throw new AppError("Insufficient credits. Please top up your balance.", 402);
+    }
+
+    // Deduct 1 credit before processing
+    await CreditService.deductCredits(userId, 1);
+    console.log(`💳 Deducted 1 credit from user ${userId}`);
+
     // Save document to database (without reporting period requirement)
     console.log(`💾 Saving document to database...`);
     const document = await DocumentModel.create({
@@ -35,10 +50,12 @@ export const uploadDocument = asyncHandler(
     console.log(`💾 Document saved: docId=${document.id}`);
 
     // Parse document with AI (WAIT for result)
+    let processingSuccessful = false;
     try {
       console.log(`🚀 Starting AI parsing for document ${document.id}...`);
       await parseDocumentWithAI(document.id, filePath);
       console.log(`✅ AI parsed document ${document.id} successfully`);
+      processingSuccessful = true;
 
       // Automatically calculate emissions after successful parsing
       try {
@@ -56,6 +73,11 @@ export const uploadDocument = asyncHandler(
     } catch (err) {
       console.error("❌ AI parsing FAILED:", err);
       console.error("❌ Error stack:", (err as Error).stack);
+      
+      // Refund the credit since processing failed
+      await CreditService.refundCredits(userId, 1);
+      console.log(`💰 Refunded 1 credit to user ${userId} due to processing failure`);
+      processingSuccessful = false;
       // Continue anyway, user can calculate manually
     }
 
@@ -66,6 +88,7 @@ export const uploadDocument = asyncHandler(
         fileName: document.file_name,
         uploadedAt: document.created_at,
         status: "processing",
+        creditRefunded: !processingSuccessful,
       },
     });
   },
