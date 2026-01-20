@@ -14,6 +14,7 @@ export interface User {
   phone?: string | null;
   logo_path?: string | null;
   google_id?: string | null;
+  credits?: number | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -46,7 +47,7 @@ export class UserModel {
 
   static async findById(id: number): Promise<User | null> {
     const result = await query(
-      "SELECT id, email, company_name, state, industry, currency, unit_system, address, phone, logo_path, created_at, updated_at FROM users WHERE id = $1",
+      "SELECT id, email, company_name, state, industry, currency, unit_system, address, phone, logo_path, credits, created_at, updated_at FROM users WHERE id = $1",
       [id]
     );
     return result.rows[0] || null;
