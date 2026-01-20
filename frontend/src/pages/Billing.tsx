@@ -124,7 +124,10 @@ export default function Billing() {
 
       {/* Pricing Plans */}
       <div>
-        <h2 className="text-xl font-medium text-gray-900 mb-6">Choose Your Plan</h2>
+        <h2 className="text-xl font-medium text-gray-900 mb-2">Purchase Credit Packages</h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Buy credits anytime you need them. You can purchase packages multiple times.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan) => (
             <div
@@ -178,7 +181,7 @@ export default function Billing() {
                       : "bg-primary-100 text-primary-700 hover:bg-primary-200"
                 }`}
               >
-                {plan.id === "trial" ? "Already Active" : "Select Plan"}
+                {plan.id === "trial" ? "Already Active" : "Purchase Credits"}
               </button>
             </div>
           ))}
@@ -243,7 +246,13 @@ export default function Billing() {
           <div>
             <p className="font-medium text-gray-900 mb-1">Can I purchase more credits later?</p>
             <p className="text-gray-600">
-              Yes, you can purchase additional credit packages at any time.
+              Yes! You can purchase any credit package as many times as you need. There are no limits on purchases.
+            </p>
+          </div>
+          <div>
+            <p className="font-medium text-gray-900 mb-1">Can I buy the same package multiple times?</p>
+            <p className="text-gray-600">
+              Absolutely. Each purchase adds credits to your balance. Buy the same package or different ones - it's up to you.
             </p>
           </div>
         </div>
