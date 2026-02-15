@@ -10,6 +10,8 @@ import {
   X,
   ArrowRight,
   Loader2,
+  Image as ImageIcon,
+  FolderOpen,
 } from "lucide-react";
 import api from "../api/axios";
 import CreditConfirmModal from "../components/CreditConfirmModal";
@@ -38,6 +40,8 @@ export default function Upload() {
   const [credits, setCredits] = useState(0);
   const [pendingUpload, setPendingUpload] = useState<File[] | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const filesInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   // Fetch credits on mount
@@ -308,8 +312,40 @@ export default function Upload() {
     }
   };
 
+  const handleGallerySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (selectedFiles && selectedFiles.length > 0) {
+      const fileArray = Array.from(selectedFiles).map((file) => ({
+        file,
+        status: "pending",
+        progress: 0,
+      }));
+      setFiles((prev) => [...prev, ...fileArray]);
+    }
+  };
+
+  const handleFilesSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (selectedFiles && selectedFiles.length > 0) {
+      const fileArray = Array.from(selectedFiles).map((file) => ({
+        file,
+        status: "pending",
+        progress: 0,
+      }));
+      setFiles((prev) => [...prev, ...fileArray]);
+    }
+  };
+
   const openCamera = () => {
     cameraInputRef.current?.click();
+  };
+
+  const openGallery = () => {
+    galleryInputRef.current?.click();
+  };
+
+  const openFiles = () => {
+    filesInputRef.current?.click();
   };
 
   return (
@@ -318,26 +354,47 @@ export default function Upload() {
         <h1 className="text-2xl font-medium text-gray-900">Upload Bills</h1>
       </div>
 
-      {/* Mobile Camera Button */}
+      {/* Mobile Upload Options */}
       {isMobile && (
-        <div className="bg-primary-500 text-white rounded-lg p-6">
-          <div className="flex flex-col items-center text-center">
-            <Camera size={40} className="mb-3" strokeWidth={2} />
-            <h3 className="text-lg font-medium mb-2">📸 Take Photo Now</h3>
-            <p className="text-sm opacity-90 mb-4">
-              Use your phone's camera to capture bills instantly
-            </p>
+        <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-medium text-gray-900 mb-4 text-center">
+            Choose Upload Method
+          </h3>
+          <div className="grid grid-cols-3 gap-3">
+            {/* Camera Button */}
             <button
               onClick={openCamera}
-              className="bg-white text-primary-600 font-medium py-2.5 px-6 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex flex-col items-center justify-center p-6 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
             >
-              Open Camera
+              <Camera size={32} strokeWidth={2} className="mb-2" />
+              <span className="text-sm font-medium">Camera</span>
+            </button>
+
+            {/* Gallery Button */}
+            <button
+              onClick={openGallery}
+              className="flex flex-col items-center justify-center p-6 bg-primary-400 text-white rounded-lg hover:bg-primary-500 transition-colors"
+            >
+              <ImageIcon size={32} strokeWidth={2} className="mb-2" />
+              <span className="text-sm font-medium">Gallery</span>
+            </button>
+
+            {/* Files Button */}
+            <button
+              onClick={openFiles}
+              className="flex flex-col items-center justify-center p-6 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              <FolderOpen size={32} strokeWidth={2} className="mb-2" />
+              <span className="text-sm font-medium">Files</span>
             </button>
           </div>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            PDF, JPG, PNG up to 10MB
+          </p>
         </div>
       )}
 
-      {/* Hidden camera input */}
+      {/* Hidden inputs for mobile */}
       <input
         ref={cameraInputRef}
         type="file"
@@ -347,38 +404,54 @@ export default function Upload() {
         className="hidden"
         multiple
       />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleGallerySelect}
+        className="hidden"
+        multiple
+      />
+      <input
+        ref={filesInputRef}
+        type="file"
+        accept="image/*,application/pdf"
+        onChange={handleFilesSelect}
+        className="hidden"
+        multiple
+      />
 
-      <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-all ${
-            isDragActive
-              ? "border-primary-500 bg-primary-50"
-              : "border-gray-200 hover:border-primary-400 hover:bg-gray-50"
-          }`}
-        >
-          <input {...getInputProps()} />
-          <UploadIcon
-            className="mx-auto text-gray-400 mb-4"
-            size={40}
-            strokeWidth={2}
-          />
-          <p className="text-base font-medium text-gray-700 mb-2">
-            {isDragActive
-              ? "Drop files here"
-              : isMobile
-                ? "Tap to select files"
-                : "Drag & drop files here"}
-          </p>
-          <p className="text-sm text-gray-500">
-            {isMobile
-              ? "or use the camera button above (PDF, JPG, PNG up to 10MB)"
-              : "or click to select files (PDF, JPG, PNG up to 10MB)"}
-          </p>
+      {/* Desktop Drag & Drop */}
+      {!isMobile && (
+        <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-all ${
+              isDragActive
+                ? "border-primary-500 bg-primary-50"
+                : "border-gray-200 hover:border-primary-400 hover:bg-gray-50"
+            }`}
+          >
+            <input {...getInputProps()} />
+            <UploadIcon
+              className="mx-auto text-gray-400 mb-4"
+              size={40}
+              strokeWidth={2}
+            />
+            <p className="text-base font-medium text-gray-700 mb-2">
+              {isDragActive ? "Drop files here" : "Drag & drop files here"}
+            </p>
+            <p className="text-sm text-gray-500">
+              or click to select files (PDF, JPG, PNG up to 10MB)
+            </p>
+          </div>
         </div>
+      )}
 
-        {files.length > 0 && (
-          <div className="mt-8 space-y-3">
+      {/* File List - shown for both mobile and desktop */}
+      {files.length > 0 && (
+        <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+          <div className="space-y-3">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium text-gray-900">Selected Files:</h3>
               <button
@@ -457,7 +530,7 @@ export default function Upload() {
 
             <button
               onClick={() => {
-                setPendingUpload(files.map(f => f.file));
+                setPendingUpload(files.map((f) => f.file));
                 setShowCreditModal(true);
               }}
               disabled={
@@ -489,135 +562,136 @@ export default function Upload() {
                 "Upload & Calculate"}
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Success/Error message */}
-        {uploadComplete && (
-          <>
-            {/* All failed */}
-            {processingErrors.length === files.length && (
+      {/* Success/Error message */}
+      {uploadComplete && (
+        <>
+          {/* All failed */}
+          {processingErrors.length === files.length && (
+            <div
+              data-error-message
+              className="mt-6 p-8 bg-gradient-to-r from-red-50 to-orange-50 border-4 border-red-400 rounded-xl text-center shadow-xl"
+            >
+              <AlertCircle className="mx-auto text-red-600 mb-4" size={80} />
+              <h3 className="text-3xl font-bold text-red-900 mb-3">
+                ❌ Documents Could Not Be Recognized
+              </h3>
+              <p className="text-xl text-gray-700 mb-3">
+                AI was unable to extract data from the uploaded images
+              </p>
+              <div className="mb-6 p-4 bg-red-100 border-2 border-red-300 rounded-lg text-left">
+                <p className="font-bold text-red-900 mb-2">Error details:</p>
+                {processingErrors.map((err, idx) => (
+                  <p key={idx} className="text-red-700 text-sm mb-1">
+                    • {err.error}
+                  </p>
+                ))}
+              </div>
+              <p className="text-lg text-gray-600 mb-6">Please try:</p>
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => {
+                    setFiles([]);
+                    setUploadComplete(false);
+                    setProcessingErrors([]);
+                    localStorage.removeItem(STORAGE_KEY);
+                  }}
+                  className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all text-lg"
+                >
+                  📸 Upload Clearer Photo
+                </button>
+                <button
+                  onClick={() => navigate("/manual-entry")}
+                  className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all text-lg"
+                >
+                  ✍️ Enter Data Manually
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Some succeeded */}
+          {processingErrors.length > 0 &&
+            processingErrors.length < files.length && (
               <div
                 data-error-message
-                className="mt-6 p-8 bg-gradient-to-r from-red-50 to-orange-50 border-4 border-red-400 rounded-xl text-center shadow-xl"
+                className="mt-6 p-8 bg-gradient-to-r from-yellow-50 to-orange-50 border-4 border-yellow-400 rounded-xl text-center shadow-xl"
               >
-                <AlertCircle className="mx-auto text-red-600 mb-4" size={80} />
-                <h3 className="text-3xl font-bold text-red-900 mb-3">
-                  ❌ Documents Could Not Be Recognized
+                <AlertCircle
+                  className="mx-auto text-yellow-600 mb-4"
+                  size={80}
+                />
+                <h3 className="text-3xl font-bold text-yellow-900 mb-3">
+                  ⚠️ Partial Success
                 </h3>
                 <p className="text-xl text-gray-700 mb-3">
-                  AI was unable to extract data from the uploaded images
+                  {files.length - processingErrors.length} of {files.length}{" "}
+                  files processed successfully
                 </p>
-                <div className="mb-6 p-4 bg-red-100 border-2 border-red-300 rounded-lg text-left">
-                  <p className="font-bold text-red-900 mb-2">Error details:</p>
+                <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg text-left">
+                  <p className="font-bold text-red-900 mb-2">
+                    Failed to recognize:
+                  </p>
                   {processingErrors.map((err, idx) => (
                     <p key={idx} className="text-red-700 text-sm mb-1">
                       • {err.error}
                     </p>
                   ))}
                 </div>
-                <p className="text-lg text-gray-600 mb-6">Please try:</p>
                 <div className="flex gap-4 justify-center">
                   <button
-                    onClick={() => {
-                      setFiles([]);
-                      setUploadComplete(false);
-                      setProcessingErrors([]);
-                      localStorage.removeItem(STORAGE_KEY);
-                    }}
-                    className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all text-lg"
+                    onClick={() => navigate("/calculations")}
+                    className="inline-flex items-center gap-3 bg-green-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-green-700 transition-all text-xl shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
-                    📸 Upload Clearer Photo
+                    View Successful Results
+                    <ArrowRight size={28} />
                   </button>
                   <button
                     onClick={() => navigate("/manual-entry")}
                     className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all text-lg"
                   >
-                    ✍️ Enter Data Manually
+                    ✍️ Enter Remaining Manually
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Some succeeded */}
-            {processingErrors.length > 0 &&
-              processingErrors.length < files.length && (
-                <div
-                  data-error-message
-                  className="mt-6 p-8 bg-gradient-to-r from-yellow-50 to-orange-50 border-4 border-yellow-400 rounded-xl text-center shadow-xl"
-                >
-                  <AlertCircle
-                    className="mx-auto text-yellow-600 mb-4"
-                    size={80}
-                  />
-                  <h3 className="text-3xl font-bold text-yellow-900 mb-3">
-                    ⚠️ Partial Success
-                  </h3>
-                  <p className="text-xl text-gray-700 mb-3">
-                    {files.length - processingErrors.length} of {files.length}{" "}
-                    files processed successfully
-                  </p>
-                  <div className="mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg text-left">
-                    <p className="font-bold text-red-900 mb-2">
-                      Failed to recognize:
-                    </p>
-                    {processingErrors.map((err, idx) => (
-                      <p key={idx} className="text-red-700 text-sm mb-1">
-                        • {err.error}
-                      </p>
-                    ))}
-                  </div>
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={() => navigate("/calculations")}
-                      className="inline-flex items-center gap-3 bg-green-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-green-700 transition-all text-xl shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                      View Successful Results
-                      <ArrowRight size={28} />
-                    </button>
-                    <button
-                      onClick={() => navigate("/manual-entry")}
-                      className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-all text-lg"
-                    >
-                      ✍️ Enter Remaining Manually
-                    </button>
-                  </div>
-                </div>
-              )}
-
-            {/* All succeeded */}
-            {processingErrors.length === 0 && (
-              <div
-                data-success-message
-                className="mt-6 p-8 bg-primary-50 border border-primary-200 rounded-lg text-center shadow-sm"
+          {/* All succeeded */}
+          {processingErrors.length === 0 && (
+            <div
+              data-success-message
+              className="mt-6 p-8 bg-primary-50 border border-primary-200 rounded-lg text-center shadow-sm"
+            >
+              <CheckCircle
+                className="mx-auto text-primary-600 mb-4"
+                size={64}
+                strokeWidth={2}
+              />
+              <h3 className="text-2xl font-medium text-primary-900 mb-3">
+                All Documents Recognized
+              </h3>
+              <p className="text-base text-gray-700 mb-3">
+                All bills successfully analyzed and emissions calculated
+              </p>
+              <p className="text-sm text-gray-600 mb-8">
+                View detailed carbon footprint breakdown on the{" "}
+                <strong>Calculations</strong> page
+              </p>
+              <button
+                onClick={() => navigate("/calculations")}
+                className="inline-flex items-center gap-2 bg-primary-500 text-white font-medium py-3 px-8 rounded-lg hover:bg-primary-600 transition-colors"
               >
-                <CheckCircle
-                  className="mx-auto text-primary-600 mb-4"
-                  size={64}
-                  strokeWidth={2}
-                />
-                <h3 className="text-2xl font-medium text-primary-900 mb-3">
-                  All Documents Recognized
-                </h3>
-                <p className="text-base text-gray-700 mb-3">
-                  All bills successfully analyzed and emissions calculated
-                </p>
-                <p className="text-sm text-gray-600 mb-8">
-                  View detailed carbon footprint breakdown on the{" "}
-                  <strong>Calculations</strong> page
-                </p>
-                <button
-                  onClick={() => navigate("/calculations")}
-                  className="inline-flex items-center gap-2 bg-primary-500 text-white font-medium py-3 px-8 rounded-lg hover:bg-primary-600 transition-colors"
-                >
-                  View Results
-                  <ArrowRight size={20} strokeWidth={2} />
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+                View Results
+                <ArrowRight size={20} strokeWidth={2} />
+              </button>
+            </div>
+          )}
+        </>
+      )}
 
+      {/* Tips Section */}
       <div className="bg-primary-50 border border-primary-200 rounded-lg p-5">
         <h3 className="font-medium text-primary-900 mb-3 flex items-center gap-2">
           <AlertCircle size={18} strokeWidth={2} className="text-primary-600" />

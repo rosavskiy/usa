@@ -26,7 +26,7 @@ const logoStorage = multer.diskStorage({
 const logoFileFilter = (_req: any, file: any, cb: any) => {
   const allowedTypes = /png|jpg|jpeg|svg/;
   const extname = allowedTypes.test(
-    path.extname(file.originalname).toLowerCase()
+    path.extname(file.originalname).toLowerCase(),
   );
   const mimetype = allowedTypes.test(file.mimetype);
 
@@ -34,7 +34,7 @@ const logoFileFilter = (_req: any, file: any, cb: any) => {
     cb(null, true);
   } else {
     cb(
-      new Error("Only image files (PNG, JPG, JPEG, SVG) are allowed for logos")
+      new Error("Only image files (PNG, JPG, JPEG, SVG) are allowed for logos"),
     );
   }
 };
@@ -69,10 +69,13 @@ router.post(
   "/logo",
   authenticate,
   logoUpload.single("logo"),
-  SettingsController.uploadLogo
+  SettingsController.uploadLogo,
 );
 
 // Delete company logo
 router.delete("/logo", authenticate, SettingsController.deleteLogo);
+
+// Delete user account
+router.delete("/account", authenticate, SettingsController.deleteAccount);
 
 export default router;

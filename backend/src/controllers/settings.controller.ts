@@ -146,4 +146,23 @@ export class SettingsController {
       return res.status(500).json({ error: "Failed to delete logo" });
     }
   }
+
+  static async deleteAccount(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // Delete user (CASCADE will delete all related data: documents, calculations, activity_logs)
+      await UserModel.deleteById(userId);
+
+      return res.json({
+        message: "Account deleted successfully",
+      });
+    } catch (error) {
+      console.error("Delete account error:", error);
+      return res.status(500).json({ error: "Failed to delete account" });
+    }
+  }
 }

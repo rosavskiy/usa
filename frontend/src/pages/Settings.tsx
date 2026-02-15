@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "../api/axios";
-import { Upload, X } from "lucide-react";
+import { Upload, X, AlertTriangle } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   id: number;
@@ -20,10 +22,15 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -89,6 +96,24 @@ export default function Settings() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await api.delete("/settings/account");
+      logout();
+      navigate("/login");
+    } catch (error: any) {
+      console.error("Failed to delete account:", error);
+      setMessage({
+        type: "error",
+        text: error.response?.data?.error || "Failed to delete account",
+      });
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
+    }
   };
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -441,7 +466,74 @@ export default function Settings() {
             </button>
           </div>
         </form>
+
+        {/* Danger Zone */}
+        <div className="mt-8 p-6 bg-red-50 border-2 border-red-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-red-900 mb-2 flex items-center gap-2">
+            <AlertTriangle className="text-red-600" size={20} />
+            Danger Zone
+          </h3>
+          <p className="text-sm text-red-700 mb-4">
+            Once you delete your account, there is no going back. Please be
+            certain.
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Delete Account
+          </button>
+        </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertTriangle className="text-red-600" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">
+                Delete Account?
+              </h3>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <p className="text-gray-700">
+                This action <strong>cannot be undone</strong>. This will
+                permanently delete:
+              </p>
+              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 ml-2">
+                <li>Your account and profile information</li>
+                <li>All uploaded documents and files</li>
+                <li>All carbon calculations and reports</li>
+                <li>Your remaining credits ({profile?.id ? "..." : "0"})</li>
+              </ul>
+              <p className="text-red-600 font-semibold mt-4">
+                Are you absolutely sure you want to delete your account?
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Yes, Delete Forever"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

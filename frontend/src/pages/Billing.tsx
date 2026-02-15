@@ -120,7 +120,7 @@ export default function Billing() {
             ) : (
               <>
                 <div className="text-4xl font-semibold text-primary-600">
-                  {credits.toLocaleString('en-US')}
+                  {credits.toLocaleString("en-US")}
                 </div>
                 <div className="text-sm text-gray-500">credits remaining</div>
               </>

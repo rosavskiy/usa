@@ -1121,48 +1121,47 @@ export default function Calculations() {
                     </label>
                     <input
                       type="text"
-                      value={
-                        reportForm.reportingPeriodStart
-                          ? new Date(reportForm.reportingPeriodStart)
-                              .toLocaleDateString("en-US", {
-                                month: "2-digit",
-                                day: "2-digit",
-                                year: "numeric",
-                              })
-                              .replace(/\//g, "/")
-                          : ""
-                      }
+                      value={reportForm.reportingPeriodStart || ""}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        // Try to parse MM/DD/YYYY format
-                        const parts = val.split("/");
-                        if (parts.length === 3) {
-                          const [month, day, year] = parts;
-                          if (month && day && year && year.length === 4) {
-                            const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-                            setReportForm({
-                              ...reportForm,
-                              reportingPeriodStart: isoDate,
-                            });
-                          }
+                        let input = e.target.value.replace(/\D/g, ""); // Remove non-digits
+                        let formatted = "";
+
+                        // Month (max 12)
+                        if (input.length > 0) {
+                          let month = input.slice(0, 2);
+                          if (parseInt(month[0]) > 1) month = "0" + month[0];
+                          if (month.length === 2 && parseInt(month) > 12)
+                            month = "12";
+                          if (month.length === 2 && parseInt(month) === 0)
+                            month = "01";
+                          formatted = month;
                         }
-                      }}
-                      onBlur={(e) => {
-                        const val = e.target.value;
-                        const parts = val.split("/");
-                        if (parts.length === 3) {
-                          const [month, day, year] = parts;
-                          if (month && day && year && year.length === 4) {
-                            const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-                            setReportForm({
-                              ...reportForm,
-                              reportingPeriodStart: isoDate,
-                            });
-                          }
+
+                        // Day (max 31)
+                        if (input.length >= 3) {
+                          formatted += "/";
+                          let day = input.slice(2, 4);
+                          if (parseInt(day[0]) > 3) day = "0" + day[0];
+                          if (day.length === 2 && parseInt(day) > 31)
+                            day = "31";
+                          if (day.length === 2 && parseInt(day) === 0)
+                            day = "01";
+                          formatted += day;
                         }
+
+                        // Year (4 digits)
+                        if (input.length >= 5) {
+                          formatted += "/";
+                          formatted += input.slice(4, 8);
+                        }
+
+                        setReportForm({
+                          ...reportForm,
+                          reportingPeriodStart: formatted,
+                        });
                       }}
                       placeholder="mm/dd/yyyy"
-                      pattern="\d{2}/\d{2}/\d{4}"
+                      maxLength={10}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
@@ -1172,32 +1171,47 @@ export default function Calculations() {
                     </label>
                     <input
                       type="text"
-                      value={
-                        reportForm.reportingPeriodEnd
-                          ? new Date(reportForm.reportingPeriodEnd)
-                              .toLocaleDateString("en-US", {
-                                month: "2-digit",
-                                day: "2-digit",
-                                year: "numeric",
-                              })
-                              .replace(/\//g, "/")
-                          : ""
-                      }
+                      value={reportForm.reportingPeriodEnd || ""}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        // Try to parse MM/DD/YYYY format
-                        const parts = val.split("/");
-                        if (parts.length === 3) {
-                          const [month, day, year] = parts;
-                          if (month && day && year && year.length === 4) {
-                            const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-                            setReportForm({
-                              ...reportForm,
-                              reportingPeriodEnd: isoDate,
-                            });
-                          }
+                        let input = e.target.value.replace(/\D/g, ""); // Remove non-digits
+                        let formatted = "";
+
+                        // Month (max 12)
+                        if (input.length > 0) {
+                          let month = input.slice(0, 2);
+                          if (parseInt(month[0]) > 1) month = "0" + month[0];
+                          if (month.length === 2 && parseInt(month) > 12)
+                            month = "12";
+                          if (month.length === 2 && parseInt(month) === 0)
+                            month = "01";
+                          formatted = month;
                         }
+
+                        // Day (max 31)
+                        if (input.length >= 3) {
+                          formatted += "/";
+                          let day = input.slice(2, 4);
+                          if (parseInt(day[0]) > 3) day = "0" + day[0];
+                          if (day.length === 2 && parseInt(day) > 31)
+                            day = "31";
+                          if (day.length === 2 && parseInt(day) === 0)
+                            day = "01";
+                          formatted += day;
+                        }
+
+                        // Year (4 digits)
+                        if (input.length >= 5) {
+                          formatted += "/";
+                          formatted += input.slice(4, 8);
+                        }
+
+                        setReportForm({
+                          ...reportForm,
+                          reportingPeriodEnd: formatted,
+                        });
                       }}
+                      placeholder="mm/dd/yyyy"
+                      maxLength={10}
                       onBlur={(e) => {
                         const val = e.target.value;
                         const parts = val.split("/");
@@ -1212,7 +1226,6 @@ export default function Calculations() {
                           }
                         }
                       }}
-                      placeholder="mm/dd/yyyy"
                       pattern="\d{2}/\d{2}/\d{4}"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />

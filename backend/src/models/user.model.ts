@@ -15,6 +15,10 @@ export interface User {
   logo_path?: string | null;
   google_id?: string | null;
   credits?: number | null;
+  is_admin?: boolean;
+  is_super?: boolean;
+  is_blocked?: boolean;
+  last_login?: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -34,7 +38,7 @@ export class UserModel {
       `INSERT INTO users (email, password_hash, company_name, state) 
        VALUES ($1, $2, $3, $4) 
        RETURNING id, email, company_name, state, created_at, updated_at`,
-      [data.email, hashedPassword, data.companyName, data.state || null]
+      [data.email, hashedPassword, data.companyName, data.state || null],
     );
 
     return result.rows[0];
@@ -48,7 +52,7 @@ export class UserModel {
   static async findById(id: number): Promise<User | null> {
     const result = await query(
       "SELECT id, email, company_name, state, industry, currency, unit_system, address, phone, logo_path, credits, created_at, updated_at FROM users WHERE id = $1",
-      [id]
+      [id],
     );
     return result.rows[0] || null;
   }
@@ -64,7 +68,7 @@ export class UserModel {
       address?: string;
       phone?: string;
       logoPath?: string;
-    }
+    },
   ): Promise<User> {
     const updates: string[] = [];
     const values: any[] = [];
@@ -109,7 +113,7 @@ export class UserModel {
     const result = await query(
       `UPDATE users SET ${updates.join(", ")} WHERE id = $${paramCount} 
        RETURNING id, email, company_name, state, industry, currency, unit_system, address, phone, logo_path, created_at, updated_at`,
-      values
+      values,
     );
 
     return result.rows[0];
@@ -117,19 +121,19 @@ export class UserModel {
 
   static async verifyPassword(
     plainPassword: string,
-    hashedPassword: string
+    hashedPassword: string,
   ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
   static async updatePassword(
     userId: number,
-    newPassword: string
+    newPassword: string,
   ): Promise<void> {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await query(
       "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2",
-      [hashedPassword, userId]
+      [hashedPassword, userId],
     );
   }
 
@@ -142,7 +146,7 @@ export class UserModel {
       `INSERT INTO users (email, password_hash, company_name, google_id) 
        VALUES ($1, $2, $3, $4) 
        RETURNING id, email, company_name, google_id, created_at, updated_at`,
-      [data.email, "", data.name, data.googleId]
+      [data.email, "", data.name, data.googleId],
     );
     return result.rows[0];
   }
@@ -150,7 +154,11 @@ export class UserModel {
   static async updateGoogleId(userId: number, googleId: string): Promise<void> {
     await query(
       "UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2",
-      [googleId, userId]
+      [googleId, userId],
     );
+  }
+
+  static async deleteById(userId: number): Promise<void> {
+    await query("DELETE FROM users WHERE id = $1", [userId]);
   }
 }

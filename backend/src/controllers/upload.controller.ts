@@ -29,7 +29,10 @@ export const uploadDocument = asyncHandler(
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
-      throw new AppError("Insufficient credits. Please top up your balance.", 402);
+      throw new AppError(
+        "Insufficient credits. Please top up your balance.",
+        402,
+      );
     }
 
     // Deduct 1 credit before processing
@@ -73,10 +76,12 @@ export const uploadDocument = asyncHandler(
     } catch (err) {
       console.error("❌ AI parsing FAILED:", err);
       console.error("❌ Error stack:", (err as Error).stack);
-      
+
       // Refund the credit since processing failed
       await CreditService.refundCredits(userId, 1);
-      console.log(`💰 Refunded 1 credit to user ${userId} due to processing failure`);
+      console.log(
+        `💰 Refunded 1 credit to user ${userId} due to processing failure`,
+      );
       processingSuccessful = false;
       // Continue anyway, user can calculate manually
     }

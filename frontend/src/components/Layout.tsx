@@ -1,5 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react";
+import axios from "../api/axios";
 import {
   Leaf,
   Upload,
@@ -9,6 +11,7 @@ import {
   FolderOpen,
   Settings,
   CreditCard,
+  Shield,
 } from "lucide-react";
 import CookieConsent from "./CookieConsent";
 import ProfileCompleteModal from "./ProfileCompleteModal";
@@ -16,6 +19,20 @@ import ProfileCompleteModal from "./ProfileCompleteModal";
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const response = await axios.get("/admin/check");
+        setIsAdmin(response.data.isAdmin || false);
+      } catch (error) {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
 
   const navItems = [
     { path: "/", label: "Dashboard", icon: BarChart3 },
@@ -26,6 +43,11 @@ export default function Layout() {
     { path: "/billing", label: "Billing", icon: CreditCard },
     { path: "/settings", label: "Settings", icon: Settings },
   ];
+
+  // Add admin panel to nav if user is admin
+  if (isAdmin) {
+    navItems.push({ path: "/admin", label: "Admin Panel", icon: Shield });
+  }
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">

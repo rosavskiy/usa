@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 pool.on("connect", () => {
-  console.log("✅ Database connected");
+  // Database connected silently
 });
 
 pool.on("error", (err: Error) => {
@@ -21,10 +21,7 @@ pool.on("error", (err: Error) => {
 });
 
 export const query = async (text: string, params?: any[]) => {
-  const start = Date.now();
   const res = await pool.query(text, params);
-  const duration = Date.now() - start;
-  console.log("Executed query", { text, duration, rows: res.rowCount });
   return res;
 };
 

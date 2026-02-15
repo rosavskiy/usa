@@ -15,6 +15,7 @@ import Calculations from "./pages/Calculations";
 import MyDocuments from "./pages/MyDocuments";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
+import AdminPanel from "./pages/AdminPanel";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Layout from "./components/Layout";
@@ -59,6 +60,7 @@ function App() {
             <Route path="my-documents" element={<MyDocuments />} />
             <Route path="billing" element={<Billing />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="admin" element={<AdminPanel />} />
           </Route>
         </Routes>
       </Router>

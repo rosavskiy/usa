@@ -9,6 +9,7 @@ import uploadRoutes from "./routes/upload.routes";
 import carbonRoutes from "./routes/carbon.routes";
 import settingsRoutes from "./routes/settings.routes";
 import reportingPeriodRoutes from "./routes/reporting-period.routes";
+import adminRoutes from "./routes/admin.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { checkOpenAIHealth } from "./services/openai.service";
 import { query } from "./config/database";
@@ -35,10 +36,11 @@ app.use(
 // Initialize passport
 app.use(passport.initialize());
 
-// Rate limiting
+// Rate limiting - more lenient for development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // increased to 1000 requests per windowMs
+  message: "Too many requests, please try again later",
 });
 app.use(limiter);
 
@@ -55,6 +57,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/carbon", carbonRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/reporting-periods", reportingPeriodRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/health", (_req: Request, res: Response) => {
